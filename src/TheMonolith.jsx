@@ -32,7 +32,13 @@ import {
   User,
   Mail,
   Briefcase,
-  Award
+  Award,
+  Calculator,
+  Workflow,
+  CheckCircle2,
+  Boxes,
+  HelpCircle,
+  TrendingUp
 } from 'lucide-react';
 
 /* =========================================================================
@@ -108,7 +114,7 @@ function MonolithCanvas() {
     const haloMesh = new THREE.Mesh(haloGeo, haloMat);
     scene.add(haloMesh);
 
-    // --- VOLUMETRIC GOD RAYS (Warm Light Beams) ---
+    // --- VOLUMETRIC GOD RAYS ---
     const godRayGroup = new THREE.Group();
     const rayCount = 8;
     const rayGeo = new THREE.CylinderGeometry(0.15, 3.8, 22, 16, 1, true);
@@ -125,18 +131,15 @@ function MonolithCanvas() {
       const ray = new THREE.Mesh(rayGeo, rayMat);
       ray.rotation.x = (r * Math.PI) / 4 + Math.PI / 6;
       ray.rotation.z = (r * Math.PI) / (rayCount / 2);
-      ray.position.set(0, 0, 0);
       godRayGroup.add(ray);
     }
     scene.add(godRayGroup);
 
-    // --- SHARDS INSTANCED MESH ---
+    // --- 320 MAGNETIC SHARDS (INSTANCED MESH) ---
     const SHARD_COUNT = 320;
-    // Irregular jagged monolith facet geometry
     const shardGeo = new THREE.ConeGeometry(0.32, 1.4, 4);
     shardGeo.rotateX(Math.PI / 3);
 
-    // Obsidian Material: deep dark charcoal with high specular clearcoat
     const shardMat = new THREE.MeshStandardMaterial({
       color: 0x141311,
       roughness: 0.18,
@@ -148,15 +151,9 @@ function MonolithCanvas() {
     instancedShards.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     scene.add(instancedShards);
 
-    // Generate Formations for each shard
-    // Form 0: Shattered Monolith (Hero) - orbiting central core
-    // Form 1: Spatial Corridor (Solutions / Bento) - parting to sides framing cards
-    // Form 2: Horizontal Data Pipeline (API / Code) - dense linear beam across X
-    // Form 3: Planetary Lattice Ring (Case Studies & Infrastructure) - spherical orbital ring
-    // Form 4: Ascending Dispersion Cloud (Footer) - scattered celestial cloud
+    // Generate Shard Waypoints for Scroll Formations
     const shardData = [];
     for (let i = 0; i < SHARD_COUNT; i++) {
-      // 0. Hero Formation (Monolith Core Cluster)
       const u = Math.random();
       const radius0 = 1.6 + Math.pow(u, 2) * 8.5;
       const theta0 = Math.random() * Math.PI * 2;
@@ -167,7 +164,6 @@ function MonolithCanvas() {
         radius0 * Math.sin(theta0)
       );
 
-      // 1. Bento Corridor (Separated laterally to clear center viewport)
       const side = i % 2 === 0 ? 1 : -1;
       const p1 = new THREE.Vector3(
         side * (6.5 + Math.random() * 7.5),
@@ -175,14 +171,12 @@ function MonolithCanvas() {
         (Math.random() - 0.5) * 8
       );
 
-      // 2. Data Pipeline (Horizontal conduit along X axis behind code window)
       const p2 = new THREE.Vector3(
         (Math.random() - 0.5) * 26,
         (Math.random() - 0.5) * 3.8,
         (Math.random() - 0.5) * 5
       );
 
-      // 3. Planetary Lattice (Spherical ring / geodesic shell)
       const phi = Math.acos(-1 + (2 * i) / SHARD_COUNT);
       const theta3 = Math.sqrt(SHARD_COUNT * Math.PI) * phi;
       const rad3 = 8.5 + (Math.random() - 0.5) * 2;
@@ -192,7 +186,6 @@ function MonolithCanvas() {
         rad3 * Math.cos(phi)
       );
 
-      // 4. Ascension Cloud (Dispersed upward and outward)
       const p4 = new THREE.Vector3(
         (Math.random() - 0.5) * 28,
         Math.random() * 16 - 2,
@@ -214,15 +207,15 @@ function MonolithCanvas() {
           (Math.random() - 0.5) * Math.PI,
           (Math.random() - 0.5) * Math.PI
         ),
-        rotSpeedY: 0.015 + Math.random() * 0.025, // Calm, slow axial rotation (takes 150-300s per rev)
+        rotSpeedY: 0.015 + Math.random() * 0.025,
         rotSpeedX: 0.008 + Math.random() * 0.015,
-        orbitSpeed: 0.012 + (1.0 / (radius0 + 1.2)) * 0.018, // Slow, majestic Keplerian orbit
+        orbitSpeed: 0.012 + (1.0 / (radius0 + 1.2)) * 0.018,
         phase: Math.random() * Math.PI * 2,
         scale: 0.55 + Math.random() * 0.75
       });
     }
 
-    // --- DUST / SAND PARTICLE SYSTEM ---
+    // --- WARM DUST PARTICLES ---
     const DUST_COUNT = 1400;
     const dustGeo = new THREE.BufferGeometry();
     const dustPositions = new Float32Array(DUST_COUNT * 3);
@@ -234,11 +227,11 @@ function MonolithCanvas() {
       dustPositions[d + 2] = (Math.random() - 0.5) * 30;
 
       dustVelocities[d] = (Math.random() - 0.5) * 0.003;
-      dustVelocities[d + 1] = 0.0015 + Math.random() * 0.003; // Serene slow upward drift
+      dustVelocities[d + 1] = 0.0015 + Math.random() * 0.003;
       dustVelocities[d + 2] = (Math.random() - 0.5) * 0.003;
     }
-    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
 
+    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
     const dustMat = new THREE.PointsMaterial({
       color: 0xd6d2cd,
       size: 0.06,
@@ -250,7 +243,7 @@ function MonolithCanvas() {
     const dustParticles = new THREE.Points(dustGeo, dustMat);
     scene.add(dustParticles);
 
-    // --- INTERACTIVE POINTER & SCROLL STATE ---
+    // --- INTERACTION & SCROLL STATE ---
     const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
     const mouse3D = new THREE.Vector3();
     let scrollProgress = 0;
@@ -278,27 +271,24 @@ function MonolithCanvas() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize);
 
-    // Matrix Dummy for Instancing
+    // --- RENDER LOOP ---
     const dummy = new THREE.Object3D();
     const clock = new THREE.Clock();
-
-    // --- ANIMATION LOOP ---
     let animationFrameId;
+
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
 
-      // Smooth lerp mouse coordinates
+      // Smooth mouse lerping
       mouse.x += (mouse.targetX - mouse.x) * 0.04;
       mouse.y += (mouse.targetY - mouse.y) * 0.04;
-
-      // Project mouse into 3D plane at Z = 0
       mouse3D.set(mouse.x * 12, mouse.y * 7, 0);
 
-      // Smooth lerp scroll progress
+      // Smooth scroll lerping
       scrollProgress += (targetScrollProgress - scrollProgress) * 0.04;
 
-      // Rotate God Rays & Core - Slow, majestic, cinematic pacing
+      // Rotate God Rays & Core
       godRayGroup.rotation.y = elapsedTime * 0.015;
       godRayGroup.rotation.x = Math.sin(elapsedTime * 0.04) * 0.06;
       coreMesh.rotation.y = elapsedTime * 0.035;
@@ -306,19 +296,18 @@ function MonolithCanvas() {
       haloMesh.rotation.z = -elapsedTime * 0.015;
       haloMesh.lookAt(camera.position);
 
-      // Core light gentle, deep breathing
+      // Core Breathing Pulse
       coreLight.intensity = 5.2 + Math.sin(elapsedTime * 0.8) * 0.8;
 
-      // Camera gentle dynamic tilt responding to mouse
+      // Parallax Camera
       camera.position.x = mouse.x * 0.9;
       camera.position.y = mouse.y * 0.5;
       camera.lookAt(0, 0, 0);
 
-      // Update Shards Formations
+      // Update Shard Swarm Formations
       for (let i = 0; i < SHARD_COUNT; i++) {
         const item = shardData[i];
 
-        // Smooth dynamic orbital motion for Hero state
         const currentAngle = item.theta0 + elapsedTime * item.orbitSpeed;
         const heroDynamicPos = new THREE.Vector3(
           item.radius0 * Math.cos(currentAngle),
@@ -328,26 +317,21 @@ function MonolithCanvas() {
 
         let targetPos = new THREE.Vector3();
 
-        // 4-Phase Interpolation across Scroll
         if (scrollProgress < 0.25) {
-          // Hero -> Bento
           const t = scrollProgress / 0.25;
           targetPos.lerpVectors(heroDynamicPos, item.p1, t);
         } else if (scrollProgress < 0.5) {
-          // Bento -> Data Pipeline
           const t = (scrollProgress - 0.25) / 0.25;
           targetPos.lerpVectors(item.p1, item.p2, t);
         } else if (scrollProgress < 0.75) {
-          // Data Pipeline -> Planetary Lattice
           const t = (scrollProgress - 0.5) / 0.25;
           targetPos.lerpVectors(item.p2, item.p3, t);
         } else {
-          // Planetary Lattice -> Ascension Cloud
           const t = (scrollProgress - 0.75) / 0.25;
           targetPos.lerpVectors(item.p3, item.p4, t);
         }
 
-        // MOUSE MAGNETISM: Soft, elegant deflection
+        // Magnetic Cursor Repulsion & Drift
         const distToMouse = item.currentPos.distanceTo(mouse3D);
         if (distToMouse < 4.5) {
           const repelDir = item.currentPos.clone().sub(mouse3D).normalize();
@@ -356,10 +340,8 @@ function MonolithCanvas() {
           targetPos.y += Math.sin(elapsedTime * 1.5 + item.phase) * force * 0.2;
         }
 
-        // Damped transition to target position (no jitter)
         item.currentPos.lerp(targetPos, 0.035);
 
-        // Transform instance matrix with explicit fresh rotation per instance
         dummy.position.copy(item.currentPos);
         dummy.rotation.set(
           item.baseRot.x + Math.sin(elapsedTime * 0.03 + item.phase) * 0.15,
@@ -373,14 +355,13 @@ function MonolithCanvas() {
       }
       instancedShards.instanceMatrix.needsUpdate = true;
 
-      // Update Dust Particles
+      // Update Floating Dust
       const posArray = dustParticles.geometry.attributes.position.array;
       for (let p = 0; p < DUST_COUNT * 3; p += 3) {
         posArray[p] += dustVelocities[p];
         posArray[p + 1] += dustVelocities[p + 1];
         posArray[p + 2] += dustVelocities[p + 2];
 
-        // Reset if drifted beyond bounds
         if (posArray[p + 1] > 18) posArray[p + 1] = -18;
         if (posArray[p] > 22) posArray[p] = -22;
         if (posArray[p] < -22) posArray[p] = 22;
@@ -398,16 +379,6 @@ function MonolithCanvas() {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
-      shardGeo.dispose();
-      shardMat.dispose();
-      dustGeo.dispose();
-      dustMat.dispose();
-      coreGeo.dispose();
-      coreMat.dispose();
-      haloGeo.dispose();
-      haloMat.dispose();
-      rayGeo.dispose();
-      rayMat.dispose();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
@@ -424,92 +395,82 @@ function MonolithCanvas() {
 }
 
 /* =========================================================================
-   2. SCROLL REVEAL INTERSECTION OBSERVER HOOK
+   2. CUSTOM HOOKS: SCROLL REVEAL & TYPEWRITER
    ========================================================================= */
 
 function useScrollReveal(threshold = 0.15) {
-  const ref = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.unobserve(entry.target);
         }
       },
-      { threshold, rootMargin: '0px 0px -40px 0px' }
+      { threshold }
     );
 
-    const currentRef = ref.current;
-    if (currentRef) observer.observe(currentRef);
-
-    return () => {
-      if (currentRef) observer.unobserve(currentRef);
-    };
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
   }, [threshold]);
 
   return [ref, isVisible];
 }
 
-/* =========================================================================
-   3. TYPEWRITER EFFECT HOOK FOR TECHNICAL CODE SNIPPETS
-   ========================================================================= */
-
-function useTypewriter(fullText, speed = 12, enabled = false) {
+function useTypewriter(text, speed = 8, startTyping = true) {
   const [displayedText, setDisplayedText] = useState('');
-  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!startTyping) {
+      setDisplayedText('');
+      return;
+    }
     setDisplayedText('');
-    setIsComplete(false);
-
-    let currentIndex = 0;
+    let i = 0;
     const interval = setInterval(() => {
-      if (currentIndex < fullText.length) {
-        setDisplayedText(fullText.slice(0, currentIndex + 1));
-        currentIndex++;
+      if (i < text.length) {
+        setDisplayedText(text.slice(0, i + 1));
+        i++;
       } else {
-        setIsComplete(true);
         clearInterval(interval);
       }
     }, speed);
 
     return () => clearInterval(interval);
-  }, [fullText, speed, enabled]);
+  }, [text, speed, startTyping]);
 
-  return { displayedText, isComplete };
+  return { displayedText };
 }
 
 /* =========================================================================
-   4. MINIMALIST VANGUARD ENTERPRISE CLIENT LOGOS (SVG Warm Gray #7a756f)
+   3. MINIMALIST VANGUARD ENTERPRISE CLIENT LOGOS
    ========================================================================= */
 
 const VanguardLogos = {
-  Aethelgard: () => (
+  Fintech: () => (
     <svg className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 40 40" fill="none" stroke="currentColor">
       <polygon points="20,4 36,14 36,34 20,38 4,34 4,14" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
       <line x1="20" y1="4" x2="20" y2="38" strokeWidth="1.25" strokeDasharray="3 3" />
       <circle cx="20" cy="20" r="3" fill="currentColor" />
     </svg>
   ),
-  Hyperion: () => (
+  Healthcare: () => (
     <svg className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 40 40" fill="none" stroke="currentColor">
       <rect x="7" y="7" width="26" height="26" strokeWidth="1.75" transform="rotate(45 20 20)" />
       <rect x="12" y="12" width="16" height="16" strokeWidth="1.25" />
       <circle cx="20" cy="20" r="2.5" fill="currentColor" />
     </svg>
   ),
-  OrbitalDynamics: () => (
+  Hospitality: () => (
     <svg className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 40 40" fill="none" stroke="currentColor">
       <circle cx="20" cy="20" r="15" strokeWidth="1.75" />
       <ellipse cx="20" cy="20" rx="16" ry="6" strokeWidth="1.25" transform="rotate(-30 20 20)" />
       <circle cx="20" cy="20" r="3.5" fill="currentColor" />
     </svg>
   ),
-  ChronosLab: () => (
+  Academic: () => (
     <svg className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 40 40" fill="none" stroke="currentColor">
       <path d="M20 4 L35 12 L35 28 L20 36 L5 28 L5 12 Z" strokeWidth="1.75" />
       <line x1="20" y1="20" x2="20" y2="8" strokeWidth="1.5" />
@@ -517,7 +478,7 @@ const VanguardLogos = {
       <circle cx="20" cy="20" r="2" fill="currentColor" />
     </svg>
   ),
-  VertexLattice: () => (
+  Streaming: () => (
     <svg className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 40 40" fill="none" stroke="currentColor">
       <polygon points="20,5 35,32 5,32" strokeWidth="1.75" />
       <polygon points="20,14 28,29 12,29" strokeWidth="1.25" fill="currentColor" fillOpacity="0.15" />
@@ -526,11 +487,10 @@ const VanguardLogos = {
 };
 
 /* =========================================================================
-   5. MAIN APPLICATION COMPONENT
+   4. MAIN REACT COMPONENT: THE MONOLITH
    ========================================================================= */
 
-export default function App() {
-  // Navigation & UI States
+export default function TheMonolith() {
   const [activeSection, setActiveSection] = useState('hero');
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [architectureModalOpen, setArchitectureModalOpen] = useState(false);
@@ -539,11 +499,25 @@ export default function App() {
   const [selectedCaseStudy, setSelectedCaseStudy] = useState(null);
   const [selectedNode, setSelectedNode] = useState('IAD-01');
 
-  // Terminal Console State
+  // Technical Arsenal Matrix active tab
+  const [activeStackTab, setActiveStackTab] = useState('backend');
+
+  // Interactive Project Scoper state
+  const [estimatorDomain, setEstimatorDomain] = useState('fintech');
+  const [estimatorScale, setEstimatorScale] = useState('high');
+  const [estimatorFeatures, setEstimatorFeatures] = useState([
+    'websockets',
+    'redis',
+    'acid'
+  ]);
+  const [briefCopied, setBriefCopied] = useState(false);
+
+  // Terminal Commands State
   const [terminalCommands, setTerminalCommands] = useState([
     { type: 'system', text: 'THE MONOLITH OS [Version 5.2.0-Core]' },
+    { type: 'system', text: 'Principal Systems Architect: Dulanja Abeysinghe' },
     { type: 'system', text: '320 Magnetic Shards Synchronized. Core AI Light at 100% nominal output.' },
-    { type: 'system', text: 'Type "help" for a list of available cluster operations.' }
+    { type: 'system', text: 'Type "help" or "architect" for a list of available cluster operations.' }
   ]);
   const [terminalInput, setTerminalInput] = useState('');
   const terminalEndRef = useRef(null);
@@ -551,10 +525,13 @@ export default function App() {
   // Scroll Reveal Refs
   const [heroRef, heroVisible] = useScrollReveal(0.1);
   const [logosRef, logosVisible] = useScrollReveal(0.15);
+  const [architectRef, architectVisible] = useScrollReveal(0.15);
+  const [stackRef, stackVisible] = useScrollReveal(0.15);
   const [solutionsRef, solutionsVisible] = useScrollReveal(0.15);
   const [apiRef, apiVisible] = useScrollReveal(0.15);
-  const [architectRef, architectVisible] = useScrollReveal(0.15);
   const [casesRef, casesVisible] = useScrollReveal(0.15);
+  const [servicesRef, servicesVisible] = useScrollReveal(0.15);
+  const [estimatorRef, estimatorVisible] = useScrollReveal(0.15);
   const [infraRef, infraVisible] = useScrollReveal(0.15);
   const [ctaRef, ctaVisible] = useScrollReveal(0.15);
 
@@ -564,7 +541,7 @@ export default function App() {
   // Active section scroll spy
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['hero', 'solutions', 'api', 'architect', 'cases', 'infra', 'cta'];
+      const sections = ['hero', 'architect', 'stack', 'solutions', 'api', 'cases', 'services', 'estimator', 'infra', 'cta'];
       const scrollPos = window.scrollY + 250;
 
       for (const section of sections) {
@@ -603,7 +580,7 @@ export default function App() {
       case 'help':
         newLogs.push({
           type: 'response',
-          text: 'AVAILABLE OPERATIONS:\n  architect   - Display Principal Architect Dulanja Abeysinghe profile & credentials\n  projects    - Output inventory of production systems & engineering deployments\n  status      - Query real-time magnetic shard coherence & core AI state\n  deploy      - Initialize autonomous enclave compute pod\n  nodes       - Output latency matrix across 6 global edge points\n  api         - Inspect latest TypeScript / Python client SDK release\n  benchmark   - Run synthetic 1,000,000 state mutation test\n  contact     - Display direct secure contact coordinates\n  clear       - Purge terminal buffer'
+          text: 'AVAILABLE OPERATIONS:\n  architect   - Display Principal Architect Dulanja Abeysinghe profile & credentials\n  projects    - Output inventory of 12 production systems & engineering deployments\n  stack       - Inspect comprehensive technical stack and architecture matrix\n  services    - Enumerate available enterprise service engagement tiers\n  estimate    - Run dynamic architecture scoping calculation\n  status      - Query real-time magnetic shard coherence & core AI state\n  deploy      - Initialize autonomous enclave compute pod\n  nodes       - Output latency matrix across 6 global edge points\n  api         - Inspect latest TypeScript / Python client SDK release\n  benchmark   - Run synthetic 1,000,000 state mutation test\n  contact     - Display direct secure contact coordinates\n  clear       - Purge terminal buffer'
         });
         break;
       case 'architect':
@@ -611,13 +588,34 @@ export default function App() {
       case 'whoami':
         newLogs.push({
           type: 'response',
-          text: 'PRINCIPAL SYSTEMS ARCHITECT:\n  Name: Dulanja Abeysinghe\n  Title: Senior Full-Stack & Systems Engineer\n  Email: dulanja150abeysinghe@gmail.com\n  Domain Focus: High-consequence enterprise SaaS, real-time WebSockets, gaming fintech, clinical pharmacy OS, and distributed crawlers.\n  Primary Stack: Laravel 11, Next.js 14/16, React 19, TypeScript, Alpine.js, MySQL, PostgreSQL, Tailwind CSS'
+          text: 'PRINCIPAL SYSTEMS ARCHITECT:\n  Name: Dulanja Abeysinghe\n  Title: Senior Full-Stack & Systems Engineer\n  Email: dulanja150abeysinghe@gmail.com\n  Domain Focus: High-consequence enterprise SaaS, real-time WebSockets, gaming fintech automation, clinical pharmacy OS, and distributed crawlers.\n  Primary Stack: Laravel 11/12, Next.js 14/16, React 19, TypeScript, Alpine.js, Docker, Redis/Redlock, MySQL, PostgreSQL, Tailwind CSS'
         });
         break;
       case 'projects':
+      case 'allprojects':
         newLogs.push({
           type: 'response',
-          text: 'PRODUCTION SYSTEMS CATALOGUE:\n  [1] ShadowTopup Engine        : Automated Garena API Top-Up & Wallet Gateway [DEPLOYED]\n  [2] The Menu Enterprise       : Multi-Tenant QR Order & Live Kitchen Display (KDS) [ACTIVE]\n  [3] Clinical Pharmacy OS      : Medication Dispensation & Batch Audit OS [VERIFIED]\n  [4] Engineering OS            : 168h Capacity Budgeting & Active Recall Command Center [ACTIVE]\n  [5] Harvard Centralized Inquiry: Admissions Multi-Channel Ingestion & SLA Routing [DEPLOYED]\n  [6] ThiraPlus & Thirai Shorts : Low-Latency Video Streaming & Short-Form Fabric [OPERATIONAL]\n  [7] Sagaki Supply Chain Engine: Multi-Depot Distribution & Restock Automation [DEPLOYED]\n  [8] Canadian Talent Crawler   : Distributed Job Board Indexing & Deduplication [ACTIVE]'
+          text: 'PRODUCTION SYSTEMS CATALOGUE (12 FLAGSHIP BUILDS):\n  [1]  ShadowTopup Engine        : Automated Garena API Top-Up & Wallet Gateway [DEPLOYED]\n  [2]  NexusTopUp Automation     : Low-Level Microservice with JA3 TLS Spoofing & Redlock [ACTIVE]\n  [3]  The Menu Enterprise       : Multi-Tenant QR Order & Live Kitchen Display (KDS) [ACTIVE]\n  [4]  Clinical Pharmacy OS      : Medication Dispensation & Batch Audit OS [VERIFIED]\n  [5]  Old Devans Legacy Hub     : Supabase Digital Museum, Archival Trophy Room & CMS [DEPLOYED]\n  [6]  Engineering OS            : 168h Capacity Budgeting & Spaced Repetition OS [ACTIVE]\n  [7]  Glaciar Water Logistics   : Automated Route Replenishment & Dynamic DomPDF Invoicing [DEPLOYED]\n  [8]  Harvard Inquiry System    : Admissions Multi-Channel Ingestion & SLA Routing [DEPLOYED]\n  [9]  ThiraPlus & Thirai Shorts : Low-Latency Video Streaming & Short-Form Fabric [OPERATIONAL]\n  [10] Sagaki Supply Chain Engine: Multi-Depot Distribution & Restock Automation [DEPLOYED]\n  [11] Canadian Talent Crawler   : Distributed Job Board Indexing & Deduplication [ACTIVE]\n  [12] Shopify Webhook Gateway   : Idempotent Payment & Custom Checkout Integrity [VERIFIED]'
+        });
+        break;
+      case 'stack':
+      case 'arsenal':
+        newLogs.push({
+          type: 'response',
+          text: 'TECHNICAL ARSENAL MATRIX:\n  Backend Core     : Laravel 11/12 (PHP 8.3), Node.js, Express, Docker Compose, Redis (Redlock Mutex)\n  Frontend & Craft : Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Alpine.js, Three.js\n  Real-Time Comms  : Pusher WebSockets, Laravel Echo, JA3/JA4 TLS Spoofing, HMAC Webhooks\n  Data Storage     : PostgreSQL, MySQL (ACID Transactions), Supabase, Prometheus, Grafana'
+        });
+        break;
+      case 'services':
+      case 'tiers':
+        newLogs.push({
+          type: 'response',
+          text: 'ENTERPRISE ENGAGEMENT PROTOCOLS:\n  Tier 1: Turnkey System Architecture (Full Lifecycle Discovery, Schema & Zero-Downtime Deployment)\n  Tier 2: High-Throughput API & Microservices Modernization (Redis Caching, Redlock, WebSocket KDS)\n  Tier 3: Fractional Principal Systems Engineering (Strategic Auditing, Queue Optimization, Scale Review)'
+        });
+        break;
+      case 'estimate':
+        newLogs.push({
+          type: 'response',
+          text: 'ARCHITECTURE ESTIMATION TELEMETRY:\n  Default Scoped Tier: TIER 3 HIGH-CONCURRENCY DISTRIBUTED LATTICE\n  Recommended Base: Laravel 11 + Next.js 16 + Redis Redlock + Pusher WS\n  Expected Deployment Window: 4 - 8 Weeks\n  Inquiry Channel: dulanja150abeysinghe@gmail.com'
         });
         break;
       case 'contact':
@@ -729,7 +727,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  // Production Systems Engineered by Dulanja Abeysinghe
+  // 12 Production Systems Engineered by Dulanja Abeysinghe
   const caseStudies = [
     {
       id: 'shadowtopup',
@@ -746,6 +744,22 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         { label: 'Fulfillment', val: '99.98%' }
       ],
       architectNote: 'Engineered sub-second webhook reconciliation between external payment providers and the Garena player validation gateway.'
+    },
+    {
+      id: 'nexustopup',
+      title: 'NexusTopUp Automation Gateway',
+      client: 'NexusTopUp Infrastructure',
+      category: 'Distributed Microservices & Security',
+      filter: 'Fintech & APIs',
+      headline: 'High-Performance Gaming Automation Gateway with JA3/JA4 TLS Spoofing & Redlock',
+      summary: 'Engineered a low-level microservice gateway automating digital gaming top-ups. Implemented warm Redis session pools (12h TTL), 2FA TOTP generation from seed, distributed Redlock double-claim prevention, and Chrome JA3/JA4 TLS fingerprint mimicry to bypass strict WAF security.',
+      stack: ['Node.js / TypeScript', 'Docker Compose', 'Redis / Redlock', 'TLS Fingerprinting', 'Prometheus', 'Telegram Bot'],
+      metrics: [
+        { label: 'Session Latency', val: '8s → 1.4s' },
+        { label: '2FA TOTP Engine', val: '100% Automated' },
+        { label: 'Double Claims', val: '0.00% Zero-Loss' }
+      ],
+      architectNote: 'Implemented JA3/JA4 TLS fingerprint spoofing with Redlock distributed mutexes to eliminate race conditions under concurrent payment callbacks.'
     },
     {
       id: 'the-menu',
@@ -771,13 +785,29 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       filter: 'Healthcare & Clinical',
       headline: 'Clinical Medication Dispensation, Prescription Verification & Batch Tracking OS',
       summary: 'Engineered an immutable medical dispensary management system handling prescription auditing, real-time batch and expiry tracking, drug interaction guardrails, barcode scanning, and multi-tier pharmaceutical billing with zero ledger discrepancies.',
-      stack: ['Laravel Core', 'MySQL ACID Transactions', 'Livewire / Alpine.js', 'REST APIs', 'Audit Log'],
+      stack: ['Laravel Core', 'MySQL ACID Transactions', 'Livewire / Alpine.js', 'Hardware Barcode Scanner', 'Audit Trail'],
       metrics: [
         { label: 'Audit Trail', val: '100% Verified' },
         { label: 'Expiry Waste', val: '0.00% Zero-Loss' },
         { label: 'Compliance', val: 'HIPAA-Grade' }
       ],
       architectNote: 'Guaranteed ACID compliance across multi-station clinical dispensations with automated batch expiry quarantine.'
+    },
+    {
+      id: 'old-devans',
+      title: 'Old Devans Legacy Platform & Museum',
+      client: 'Old Devans Basketball Club',
+      category: 'Digital Heritage & Realtime CMS',
+      filter: 'Enterprise SaaS',
+      headline: 'Living Historical Archive, Archival Trophy Cabinet & Alumni Memory Hub',
+      summary: 'Architected a high-craft historical legacy and alumni platform with an interactive milestone timeline, digital championship trophy room, yearbook Hall of Fame, archival memory wall with Lightbox, and an authenticated administrative CRUD content studio.',
+      stack: ['React 18', 'Vite', 'Tailwind CSS', 'Framer Motion', 'Express.js REST API', 'Supabase PostgreSQL', 'JWT Auth'],
+      metrics: [
+        { label: 'Archive Span', val: '1980s - 2020s' },
+        { label: 'API Response', val: '< 25ms P95' },
+        { label: 'Trophy Museum', val: '100% Interactive' }
+      ],
+      architectNote: 'Designed a dual-layer data architecture with Supabase PostgreSQL and a fallback resilient in-memory store for 100% offline-tolerant rendering.'
     },
     {
       id: 'engineering-os',
@@ -787,13 +817,29 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       filter: 'Dev Tooling & AI',
       headline: 'Production-Quality Capacity Budgeting, Active Recall & Knowledge Retention OS',
       summary: 'Built a private command center for senior software and AI engineers. Computes 168-hour weekly capacity budgets across 7 simultaneous engineering tracks, protected client buffers, spaced repetition flashcard retention, and real-time telemetry analytics.',
-      stack: ['Next.js 16 (App Router)', 'React 19', 'TypeScript', 'Tailwind CSS', 'Recharts', 'Vercel'],
+      stack: ['Next.js 16 (App Router)', 'React 19', 'TypeScript', 'Tailwind CSS', 'Recharts', 'SM-2 Algorithm'],
       metrics: [
         { label: 'Weekly Engine', val: '168h Budget' },
         { label: 'Active Recall', val: 'SM-2 Algorithm' },
         { label: 'Transitions', val: '< 10ms P99' }
       ],
       architectNote: 'Designed dynamic capacity algorithms that trigger automatic schedule rebalancing when weekly cognitive load exceeds thresholds.'
+    },
+    {
+      id: 'glaciar-water',
+      title: 'Glaciar Water Logistics & Enterprise ERP',
+      client: 'Glaciar Water Bottling & Distribution',
+      category: 'Supply Chain & Logistics ERP',
+      filter: 'Enterprise SaaS',
+      headline: 'Commercial Bottling Replenishment, Route Fleet Scheduling & Automated Invoicing',
+      summary: 'Engineered an enterprise resource management platform managing water distribution fleets, customer deposit containers, dynamic route allocations, and automated DomPDF invoice dispatching.',
+      stack: ['Laravel 11', 'Laravel Sanctum', 'DomPDF Engine', 'PostgreSQL', 'Tailwind UI'],
+      metrics: [
+        { label: 'Invoicing', val: 'Automated DomPDF' },
+        { label: 'Route Dispatch', val: 'Real-Time Sync' },
+        { label: 'Container Parity', val: '100% Reconciled' }
+      ],
+      architectNote: 'Engineered a batch PDF generation queue with automated customer email dispatching and recurring balance reconciliations.'
     },
     {
       id: 'harvard-inquiry',
@@ -846,18 +892,34 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
     {
       id: 'canadian-scraper',
       title: 'Canadian Talent Scraper',
-      client: 'Market Intelligence',
+      client: 'Market Intelligence & Data Mining',
       category: 'Distributed Web Crawling',
       filter: 'Dev Tooling & AI',
       headline: 'Distributed Web Crawling Pipeline Indexing National Technical Job Boards',
       summary: 'Automated distributed scraping system aggregating, deduplicating, and parsing job postings across top Canadian talent boards with automated salary normalization and daily alert digests.',
-      stack: ['Python', 'Node.js Crawlers', 'Cheerio / Playwright', 'PostgreSQL'],
+      stack: ['Node.js / Puppeteer', 'Python Crawlers', 'PostgreSQL Data Lake', 'Anti-Bot Bypasses'],
       metrics: [
-        { label: 'Daily Indexing', val: '10,000+ Postings' },
-        { label: 'Accuracy', val: '99.4% Validated' },
-        { label: 'Pipeline', val: 'Deduplicated' }
+        { label: 'Daily Indexing', val: '100,000+ Docs' },
+        { label: 'Pipeline Speed', val: '3,200 docs/min' },
+        { label: 'Data Fidelity', val: '99.9% Validated' }
       ],
       architectNote: 'Constructed an anti-detection residential proxy rotater paired with heuristic salary parsing.'
+    },
+    {
+      id: 'shopify-gateway',
+      title: 'Shopify Checkout & Webhook Gateway',
+      client: 'High-Volume E-Commerce',
+      category: 'E-Commerce & Payment Consistency',
+      filter: 'Fintech & APIs',
+      headline: 'Idempotent Webhook Synchronization & Custom Checkout Pipeline Hardening',
+      summary: 'Designed resilient webhook listeners and custom checkout synchronizations resolving state desynchronization between Shopify Admin APIs, third-party payment gateways, and custom inventory databases.',
+      stack: ['Shopify Admin API', 'Shopify Liquid', 'Laravel Middleware', 'HMAC Validation', 'MySQL'],
+      metrics: [
+        { label: 'Idempotency', val: '100% Cryptographic' },
+        { label: 'Double Charges', val: '0.00% Zero-Loss' },
+        { label: 'Callback ACK', val: '< 250 ms' }
+      ],
+      architectNote: 'Implemented cryptographic HMAC signature verification with database-backed idempotency keys to prevent duplicate transaction state fulfillment.'
     }
   ];
 
@@ -876,6 +938,70 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
     { id: 'GRU-01', name: 'São Paulo', region: 'South America', ping: '2.15 ms', status: 'SYNCHRONIZED' }
   ];
 
+  // Technical Arsenal Matrix Content
+  const stackArsenal = {
+    backend: [
+      { name: 'Laravel 11 / 12 (PHP 8.3)', role: 'Microservice Core & Queue Pipelines', desc: 'High-throughput enterprise APIs, asynchronous queue workers, custom artisan daemons, and Sanctum token security.' },
+      { name: 'Node.js & Express.js', role: 'High-Concurrency Ingestion & Proxy', desc: 'Non-blocking I/O event loops, headless browser crawler managers, and low-latency webhook ingestion layers.' },
+      { name: 'Docker & Docker Compose', role: 'Containerized Enclaves', desc: 'Isolated multi-container orchestration with deterministic production parity, health monitoring, and automated restarts.' },
+      { name: 'Redis & Redlock Mutex', role: 'Warm Session Pools & Mutex Locks', desc: 'Sub-millisecond key-value caching, 12-hour session lifetime management, and distributed mutexes preventing double-execution.' }
+    ],
+    frontend: [
+      { name: 'Next.js 16 (App Router)', role: 'Enterprise Server-Side Architecture', desc: 'Hybrid static/SSR rendering, React Server Components, server actions, dynamic routing, and sub-10ms P99 client transitions.' },
+      { name: 'React 19 & TypeScript', role: 'Strict-Type Interface Layer', desc: 'Predictable unidirectional state trees, custom reactive hooks, and strict compile-time verification across complex domain models.' },
+      { name: 'Tailwind CSS & Framer Motion', role: 'Tactile Spatial Design & Polish', desc: '8pt spatial grid layouts, bespoke dark-mode tokens, smooth layout spring animations, and WCAG AA accessible contrast.' },
+      { name: 'Alpine.js & Livewire', role: 'Dynamic Zero-Reload Reactive DOM', desc: 'Lightweight reactive components in traditional SSR Laravel architectures for lightning-fast modal workflows without full bundle overhead.' }
+    ],
+    realtime: [
+      { name: 'Pusher WebSockets & Echo', role: 'Bidirectional State Broadcasting', desc: 'Sub-second event synchronization powering live kitchen display queues, chat streams, and immediate order status transitions.' },
+      { name: 'JA3 / JA4 TLS Spoofing', role: 'Anti-WAF Protocol Mimicry', desc: 'Low-level HTTP client TLS signature synthesis mimicking standard Chrome browser handshakes to bypass aggressive firewall blocks.' },
+      { name: 'HMAC Webhook Verification', role: 'Cryptographic Callback Security', desc: 'Signature authentication and replay attack prevention protecting fintech payment gateways and third-party webhook relays.' },
+      { name: 'FFmpeg Transcoding Pipeline', role: 'Adaptive Video Processing', desc: 'Automated chunking and multi-resolution transcoding for vertical short-form reels and low-latency streaming delivery.' }
+    ],
+    data: [
+      { name: 'PostgreSQL & Supabase', role: 'Relational Data Lakes & Realtime DB', desc: 'Complex relational indexing, row-level security policies, JSONB document querying, and realtime table subscription listeners.' },
+      { name: 'MySQL ACID Transactions', role: 'Financial & Clinical Ledgers', desc: 'Row-level locking, foreign key constraints, and multi-step transactional boundaries with zero ledger discrepancies.' },
+      { name: 'Prometheus & Grafana', role: 'Telemetry & P95/P99 Monitoring', desc: 'Real-time metrics scraping, queue depth observability, shell balance monitoring, and automated anomaly alert thresholds.' },
+      { name: 'DomPDF Dynamic Invoicing', role: 'Compliant Document Generation', desc: 'Automated wholesale tax invoices, clinical batch reports, and balance reconciliations compiled directly to immutable PDF storage.' }
+    ]
+  };
+
+  // Dynamic Scoper Calculation
+  const estimatedBrief = useMemo(() => {
+    let tier = 'TIER 2: RESILIENT PRODUCTION ARCHITECTURE';
+    let window = '3 - 6 Weeks';
+    let baseStack = 'Laravel 11 + React 19 / Next.js';
+
+    if (estimatorScale === 'extreme' || estimatorDomain === 'fintech') {
+      tier = 'TIER 3: HIGH-CONCURRENCY DISTRIBUTED LATTICE';
+      window = '6 - 10 Weeks';
+      baseStack = 'Laravel Microservices + Docker + Redis Redlock + Next.js 16';
+    } else if (estimatorDomain === 'healthcare') {
+      tier = 'TIER 3: REGULATED ACID CLINICAL PLATFORM';
+      window = '5 - 8 Weeks';
+      baseStack = 'Laravel Core + MySQL ACID Transactions + Barcode Hardware Sync';
+    } else if (estimatorScale === 'sub-1k') {
+      tier = 'TIER 1: HIGH-CRAFT MVP ARCHITECTURE';
+      window = '2 - 4 Weeks';
+      baseStack = 'Laravel + Inertia / Tailwind UI';
+    }
+
+    const featureNames = estimatorFeatures.join(', ');
+    return {
+      tier,
+      window,
+      baseStack,
+      subject: `[Architecture Inquiry] Scoped Engagement: ${estimatorDomain.toUpperCase()} (${estimatorScale.toUpperCase()})`,
+      body: `Hello Dulanja,\n\nI scoped an architecture engagement via The Monolith platform:\n\n- Domain: ${estimatorDomain.toUpperCase()}\n- Target Concurrency: ${estimatorScale.toUpperCase()}\n- Core Capabilities: ${featureNames}\n- Target Architecture Tier: ${tier}\n- Estimated Window: ${window}\n\nLet's schedule an initial architecture review.`
+    };
+  }, [estimatorDomain, estimatorScale, estimatorFeatures]);
+
+  const toggleFeature = (id) => {
+    setEstimatorFeatures((prev) =>
+      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+    );
+  };
+
   return (
     <div className="relative min-h-screen bg-[#0a0908] text-[#f5f4f0] font-sans antialiased selection:bg-[#d6d2cd]/20 selection:text-[#f5f4f0]">
       {/* 3D WEBGL GLOBAL CANVAS: THE MAGNETIC SHARD-SWARM */}
@@ -886,7 +1012,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
       {/* FLOATING TOP NAVIGATION */}
       <header className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 sm:px-6">
-        <nav className="flex items-center justify-between w-full max-w-5xl px-6 py-3 rounded-full bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 shadow-2xl transition-all duration-300 hover:border-[#a39d96]/30">
+        <nav className="flex items-center justify-between w-full max-w-6xl px-6 py-3 rounded-full bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 shadow-2xl transition-all duration-300 hover:border-[#a39d96]/30">
           {/* Monolith Architectural Brand */}
           <a
             href="#hero"
@@ -903,30 +1029,23 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           </a>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-7 text-xs font-medium tracking-wider uppercase text-[#a39d96]">
-            <a
-              href="#solutions"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'solutions' ? 'text-[#f5f4f0]' : ''
-              }`}
-            >
-              Solutions
-            </a>
-            <a
-              href="#api"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'api' ? 'text-[#f5f4f0]' : ''
-              }`}
-            >
-              API
-            </a>
+          <div className="hidden lg:flex items-center gap-6 xl:gap-7 text-xs font-medium tracking-wider uppercase text-[#a39d96]">
             <a
               href="#architect"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
+              className={`transition-colors duration-200 hover:text-[#f5f4f0] flex items-center gap-1.5 ${
                 activeSection === 'architect' ? 'text-[#f5f4f0]' : ''
               }`}
             >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
               Architect
+            </a>
+            <a
+              href="#stack"
+              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
+                activeSection === 'stack' ? 'text-[#f5f4f0]' : ''
+              }`}
+            >
+              Stack
             </a>
             <a
               href="#cases"
@@ -937,12 +1056,44 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               Projects
             </a>
             <a
+              href="#solutions"
+              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
+                activeSection === 'solutions' ? 'text-[#f5f4f0]' : ''
+              }`}
+            >
+              Solutions
+            </a>
+            <a
+              href="#services"
+              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
+                activeSection === 'services' ? 'text-[#f5f4f0]' : ''
+              }`}
+            >
+              Services
+            </a>
+            <a
+              href="#estimator"
+              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
+                activeSection === 'estimator' ? 'text-[#f5f4f0]' : ''
+              }`}
+            >
+              Scoper
+            </a>
+            <a
+              href="#api"
+              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
+                activeSection === 'api' ? 'text-[#f5f4f0]' : ''
+              }`}
+            >
+              API
+            </a>
+            <a
               href="#infra"
               className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
                 activeSection === 'infra' ? 'text-[#f5f4f0]' : ''
               }`}
             >
-              Infrastructure
+              Infra
             </a>
           </div>
 
@@ -951,14 +1102,13 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             <button
               onClick={() => setTerminalOpen(true)}
               className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono tracking-wide rounded-full bg-[#1c1a17]/80 text-[#e3dfd8] border border-[#a39d96]/20 transition-all duration-300 hover:bg-[#252320] hover:border-[#d6d2cd]/40 hover:text-[#f5f4f0] shadow-taupe-glow"
-              aria-label="Open Terminal"
+              aria-label="Open Interactive Terminal"
             >
-              {/* Warm silver pulse indicator (NO green) */}
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d6d2cd] opacity-50" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#f5f4f0]" />
               </span>
-              <TerminalIcon className="w-3.5 h-3.5 text-[#a39d96]" />
+              <TerminalIcon className="w-3.5 h-3.5 text-[#d6d2cd]" />
               <span className="hidden sm:inline">TERMINAL</span>
             </button>
           </div>
@@ -969,20 +1119,20 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       <section
         id="hero"
         ref={heroRef}
-        className={`relative z-10 min-h-screen flex items-center justify-start pt-32 pb-24 px-6 sm:px-12 lg:px-24 transition-all duration-1000 ease-out ${
-          heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+        className={`relative z-10 min-h-screen flex items-center justify-start pt-32 pb-24 px-6 sm:px-12 lg:px-24 transition-all duration-700 ease-out ${
+          heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
         }`}
       >
         <div className="max-w-3xl">
-          {/* Eyebrow Status Badge */}
-          <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-[#141311]/70 border border-[#a39d96]/20 backdrop-blur-md mb-6 animate-pulse-subtle">
+          {/* Status Badge */}
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#141311]/70 border border-[#a39d96]/20 backdrop-blur-md mb-6 animate-pulse-subtle">
             <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
             <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96]">
-              Magnetic Shard-Swarm v5.2 // Core AI Online
+              STUDIO DIRECTORY // PRINCIPAL ARCHITECT DULANJA ABEYSINGHE
             </span>
           </div>
 
-          {/* Left-Aligned Headline */}
+          {/* Headline */}
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold font-sans tracking-tight text-[#f5f4f0] leading-[1.08] mb-6">
             Architecting the{' '}
             <span className="bg-gradient-to-r from-[#f5f4f0] via-[#d6d2cd] to-[#a39d96] bg-clip-text text-transparent">
@@ -992,58 +1142,56 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
           {/* Subtitle */}
           <p className="text-lg sm:text-xl text-[#a39d96] font-light leading-relaxed max-w-2xl mb-10">
-            Bespoke enterprise software, immutable infrastructure, and AI systems built for
-            absolute permanence.
+            Bespoke enterprise software, high-throughput distributed systems, and real-time
+            architectures built for absolute permanence.
           </p>
 
-          {/* CTAs */}
+          {/* Call-To-Action Pill Buttons */}
           <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-            {/* Primary Pill Button: Pale off-white/taupe with charcoal text */}
-            <button
-              onClick={() => setTerminalOpen(true)}
+            <a
+              href="#estimator"
               className="px-8 py-3.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-widest uppercase transition-all duration-300 hover:bg-[#f5f4f0] shadow-taupe-glow hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
             >
-              INITIALIZE DEPLOYMENT
+              INITIALIZE ENGAGEMENT
               <ArrowRight className="w-3.5 h-3.5 text-[#0a0908]" />
-            </button>
+            </a>
 
-            {/* Ghost Button: Off-white text, taupe hover */}
-            <button
-              onClick={() => setArchitectureModalOpen(true)}
+            <a
+              href="#cases"
               className="px-7 py-3.5 rounded-full bg-[#141311]/60 text-[#f5f4f0] border border-[#a39d96]/30 font-medium text-xs tracking-widest uppercase backdrop-blur-md transition-all duration-300 hover:border-[#d6d2cd] hover:bg-[#7a756f]/20 hover:text-[#f5f4f0]"
             >
-              VIEW ARCHITECTURE
-            </button>
+              VIEW 12 REPOSITORIES
+            </a>
           </div>
 
-          {/* Hero Micro Telemetry */}
+          {/* Telemetry Stats Strip */}
           <div className="mt-16 pt-8 border-t border-[#a39d96]/15 flex flex-wrap items-center gap-8 sm:gap-14 text-xs font-mono text-[#7a756f]">
             <div>
-              <span className="text-[#f5f4f0] block text-sm font-semibold">0.14 ms</span>
-              <span>P99 Lattice Latency</span>
+              <span className="text-[#f5f4f0] block text-sm font-semibold">12 Repositories</span>
+              <span>Production Systems Engineered</span>
             </div>
             <div>
-              <span className="text-[#f5f4f0] block text-sm font-semibold">320 Shards</span>
-              <span>Magnetic Swarm Coherence</span>
+              <span className="text-[#f5f4f0] block text-sm font-semibold">&lt; 1.4s Latency</span>
+              <span>Warm Session Caching</span>
             </div>
             <div>
-              <span className="text-[#f5f4f0] block text-sm font-semibold">1,000 Yrs</span>
-              <span>Cryptographic Cold Parity</span>
+              <span className="text-[#f5f4f0] block text-sm font-semibold">100% Zero-Loss</span>
+              <span>ACID Medical & Payment Ledgers</span>
             </div>
           </div>
         </div>
 
-        {/* 3D Interaction Guide indicator in bottom-right */}
+        {/* Ambient Cursor Magnetism Hint */}
         <div className="absolute bottom-8 right-8 sm:right-16 hidden lg:flex flex-col items-end gap-2 text-[#7a756f] pointer-events-none">
           <div className="flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase">
             <span>MOVE CURSOR TO MAGNETIZE SHARDS</span>
-            <Sparkles className="w-3 h-3 text-[#d6d2cd]" />
+            <Sparkles className="w-3.5 h-3.5 text-[#d6d2cd]" />
           </div>
           <div className="w-24 h-[1px] bg-gradient-to-r from-transparent to-[#7a756f]" />
         </div>
       </section>
 
-      {/* 2. LOGO STRIP (ENTERPRISE CLIENTS) */}
+      {/* 2. LOGO STRIP (DOMAINS & CLIENT PROOF) */}
       <section
         id="logos"
         ref={logosRef}
@@ -1053,369 +1201,58 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       >
         <div className="max-w-6xl mx-auto">
           <p className="text-center text-xs font-mono uppercase tracking-[0.3em] text-[#7a756f] mb-10">
-            Trusted by Vanguard Organizations
+            Trusted Across Mission-Critical Domains
           </p>
-
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 sm:gap-8 items-center justify-items-center">
             <div className="group flex flex-col items-center text-center p-4 rounded-xl hover:bg-[#141311]/50 transition-all duration-300">
-              <div className="text-[#7a756f] group-hover:text-[#f5f4f0] transition-colors duration-300 mb-2">
-                <VanguardLogos.Aethelgard />
+              <div className="text-[#7a756f] group-hover:text-[#f5f4f0] transition-colors mb-2">
+                <VanguardLogos.Fintech />
               </div>
               <span className="text-xs font-bold tracking-wider uppercase text-[#a39d96] group-hover:text-[#f5f4f0] transition-colors">
-                Aethelgard
+                Gaming Fintech
               </span>
             </div>
 
             <div className="group flex flex-col items-center text-center p-4 rounded-xl hover:bg-[#141311]/50 transition-all duration-300">
-              <div className="text-[#7a756f] group-hover:text-[#f5f4f0] transition-colors duration-300 mb-2">
-                <VanguardLogos.Hyperion />
+              <div className="text-[#7a756f] group-hover:text-[#f5f4f0] transition-colors mb-2">
+                <VanguardLogos.Healthcare />
               </div>
               <span className="text-xs font-bold tracking-wider uppercase text-[#a39d96] group-hover:text-[#f5f4f0] transition-colors">
-                Hyperion Vault
+                Clinical Healthcare
               </span>
             </div>
 
             <div className="group flex flex-col items-center text-center p-4 rounded-xl hover:bg-[#141311]/50 transition-all duration-300">
-              <div className="text-[#7a756f] group-hover:text-[#f5f4f0] transition-colors duration-300 mb-2">
-                <VanguardLogos.OrbitalDynamics />
+              <div className="text-[#7a756f] group-hover:text-[#f5f4f0] transition-colors mb-2">
+                <VanguardLogos.Hospitality />
               </div>
               <span className="text-xs font-bold tracking-wider uppercase text-[#a39d96] group-hover:text-[#f5f4f0] transition-colors">
-                Orbital Dynamics
+                Real-Time Dining
               </span>
             </div>
 
             <div className="group flex flex-col items-center text-center p-4 rounded-xl hover:bg-[#141311]/50 transition-all duration-300">
-              <div className="text-[#7a756f] group-hover:text-[#f5f4f0] transition-colors duration-300 mb-2">
-                <VanguardLogos.ChronosLab />
+              <div className="text-[#7a756f] group-hover:text-[#f5f4f0] transition-colors mb-2">
+                <VanguardLogos.Academic />
               </div>
               <span className="text-xs font-bold tracking-wider uppercase text-[#a39d96] group-hover:text-[#f5f4f0] transition-colors">
-                Chronos Lab
+                Academic Admissions
               </span>
             </div>
 
             <div className="group flex flex-col items-center text-center p-4 rounded-xl hover:bg-[#141311]/50 transition-all duration-300">
-              <div className="text-[#7a756f] group-hover:text-[#f5f4f0] transition-colors duration-300 mb-2">
-                <VanguardLogos.VertexLattice />
+              <div className="text-[#7a756f] group-hover:text-[#f5f4f0] transition-colors mb-2">
+                <VanguardLogos.Streaming />
               </div>
               <span className="text-xs font-bold tracking-wider uppercase text-[#a39d96] group-hover:text-[#f5f4f0] transition-colors">
-                Vertex Lattice
+                Media Streaming
               </span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. SOLUTIONS (BENTO GRID) */}
-      <section
-        id="solutions"
-        ref={solutionsRef}
-        className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 transition-all duration-700 ease-out ${
-          solutionsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="max-w-3xl mb-16">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
-              // CORE CAPABILITIES
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
-              Autonomous Systems for High-Consequence Compute
-            </h2>
-            <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
-              When standard cloud architectures fail under extreme load and adversarial conditions,
-              The Monolith provides mathematical permanence and sub-millisecond execution.
-            </p>
-          </div>
-
-          {/* 3-Column Bento Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Bento Card 1: Col span 2 — Distributed Compute */}
-            <div className="md:col-span-2 group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
-              <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-[#a39d96]/5 blur-3xl group-hover:bg-[#a39d96]/10 transition-all duration-500" />
-
-              <div className="relative z-10 flex flex-col h-full justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="p-3 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#f5f4f0]">
-                      <Cpu className="w-6 h-6 text-[#d6d2cd]" />
-                    </div>
-                    <span className="text-xs font-mono px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
-                      Sub-Millisecond Fabric
-                    </span>
-                  </div>
-
-                  <h3 className="text-2xl sm:text-3xl font-bold text-[#f5f4f0] tracking-tight mb-3">
-                    Distributed Compute
-                  </h3>
-                  <p className="text-sm sm:text-base text-[#a39d96] font-light leading-relaxed max-w-xl mb-8">
-                    Autonomous cluster scheduler dynamically allocates GPU and TPU workloads across
-                    heterogeneous hardware without context fragmentation. Sub-light optical
-                    synchronization guarantees zero state drift.
-                  </p>
-                </div>
-
-                {/* Simulated Core Cluster Topology Visualizer */}
-                <div className="p-5 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs">
-                  <div className="flex items-center justify-between text-[#7a756f] border-b border-[#a39d96]/10 pb-3 mb-4">
-                    <span className="flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-[#d6d2cd]" />
-                      CLUSTER SCHEDULER STATE
-                    </span>
-                    <span className="text-[#f5f4f0]">64,000 ACCELERATORS NOMINAL</span>
-                  </div>
-
-                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-4">
-                    {Array.from({ length: 16 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="h-10 rounded-lg bg-[#141311] border border-[#a39d96]/10 flex flex-col items-center justify-center transition-all duration-300 hover:border-[#d6d2cd]/40"
-                      >
-                        <div
-                          className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd] mb-1"
-                          style={{ opacity: 0.35 + (i % 5) * 0.15 }}
-                        />
-                        <span className="text-[9px] text-[#7a756f]">C{i + 1}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between text-[11px] text-[#7a756f] pt-1">
-                    <span>Optical Interconnect: 4.8 TB/s</span>
-                    <span className="text-[#f5f4f0] font-semibold">State Drift: &lt; 0.04 ns</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bento Card 2: Col span 1 — Zero-Trust Security */}
-            <div className="md:col-span-1 group relative p-8 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
-              <div className="relative z-10 flex flex-col h-full justify-between">
-                <div>
-                  <div className="p-3 w-fit rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#f5f4f0] mb-6">
-                    <Shield className="w-6 h-6 text-[#d6d2cd]" />
-                  </div>
-                  <h3 className="text-xl font-bold text-[#f5f4f0] tracking-tight mb-2">
-                    Zero-Trust Security
-                  </h3>
-                  <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
-                    Hardware-enforced null-field sandboxes encapsulating weights and runtime states
-                    behind post-quantum lattice cryptography.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs space-y-2">
-                  <div className="flex justify-between text-[#7a756f]">
-                    <span>CIPHER</span>
-                    <span className="text-[#f5f4f0]">DILITHIUM-5 PQC</span>
-                  </div>
-                  <div className="flex justify-between text-[#7a756f]">
-                    <span>SIDE-CHANNEL FLUX</span>
-                    <span className="text-[#d6d2cd]">0.00 dB (ABSORBED)</span>
-                  </div>
-                  <div className="flex justify-between text-[#7a756f]">
-                    <span>PERIMETER</span>
-                    <span className="text-[#a39d96]">HARDWARE SEALED</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bento Card 3: Col span 1 — Neural Data Pipelines */}
-            <div className="md:col-span-1 group relative p-8 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
-              <div className="relative z-10 flex flex-col h-full justify-between">
-                <div>
-                  <div className="p-3 w-fit rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#f5f4f0] mb-6">
-                    <Zap className="w-6 h-6 text-[#d6d2cd]" />
-                  </div>
-                  <h3 className="text-xl font-bold text-[#f5f4f0] tracking-tight mb-2">
-                    Neural Data Pipelines
-                  </h3>
-                  <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
-                    Real-time high-throughput streaming with zero-copy deserialization. Ingests 10M+
-                    events/sec with deterministic sub-millisecond execution.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs space-y-2">
-                  <div className="flex justify-between text-[#7a756f]">
-                    <span>STREAM THROUGHPUT</span>
-                    <span className="text-[#f5f4f0]">10,485,760 ops/s</span>
-                  </div>
-                  <div className="flex justify-between text-[#7a756f]">
-                    <span>MEMORY OVERHEAD</span>
-                    <span className="text-[#a39d96]">0.00 MB ALLOC</span>
-                  </div>
-                  <div className="flex justify-between text-[#7a756f]">
-                    <span>DESERIALIZATION</span>
-                    <span className="text-[#d6d2cd]">ZERO-COPY RING</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bento Card 4: Col span 2 — Immutable Consensus Architecture */}
-            <div className="md:col-span-2 group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
-              <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-[#d6d2cd]/5 blur-3xl group-hover:bg-[#d6d2cd]/10 transition-all duration-500" />
-
-              <div className="relative z-10 flex flex-col h-full justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="p-3 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#f5f4f0]">
-                      <Database className="w-6 h-6 text-[#d6d2cd]" />
-                    </div>
-                    <span className="text-xs font-mono px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
-                      Millennial Durability
-                    </span>
-                  </div>
-
-                  <h3 className="text-2xl sm:text-3xl font-bold text-[#f5f4f0] tracking-tight mb-3">
-                    Immutable Consensus Architecture
-                  </h3>
-                  <p className="text-sm sm:text-base text-[#a39d96] font-light leading-relaxed max-w-xl mb-8">
-                    Continuous background parity verification guarantees data permanence for a
-                    thousand years. Quantum-sharded Byzantine consensus prevents degradation under
-                    any network partition.
-                  </p>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="p-3 rounded-xl bg-[#141311] border border-[#a39d96]/10">
-                      <div className="text-[10px] text-[#7a756f] uppercase">Durability Tier</div>
-                      <div className="text-lg font-bold text-[#f5f4f0] mt-1">99.999999999%</div>
-                      <span className="text-[9px] text-[#a39d96]">11 Nines Parity</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-[#141311] border border-[#a39d96]/10">
-                      <div className="text-[10px] text-[#7a756f] uppercase">Consensus Model</div>
-                      <div className="text-lg font-bold text-[#f5f4f0] mt-1">3f + 1 Byzantine</div>
-                      <span className="text-[9px] text-[#a39d96]">Zero-loss quorum</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-[#141311] border border-[#a39d96]/10">
-                      <div className="text-[10px] text-[#7a756f] uppercase">Self-Heal Cycle</div>
-                      <div className="text-lg font-bold text-[#f5f4f0] mt-1">REAL-TIME</div>
-                      <span className="text-[9px] text-[#d6d2cd]">Autonomous Bit-Repair</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. TECHNICAL PROTOCOLS (API & DEVELOPER EXPERIENCE) */}
-      <section
-        id="api"
-        ref={apiRef}
-        className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 border-t border-[#a39d96]/10 transition-all duration-700 ease-out ${
-          apiVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="max-w-3xl mb-16">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
-              // DEVELOPER PROTOCOLS
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
-              Integrate with Bare-Metal Precision
-            </h2>
-            <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
-              Provision isolated enclaves, deploy distributed neural pipelines, and mutate states
-              with single-digit lines of code.
-            </p>
-          </div>
-
-          {/* Polished Frosted-Glass Terminal Window */}
-          <div className="rounded-3xl bg-[#141311]/85 backdrop-blur-2xl border border-[#a39d96]/20 shadow-2xl overflow-hidden">
-            {/* Header / Tabs */}
-            <div className="flex flex-wrap items-center justify-between px-6 py-4 border-b border-[#a39d96]/15 bg-[#181614]">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#7a756f]/40" />
-                <span className="w-3 h-3 rounded-full bg-[#a39d96]/40" />
-                <span className="w-3 h-3 rounded-full bg-[#d6d2cd]/40" />
-                <span className="ml-3 text-xs font-mono text-[#a39d96] hidden sm:inline">
-                  monolith-core // client-sdk
-                </span>
-              </div>
-
-              {/* Language Switcher Tabs */}
-              <div className="flex items-center gap-1.5 bg-[#0a0908] p-1 rounded-xl border border-[#a39d96]/15">
-                <button
-                  onClick={() => setCodeLanguage('ts')}
-                  className={`px-3 py-1 text-xs font-mono rounded-lg transition-all ${
-                    codeLanguage === 'ts'
-                      ? 'bg-[#1c1a17] text-[#f5f4f0] shadow-sm'
-                      : 'text-[#7a756f] hover:text-[#a39d96]'
-                  }`}
-                >
-                  TypeScript
-                </button>
-                <button
-                  onClick={() => setCodeLanguage('py')}
-                  className={`px-3 py-1 text-xs font-mono rounded-lg transition-all ${
-                    codeLanguage === 'py'
-                      ? 'bg-[#1c1a17] text-[#f5f4f0] shadow-sm'
-                      : 'text-[#7a756f] hover:text-[#a39d96]'
-                  }`}
-                >
-                  Python
-                </button>
-              </div>
-
-              {/* Copy Code */}
-              <button
-                onClick={() => copyToClipboard(activeCodeString)}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#1c1a17] text-xs font-mono text-[#a39d96] hover:text-[#f5f4f0] border border-[#a39d96]/15 transition-colors"
-                aria-label="Copy code"
-              >
-                {copiedCode ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>COPIED</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5 text-[#a39d96]" />
-                    <span>COPY SDK</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Typewriter Code Display */}
-            <div className="p-6 sm:p-8 font-mono text-xs sm:text-sm text-[#e3dfd8] overflow-x-auto bg-[#0a0908]/90 min-h-[380px]">
-              <pre className="leading-relaxed">
-                <code>
-                  {typedCode}
-                  <span className="inline-block w-2 h-4 bg-[#f5f4f0] ml-0.5 animate-pulse align-middle" />
-                </code>
-              </pre>
-            </div>
-
-            {/* Footer Telemetry */}
-            <div className="px-6 py-4 bg-[#11100e] border-t border-[#a39d96]/15 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-[#7a756f]">
-              <div className="flex items-center gap-6">
-                <span>
-                  INTEGRATION SPEED: <strong className="text-[#f5f4f0]">&lt; 5 MINUTES</strong>
-                </span>
-                <span>
-                  TEST SUITE: <strong className="text-[#a39d96]">100% PASS</strong>
-                </span>
-              </div>
-              <button
-                onClick={() => setTerminalOpen(true)}
-                className="text-xs text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors"
-              >
-                LAUNCH INTERACTIVE SHELL <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. THE PRINCIPAL ARCHITECT: DULANJA ABEYSINGHE */}
+      {/* 3. THE PRINCIPAL ARCHITECT: DULANJA ABEYSINGHE */}
       <section
         id="architect"
         ref={architectRef}
@@ -1557,7 +1394,383 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         </div>
       </section>
 
-      {/* 6. PRODUCTION SYSTEMS & CASE STUDIES */}
+      {/* 4. TECHNICAL ARSENAL MATRIX */}
+      <section
+        id="stack"
+        ref={stackRef}
+        className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 border-t border-[#a39d96]/15 bg-[#0a0908]/75 backdrop-blur-md transition-all duration-700 ease-out ${
+          stackVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Section Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <div className="max-w-2xl">
+              <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
+                // COMPREHENSIVE TECHNICAL ARSENAL
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
+                Full-Stack Systems Architecture
+              </h2>
+              <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
+                Battle-tested technologies chosen for algorithmic efficiency, type safety, low latency, and operational resilience.
+              </p>
+            </div>
+
+            {/* Category Selector Tabs */}
+            <div className="flex items-center gap-2 bg-[#141311] p-1.5 rounded-2xl border border-[#a39d96]/15 text-xs font-mono">
+              {[
+                { id: 'backend', label: 'Backend Core' },
+                { id: 'frontend', label: 'Frontend Layer' },
+                { id: 'realtime', label: 'Real-Time & Protocols' },
+                { id: 'data', label: 'Data & Cloud' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveStackTab(tab.id)}
+                  className={`px-3.5 py-1.5 rounded-xl transition-all ${
+                    activeStackTab === tab.id
+                      ? 'bg-[#e3dfd8] text-[#0a0908] font-bold shadow-taupe-glow'
+                      : 'text-[#a39d96] hover:text-[#f5f4f0]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {stackArsenal[activeStackTab].map((item, idx) => (
+              <div
+                key={idx}
+                className="group p-6 rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between"
+              >
+                <div>
+                  <span className="text-[10px] font-mono tracking-widest uppercase text-[#a39d96] block mb-2">
+                    {item.role}
+                  </span>
+                  <h3 className="text-lg font-bold text-[#f5f4f0] group-hover:text-[#e3dfd8] transition-colors mb-3">
+                    {item.name}
+                  </h3>
+                  <p className="text-xs text-[#a39d96] font-light leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-[#a39d96]/10 flex items-center justify-between text-[10px] font-mono text-[#7a756f]">
+                  <span>PRODUCTION READY</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f5f4f0]" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. SOLUTIONS & BENTO CAPABILITIES */}
+      <section
+        id="solutions"
+        ref={solutionsRef}
+        className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 transition-all duration-700 ease-out ${
+          solutionsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="max-w-3xl mb-16">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
+              // ARCHITECTURAL CAPABILITIES
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
+              Autonomous Systems for High-Consequence Compute
+            </h2>
+            <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
+              When standard cloud architectures fail under extreme load and adversarial conditions,
+              The Monolith provides mathematical permanence and sub-millisecond execution.
+            </p>
+          </div>
+
+          {/* Premium Bento Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Bento Card 1: Distributed Compute */}
+            <div className="md:col-span-2 group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-3 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#f5f4f0]">
+                      <Cpu className="w-6 h-6 text-[#d6d2cd]" />
+                    </div>
+                    <span className="text-xs font-mono px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                      Sub-Millisecond Fabric
+                    </span>
+                  </div>
+
+                  <h3 className="text-2xl sm:text-3xl font-bold text-[#f5f4f0] tracking-tight mb-3">
+                    Distributed Compute & Microservices
+                  </h3>
+                  <p className="text-sm sm:text-base text-[#a39d96] font-light leading-relaxed max-w-xl mb-8">
+                    Autonomous cluster scheduler dynamically allocates GPU and TPU workloads without
+                    context fragmentation. Sub-light optical synchronization guarantees zero state drift.
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs">
+                  <div className="flex items-center justify-between text-[#7a756f] border-b border-[#a39d96]/10 pb-3 mb-4">
+                    <span className="flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-[#d6d2cd]" />
+                      CLUSTER SCHEDULER STATE
+                    </span>
+                    <span className="text-[#f5f4f0]">64,000 ACCELERATORS NOMINAL</span>
+                  </div>
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-4">
+                    {Array.from({ length: 16 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-10 rounded-lg bg-[#141311] border border-[#a39d96]/10 flex flex-col items-center justify-center transition-all duration-300 hover:border-[#d6d2cd]/40"
+                      >
+                        <div
+                          className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd] mb-1"
+                          style={{ opacity: 0.35 + (i % 5) * 0.15 }}
+                        />
+                        <span className="text-[9px] text-[#7a756f]">C{i + 1}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-[#7a756f] pt-1">
+                    <span>Optical Interconnect: 4.8 TB/s</span>
+                    <span className="text-[#f5f4f0] font-semibold">State Drift: &lt; 0.04 ns</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bento Card 2: Zero-Trust Security */}
+            <div className="md:col-span-1 group relative p-8 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div>
+                  <div className="p-3 w-fit rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#d6d2cd] mb-6">
+                    <Shield className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold text-[#f5f4f0] tracking-tight mb-2">
+                    Zero-Trust Security
+                  </h3>
+                  <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                    Hardware-enforced null-field sandboxes encapsulating weights and runtime states
+                    behind post-quantum lattice cryptography.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs space-y-2">
+                  <div className="flex justify-between text-[#7a756f]">
+                    <span>CIPHER</span>
+                    <span className="text-[#f5f4f0]">DILITHIUM-5 PQC</span>
+                  </div>
+                  <div className="flex justify-between text-[#7a756f]">
+                    <span>SIDE-CHANNEL FLUX</span>
+                    <span className="text-[#d6d2cd]">0.00 dB (ABSORBED)</span>
+                  </div>
+                  <div className="flex justify-between text-[#7a756f]">
+                    <span>PERIMETER</span>
+                    <span className="text-[#a39d96]">HARDWARE SEALED</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bento Card 3: Neural Data Pipelines */}
+            <div className="md:col-span-1 group relative p-8 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div>
+                  <div className="p-3 w-fit rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#d6d2cd] mb-6">
+                    <Zap className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold text-[#f5f4f0] tracking-tight mb-2">
+                    Neural Data Pipelines
+                  </h3>
+                  <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                    Real-time high-throughput streaming with zero-copy deserialization. Ingests 10M+
+                    events/sec with deterministic sub-millisecond execution.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs space-y-2">
+                  <div className="flex justify-between text-[#7a756f]">
+                    <span>STREAM THROUGHPUT</span>
+                    <span className="text-[#f5f4f0]">10,485,760 ops/s</span>
+                  </div>
+                  <div className="flex justify-between text-[#7a756f]">
+                    <span>MEMORY OVERHEAD</span>
+                    <span className="text-[#a39d96]">0.00 MB ALLOC</span>
+                  </div>
+                  <div className="flex justify-between text-[#7a756f]">
+                    <span>DESERIALIZATION</span>
+                    <span className="text-[#d6d2cd]">ZERO-COPY RING</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bento Card 4: Immutable Consensus */}
+            <div className="md:col-span-2 group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-3 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#f5f4f0]">
+                      <Database className="w-6 h-6 text-[#d6d2cd]" />
+                    </div>
+                    <span className="text-xs font-mono px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                      Millennial Durability
+                    </span>
+                  </div>
+
+                  <h3 className="text-2xl sm:text-3xl font-bold text-[#f5f4f0] tracking-tight mb-3">
+                    Immutable Consensus Architecture
+                  </h3>
+                  <p className="text-sm sm:text-base text-[#a39d96] font-light leading-relaxed max-w-xl mb-8">
+                    Continuous background parity verification guarantees data permanence for a thousand
+                    years. Quantum-sharded Byzantine consensus prevents degradation under any network
+                    partition.
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="p-3 rounded-xl bg-[#141311] border border-[#a39d96]/10">
+                      <div className="text-[10px] text-[#7a756f] uppercase">Durability Tier</div>
+                      <div className="text-lg font-bold text-[#f5f4f0] mt-1">99.999999999%</div>
+                      <span className="text-[9px] text-[#a39d96]">11 Nines Parity</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[#141311] border border-[#a39d96]/10">
+                      <div className="text-[10px] text-[#7a756f] uppercase">Consensus Model</div>
+                      <div className="text-lg font-bold text-[#f5f4f0] mt-1">3f + 1 Byzantine</div>
+                      <span className="text-[9px] text-[#a39d96]">Zero-loss quorum</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[#141311] border border-[#a39d96]/10">
+                      <div className="text-[10px] text-[#7a756f] uppercase">Self-Heal Cycle</div>
+                      <div className="text-lg font-bold text-[#f5f4f0] mt-1">REAL-TIME</div>
+                      <span className="text-[9px] text-[#d6d2cd]">Autonomous Bit-Repair</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. TECHNICAL PROTOCOLS (API & DEVELOPER EXPERIENCE) */}
+      <section
+        id="api"
+        ref={apiRef}
+        className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 border-t border-[#a39d96]/10 transition-all duration-700 ease-out ${
+          apiVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="max-w-3xl mb-16">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
+              // DEVELOPER PROTOCOLS
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
+              Integrate with Bare-Metal Precision
+            </h2>
+            <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
+              Provision isolated enclaves, deploy distributed neural pipelines, and mutate states
+              with single-digit lines of code.
+            </p>
+          </div>
+
+          {/* Polished Frosted-Glass Terminal Window */}
+          <div className="rounded-3xl bg-[#141311]/85 backdrop-blur-2xl border border-[#a39d96]/20 shadow-2xl overflow-hidden">
+            {/* Header / Tabs */}
+            <div className="flex flex-wrap items-center justify-between px-6 py-4 border-b border-[#a39d96]/15 bg-[#181614]">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-[#7a756f]/40" />
+                <span className="w-3 h-3 rounded-full bg-[#a39d96]/40" />
+                <span className="w-3 h-3 rounded-full bg-[#d6d2cd]/40" />
+                <span className="ml-3 text-xs font-mono text-[#a39d96] hidden sm:inline">
+                  monolith-core // client-sdk
+                </span>
+              </div>
+
+              {/* Language Switcher Tabs */}
+              <div className="flex items-center gap-1.5 bg-[#0a0908] p-1 rounded-xl border border-[#a39d96]/15">
+                <button
+                  onClick={() => setCodeLanguage('ts')}
+                  className={`px-3 py-1 text-xs font-mono rounded-lg transition-all ${
+                    codeLanguage === 'ts'
+                      ? 'bg-[#1c1a17] text-[#f5f4f0] shadow-sm'
+                      : 'text-[#7a756f] hover:text-[#a39d96]'
+                  }`}
+                >
+                  TypeScript
+                </button>
+                <button
+                  onClick={() => setCodeLanguage('py')}
+                  className={`px-3 py-1 text-xs font-mono rounded-lg transition-all ${
+                    codeLanguage === 'py'
+                      ? 'bg-[#1c1a17] text-[#f5f4f0] shadow-sm'
+                      : 'text-[#7a756f] hover:text-[#a39d96]'
+                  }`}
+                >
+                  Python
+                </button>
+              </div>
+
+              {/* Copy Code */}
+              <button
+                onClick={() => copyToClipboard(activeCodeString)}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#1c1a17] text-xs font-mono text-[#a39d96] hover:text-[#f5f4f0] border border-[#a39d96]/15 transition-colors"
+                aria-label="Copy code"
+              >
+                {copiedCode ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>COPIED</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-[#a39d96]" />
+                    <span>COPY SDK</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Typewriter Code Display */}
+            <div className="p-6 sm:p-8 font-mono text-xs sm:text-sm text-[#e3dfd8] overflow-x-auto bg-[#0a0908]/90 min-h-[380px]">
+              <pre className="leading-relaxed">
+                <code>
+                  {typedCode}
+                  <span className="inline-block w-2 h-4 bg-[#f5f4f0] ml-0.5 animate-pulse align-middle" />
+                </code>
+              </pre>
+            </div>
+
+            {/* Footer Telemetry */}
+            <div className="px-6 py-4 bg-[#11100e] border-t border-[#a39d96]/15 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-[#7a756f]">
+              <div className="flex items-center gap-6">
+                <span>
+                  INTEGRATION SPEED: <strong className="text-[#f5f4f0]">&lt; 5 MINUTES</strong>
+                </span>
+                <span>
+                  TEST SUITE: <strong className="text-[#a39d96]">100% PASS</strong>
+                </span>
+              </div>
+              <button
+                onClick={() => setTerminalOpen(true)}
+                className="text-xs text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors"
+              >
+                LAUNCH INTERACTIVE SHELL <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. PRODUCTION SYSTEMS & CASE STUDIES (12 REPOSITORIES) */}
       <section
         id="cases"
         ref={casesRef}
@@ -1570,14 +1783,14 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div className="max-w-2xl">
               <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
-                // PRODUCTION SYSTEMS & DEPLOYMENTS
+                // PRODUCTION SYSTEMS & REPOSITORIES
               </span>
               <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
                 Systems Engineered by Dulanja
               </h2>
               <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
-                Production-grade applications and distributed architectures engineered across fintech,
-                clinical healthcare, real-time hospitality, and automated developer tooling.
+                Twelve production-grade applications and distributed architectures engineered across fintech,
+                clinical healthcare, real-time hospitality, media streaming, and automated developer tooling.
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs font-mono text-[#a39d96]">
@@ -1604,34 +1817,34 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           </div>
 
           {/* Cinematic Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((study) => (
               <div
                 key={study.id}
                 onClick={() => setSelectedCaseStudy(study)}
-                className="group relative cursor-pointer rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 p-8 sm:p-10 transition-all duration-500 hover:border-[#d6d2cd]/40 hover:bg-[#1a1815]/90 hover:shadow-taupe-glow flex flex-col justify-between"
+                className="group relative cursor-pointer rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 p-7 sm:p-8 transition-all duration-500 hover:border-[#d6d2cd]/40 hover:bg-[#1a1815]/90 hover:shadow-taupe-glow flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-xs font-mono tracking-widest text-[#a39d96] uppercase">
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="text-[11px] font-mono tracking-widest text-[#a39d96] uppercase">
                       {study.category}
                     </span>
-                    <span className="text-[10px] font-mono tracking-wider px-2.5 py-1 rounded-full bg-[#1c1a17] text-[#d6d2cd] border border-[#a39d96]/20">
+                    <span className="text-[10px] font-mono tracking-wider px-2 py-0.5 rounded-full bg-[#1c1a17] text-[#d6d2cd] border border-[#a39d96]/20">
                       {study.client}
                     </span>
                   </div>
 
-                  <h3 className="text-2xl sm:text-3xl font-bold text-[#f5f4f0] group-hover:text-[#e3dfd8] transition-colors duration-300 mb-2">
+                  <h3 className="text-xl sm:text-2xl font-bold text-[#f5f4f0] group-hover:text-[#e3dfd8] transition-colors duration-300 mb-2">
                     {study.title}
                   </h3>
-                  <p className="text-sm font-medium text-[#d6d2cd] mb-4">{study.headline}</p>
-                  <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  <p className="text-xs font-medium text-[#d6d2cd] mb-3 leading-snug">{study.headline}</p>
+                  <p className="text-xs text-[#a39d96] font-light leading-relaxed mb-5 line-clamp-3">
                     {study.summary}
                   </p>
 
                   {/* Stack Tags */}
-                  <div className="flex flex-wrap gap-1.5 mb-6">
-                    {study.stack.slice(0, 4).map((tech, tIdx) => (
+                  <div className="flex flex-wrap gap-1.5 mb-5">
+                    {study.stack.slice(0, 3).map((tech, tIdx) => (
                       <span
                         key={tIdx}
                         className="px-2 py-0.5 rounded-md bg-[#1c1a17] text-[10px] font-mono text-[#a39d96] border border-[#a39d96]/10"
@@ -1639,23 +1852,28 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                         {tech}
                       </span>
                     ))}
+                    {study.stack.length > 3 && (
+                      <span className="px-1.5 py-0.5 rounded-md bg-[#1c1a17] text-[10px] font-mono text-[#7a756f]">
+                        +{study.stack.length - 3}
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <div className="grid grid-cols-3 gap-2.5 pt-6 border-t border-[#a39d96]/10 mb-6 font-mono text-xs">
+                  <div className="grid grid-cols-3 gap-2 pt-4 border-t border-[#a39d96]/10 mb-4 font-mono text-xs">
                     {study.metrics.map((m, i) => (
-                      <div key={i} className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10">
-                        <span className="text-[10px] text-[#7a756f] block uppercase mb-0.5">{m.label}</span>
-                        <span className="text-xs font-semibold text-[#f5f4f0]">{m.val}</span>
+                      <div key={i} className="p-2 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10">
+                        <span className="text-[9px] text-[#7a756f] block uppercase truncate mb-0.5">{m.label}</span>
+                        <span className="text-[11px] font-semibold text-[#f5f4f0] truncate block">{m.val}</span>
                       </div>
                     ))}
                   </div>
 
                   <div className="flex items-center justify-between text-xs font-mono tracking-wider text-[#a39d96] group-hover:text-[#f5f4f0] transition-colors duration-300">
-                    <span className="uppercase text-[11px]">ARCHITECTURAL SPEC</span>
-                    <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-300">
-                      INSPECT DOSSIER <ChevronRight className="w-3.5 h-3.5" />
+                    <span className="uppercase text-[10px]">SPECIFICATION</span>
+                    <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-300 text-[11px]">
+                      INSPECT <ChevronRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </div>
@@ -1665,7 +1883,364 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         </div>
       </section>
 
-      {/* 6. GLOBAL INFRASTRUCTURE DATA-VIZ */}
+      {/* 8. SERVICE ENGAGEMENT MODELS (HOW TO ENGAGE) */}
+      <section
+        id="services"
+        ref={servicesRef}
+        className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 border-t border-[#a39d96]/15 bg-[#0a0908]/85 backdrop-blur-md transition-all duration-700 ease-out ${
+          servicesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="max-w-3xl mb-16">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
+              // ENGAGEMENT PROTOCOLS
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
+              How Enterprise Clients Engage
+            </h2>
+            <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
+              Transparent, high-velocity engineering engagement tiers structured for founders, enterprise technical leads, and venture studios.
+            </p>
+          </div>
+
+          {/* 3 Service Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Service 1 */}
+            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-mono text-[#a39d96] tracking-widest block uppercase mb-3">
+                  TIER 01 // TURNKEY
+                </span>
+                <h3 className="text-2xl font-bold text-[#f5f4f0] mb-3">
+                  Turnkey System Architecture
+                </h3>
+                <p className="text-xs sm:text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  End-to-end architecture, development, and deployment of complex enterprise software platforms from ground zero.
+                </p>
+
+                <ul className="space-y-3 font-mono text-xs text-[#d6d2cd] mb-8">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>Full Domain & Schema Design</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>Sub-100ms API Microservices</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>Reactive Frontend (Next.js/React)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>Automated CI/CD & Enclave Launch</span>
+                  </li>
+                </ul>
+              </div>
+
+              <a
+                href="#estimator"
+                className="w-full py-3 rounded-full bg-[#1c1a17] text-xs font-mono text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 hover:bg-[#252320] transition-colors flex items-center justify-center gap-2"
+              >
+                SCOPE THIS ENGAGEMENT <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+
+            {/* Service 2 */}
+            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/90 backdrop-blur-xl border border-[#d6d2cd]/30 shadow-taupe-glow hover:border-[#f5f4f0] transition-all duration-300 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-mono text-[#d6d2cd] tracking-widest uppercase">
+                    TIER 02 // MODERNIZATION
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold">
+                    MOST REQUESTED
+                  </span>
+                </div>
+                <h3 className="text-2xl font-bold text-[#f5f4f0] mb-3">
+                  High-Throughput API Modernization
+                </h3>
+                <p className="text-xs sm:text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  Performance re-engineering for platforms facing latency bottlenecks, race conditions, or scaling walls.
+                </p>
+
+                <ul className="space-y-3 font-mono text-xs text-[#d6d2cd] mb-8">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>Warm Redis Session & Mutex Caching</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>Redlock Double-Claim Prevention</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>Pusher WebSockets Real-Time Sync</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>TLS/WAF Bypass & Prometheus Telemetry</span>
+                  </li>
+                </ul>
+              </div>
+
+              <a
+                href="#estimator"
+                className="w-full py-3 rounded-full bg-[#e3dfd8] text-xs font-mono font-bold text-[#0a0908] hover:bg-[#f5f4f0] shadow-taupe-glow transition-all flex items-center justify-center gap-2"
+              >
+                INITIALIZE MODERNIZATION <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+
+            {/* Service 3 */}
+            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-mono text-[#a39d96] tracking-widest block uppercase mb-3">
+                  TIER 03 // ADVISORY
+                </span>
+                <h3 className="text-2xl font-bold text-[#f5f4f0] mb-3">
+                  Fractional Principal Systems Engineer
+                </h3>
+                <p className="text-xs sm:text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  High-leverage architectural guidance, code reviews, and scalability roadmap consulting for engineering teams.
+                </p>
+
+                <ul className="space-y-3 font-mono text-xs text-[#d6d2cd] mb-8">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>Deep Architectural Audits</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>Database Schema & ACID Proofing</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>Queue Worker Tuning & Deadlock Fixes</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
+                    <span>Weekly Strategic Architectural Reviews</span>
+                  </li>
+                </ul>
+              </div>
+
+              <a
+                href="#estimator"
+                className="w-full py-3 rounded-full bg-[#1c1a17] text-xs font-mono text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 hover:bg-[#252320] transition-colors flex items-center justify-center gap-2"
+              >
+                REQUEST FRACTIONAL LEAD <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 9. INTERACTIVE PROJECT SCOPER & ESTIMATOR */}
+      <section
+        id="estimator"
+        ref={estimatorRef}
+        className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 border-t border-[#a39d96]/15 bg-[#0a0908]/90 transition-all duration-700 ease-out ${
+          estimatorVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="max-w-3xl mb-16">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
+              // ARCHITECTURE ESTIMATOR
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
+              Scope Your Next Architecture
+            </h2>
+            <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
+              Configure your domain requirements, target scale, and required primitives to synthesize an immediate architectural profile.
+            </p>
+          </div>
+
+          {/* Calculator Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left 2 Cols: Controls */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Step 1: Select Domain */}
+              <div className="p-7 rounded-3xl bg-[#141311]/80 border border-[#a39d96]/15">
+                <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96] block mb-4">
+                  01 // SELECT PROJECT DOMAIN
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs">
+                  {[
+                    { id: 'fintech', label: 'Fintech & Automation' },
+                    { id: 'saas', label: 'Real-Time SaaS' },
+                    { id: 'healthcare', label: 'Clinical Healthcare' },
+                    { id: 'ecommerce', label: 'E-Commerce / ERP' },
+                    { id: 'crawlers', label: 'Data Mining & AI' }
+                  ].map((dom) => (
+                    <button
+                      key={dom.id}
+                      onClick={() => setEstimatorDomain(dom.id)}
+                      className={`p-3.5 rounded-2xl border text-left transition-all ${
+                        estimatorDomain === dom.id
+                          ? 'bg-[#1c1a17] border-[#d6d2cd] text-[#f5f4f0] shadow-taupe-glow'
+                          : 'bg-[#0a0908] border-[#a39d96]/15 text-[#a39d96] hover:border-[#a39d96]/40'
+                      }`}
+                    >
+                      <span className="block font-semibold mb-1">{dom.label}</span>
+                      <span className="text-[10px] text-[#7a756f]">Selected Domain</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 2: Concurrency & Scale */}
+              <div className="p-7 rounded-3xl bg-[#141311]/80 border border-[#a39d96]/15">
+                <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96] block mb-4">
+                  02 // TARGET CONCURRENCY & TRAFFIC LOAD
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
+                  {[
+                    { id: 'sub-1k', label: '< 1,000 req/s', desc: 'Standard Enterprise' },
+                    { id: 'high', label: '10,000+ req/s', desc: 'High-Throughput Surge' },
+                    { id: 'extreme', label: '100,000+ req/s', desc: 'Distributed Multi-Node' }
+                  ].map((scale) => (
+                    <button
+                      key={scale.id}
+                      onClick={() => setEstimatorScale(scale.id)}
+                      className={`p-3.5 rounded-2xl border text-left transition-all ${
+                        estimatorScale === scale.id
+                          ? 'bg-[#1c1a17] border-[#d6d2cd] text-[#f5f4f0] shadow-taupe-glow'
+                          : 'bg-[#0a0908] border-[#a39d96]/15 text-[#a39d96] hover:border-[#a39d96]/40'
+                      }`}
+                    >
+                      <span className="block font-semibold text-sm mb-1">{scale.label}</span>
+                      <span className="text-[10px] text-[#7a756f]">{scale.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 3: Required Architectural Features */}
+              <div className="p-7 rounded-3xl bg-[#141311]/80 border border-[#a39d96]/15">
+                <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96] block mb-4">
+                  03 // ESSENTIAL SUBSYSTEMS & CAPABILITIES
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs">
+                  {[
+                    { id: 'websockets', label: 'Pusher WebSockets' },
+                    { id: 'redis', label: 'Redis Redlock Mutex' },
+                    { id: 'acid', label: 'ACID Strict Ledger' },
+                    { id: 'invoicing', label: 'Automated DomPDF' },
+                    { id: 'docker', label: 'Docker Microservices' },
+                    { id: 'scanner', label: 'Hardware Scanner Sync' }
+                  ].map((feat) => {
+                    const isSelected = estimatorFeatures.includes(feat.id);
+                    return (
+                      <button
+                        key={feat.id}
+                        onClick={() => toggleFeature(feat.id)}
+                        className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-[#1c1a17] border-[#d6d2cd] text-[#f5f4f0]'
+                            : 'bg-[#0a0908] border-[#a39d96]/15 text-[#7a756f] hover:border-[#a39d96]/40'
+                        }`}
+                      >
+                        <span className="text-xs">{feat.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-[#f5f4f0]" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Right 1 Col: Dynamic Output Profile */}
+            <div className="lg:col-span-1 p-8 rounded-3xl bg-[#141311] border border-[#a39d96]/20 shadow-2xl flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-4 border-b border-[#a39d96]/15 mb-6">
+                  <span className="text-xs font-mono uppercase tracking-widest text-[#a39d96]">
+                    ESTIMATED BLUEPRINT
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-[#f5f4f0] animate-pulse" />
+                </div>
+
+                <div className="space-y-6 font-mono text-xs">
+                  <div>
+                    <span className="text-[10px] text-[#7a756f] uppercase block mb-1">
+                      Architecture Tier
+                    </span>
+                    <span className="text-sm font-bold text-[#f5f4f0] block leading-snug">
+                      {estimatedBrief.tier}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-[#7a756f] uppercase block mb-1">
+                      Recommended Tech Foundation
+                    </span>
+                    <span className="text-xs text-[#d6d2cd] block leading-relaxed">
+                      {estimatedBrief.baseStack}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-[#7a756f] uppercase block mb-1">
+                      Estimated Production Horizon
+                    </span>
+                    <span className="text-xs font-semibold text-[#f5f4f0] block">
+                      {estimatedBrief.window}
+                    </span>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#0a0908] border border-[#a39d96]/15">
+                    <span className="text-[10px] text-[#7a756f] uppercase block mb-1">
+                      Active Subsystems
+                    </span>
+                    <span className="text-[11px] text-[#a39d96]">
+                      {estimatorFeatures.length > 0 ? estimatorFeatures.join(' • ') : 'Standard Runtime'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-8 border-t border-[#a39d96]/15 space-y-3">
+                <a
+                  href={`mailto:dulanja150abeysinghe@gmail.com?subject=${encodeURIComponent(
+                    estimatedBrief.subject
+                  )}&body=${encodeURIComponent(estimatedBrief.body)}`}
+                  className="w-full py-3.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-widest uppercase transition-all hover:bg-[#f5f4f0] shadow-taupe-glow flex items-center justify-center gap-2"
+                >
+                  DISPATCH TO ARCHITECT
+                  <ArrowRight className="w-3.5 h-3.5 text-[#0a0908]" />
+                </a>
+
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(estimatedBrief.body);
+                    setBriefCopied(true);
+                    setTimeout(() => setBriefCopied(false), 2000);
+                  }}
+                  className="w-full py-2.5 rounded-full bg-[#1c1a17] text-[#a39d96] hover:text-[#f5f4f0] text-xs font-mono border border-[#a39d96]/20 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  {briefCopied ? (
+                    <>
+                      <Check className="w-3 h-3 text-[#f5f4f0]" />
+                      <span>BRIEF COPIED TO CLIPBOARD</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3 text-[#a39d96]" />
+                      <span>COPY ARCHITECTURE BRIEF</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 10. GLOBAL INFRASTRUCTURE DATA-VIZ */}
       <section
         id="infra"
         ref={infraRef}
@@ -1693,7 +2268,6 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
               {/* Left: Minimalist SVG Map Visualization */}
               <div className="lg:col-span-2 relative min-h-[340px] flex items-center justify-center p-4 rounded-2xl bg-[#0a0908]/90 border border-[#a39d96]/15 overflow-hidden">
-                {/* SVG Lattice Coordinates Map */}
                 <svg className="w-full h-full min-h-[300px]" viewBox="0 0 800 450" fill="none">
                   {/* Grid Lines */}
                   {Array.from({ length: 9 }).map((_, i) => (
@@ -1756,7 +2330,6 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                   />
 
                   {/* Nodes */}
-                  {/* IAD-01 Virginia */}
                   <g className="cursor-pointer" onClick={() => setSelectedNode('IAD-01')}>
                     <circle cx="220" cy="170" r="14" fill="rgba(214, 210, 205, 0.15)" />
                     <circle cx="220" cy="170" r="5" fill="#f5f4f0" />
@@ -1765,7 +2338,6 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                     </text>
                   </g>
 
-                  {/* FRA-01 Frankfurt */}
                   <g className="cursor-pointer" onClick={() => setSelectedNode('FRA-01')}>
                     <circle cx="430" cy="140" r="14" fill="rgba(214, 210, 205, 0.15)" />
                     <circle cx="430" cy="140" r="5" fill="#f5f4f0" />
@@ -1774,7 +2346,6 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                     </text>
                   </g>
 
-                  {/* NRT-01 Tokyo */}
                   <g className="cursor-pointer" onClick={() => setSelectedNode('NRT-01')}>
                     <circle cx="650" cy="160" r="14" fill="rgba(214, 210, 205, 0.15)" />
                     <circle cx="650" cy="160" r="5" fill="#f5f4f0" />
@@ -1783,7 +2354,6 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                     </text>
                   </g>
 
-                  {/* SIN-01 Singapore */}
                   <g className="cursor-pointer" onClick={() => setSelectedNode('SIN-01')}>
                     <circle cx="590" cy="280" r="12" fill="rgba(163, 157, 150, 0.15)" />
                     <circle cx="590" cy="280" r="4" fill="#d6d2cd" />
@@ -1792,7 +2362,6 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                     </text>
                   </g>
 
-                  {/* GRU-01 São Paulo */}
                   <g className="cursor-pointer" onClick={() => setSelectedNode('GRU-01')}>
                     <circle cx="290" cy="340" r="12" fill="rgba(163, 157, 150, 0.15)" />
                     <circle cx="290" cy="340" r="4" fill="#d6d2cd" />
@@ -1838,7 +2407,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         </div>
       </section>
 
-      {/* 7. FINAL CTA / FOOTER */}
+      {/* 11. FINAL CTA / FOOTER */}
       <section
         id="cta"
         ref={ctaRef}
@@ -1856,7 +2425,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           </h2>
 
           <p className="text-base sm:text-xl text-[#a39d96] font-light max-w-2xl mx-auto mb-10 leading-relaxed">
-            Step beyond ephemeral cloud systems. Anchor your intelligence into the eternal bedrock
+            Step beyond fragile, unverified software. Anchor your systems into the immutable bedrock
             of The Monolith.
           </p>
 
@@ -1898,9 +2467,12 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-6 sm:gap-8 text-xs font-mono text-[#a39d96]">
+          <div className="flex flex-wrap items-center gap-6 sm:gap-7 text-xs font-mono text-[#a39d96]">
             <a href="#architect" className="hover:text-[#f5f4f0] transition-colors">
               ARCHITECT
+            </a>
+            <a href="#stack" className="hover:text-[#f5f4f0] transition-colors">
+              STACK
             </a>
             <a href="#cases" className="hover:text-[#f5f4f0] transition-colors">
               PROJECTS
@@ -1908,18 +2480,18 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             <a href="#solutions" className="hover:text-[#f5f4f0] transition-colors">
               SOLUTIONS
             </a>
+            <a href="#services" className="hover:text-[#f5f4f0] transition-colors">
+              SERVICES
+            </a>
+            <a href="#estimator" className="hover:text-[#f5f4f0] transition-colors">
+              ESTIMATOR
+            </a>
             <a href="#api" className="hover:text-[#f5f4f0] transition-colors">
               API
             </a>
             <a href="#infra" className="hover:text-[#f5f4f0] transition-colors">
               INFRASTRUCTURE
             </a>
-            <button
-              onClick={() => setArchitectureModalOpen(true)}
-              className="hover:text-[#f5f4f0] transition-colors uppercase text-left"
-            >
-              SPEC
-            </button>
           </div>
 
           <div className="flex flex-col md:items-end text-xs font-mono text-[#7a756f] gap-1.5">
@@ -1961,7 +2533,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
             <div className="flex items-center gap-2 px-6 py-2.5 bg-[#0e0d0c] border-b border-[#a39d96]/10 overflow-x-auto text-[11px] font-mono">
               <span className="text-[#7a756f]">RUN:</span>
-              {['status', 'deploy', 'nodes', 'api', 'benchmark', 'help'].map((cmd) => (
+              {['architect', 'projects', 'stack', 'services', 'estimate', 'status', 'benchmark', 'help'].map((cmd) => (
                 <button
                   key={cmd}
                   onClick={() => setTerminalInput(cmd)}
@@ -2001,7 +2573,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                 type="text"
                 value={terminalInput}
                 onChange={(e) => setTerminalInput(e.target.value)}
-                placeholder="Type 'help' for instructions..."
+                placeholder="Type 'help' or 'architect'..."
                 autoFocus
                 className="flex-1 bg-transparent font-mono text-xs text-[#f5f4f0] focus:outline-none placeholder:text-[#7a756f]"
               />
