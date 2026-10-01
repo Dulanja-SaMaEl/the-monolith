@@ -956,7 +956,7 @@ function DocumentEditorModal({
       const items = [...(prev.items || [])];
       items[index] = {
         ...items[index],
-        [field]: field === 'quantity' || field === 'unitPrice' ? Number(value) || 0 : value
+        [field]: field === 'quantity' || field === 'unitPrice' ? (value === '' ? '' : Number(value)) : value
       };
       return { ...prev, items };
     });
@@ -1020,7 +1020,17 @@ function DocumentEditorModal({
       alert('Please add at least one line item to the document.');
       return;
     }
-    onSave(formData);
+    const sanitizedData = {
+      ...formData,
+      discountPercent: Number(formData.discountPercent) || 0,
+      taxPercent: Number(formData.taxPercent) || 0,
+      items: formData.items.map((it) => ({
+        ...it,
+        quantity: Number(it.quantity) || 1,
+        unitPrice: Number(it.unitPrice) || 0
+      }))
+    };
+    onSave(sanitizedData);
   };
 
   const currentCurrency = formData.currency || 'LKR';
@@ -1302,8 +1312,8 @@ function DocumentEditorModal({
                     <div className="w-20">
                       <input
                         type="number"
-                        min="1"
-                        step="1"
+                        min="0.01"
+                        step="any"
                         value={item.quantity}
                         onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
                         placeholder="Qty"
@@ -1315,7 +1325,7 @@ function DocumentEditorModal({
                       <input
                         type="number"
                         min="0"
-                        step={currentCurrency === 'LKR' ? '1000' : '50'}
+                        step="any"
                         value={item.unitPrice}
                         onChange={(e) => handleItemChange(idx, 'unitPrice', e.target.value)}
                         placeholder={`Rate (${currencySymbol})`}
@@ -1324,7 +1334,7 @@ function DocumentEditorModal({
                       />
                     </div>
                     <span className="w-32 text-right font-mono text-[#f5f4f0] font-semibold text-xs truncate">
-                      {formatDocCurrency((item.quantity || 1) * (item.unitPrice || 0), currentCurrency)}
+                      {formatDocCurrency((Number(item.quantity) || 1) * (Number(item.unitPrice) || 0), currentCurrency)}
                     </span>
                     <button
                       type="button"
@@ -1352,8 +1362,9 @@ function DocumentEditorModal({
                   type="number"
                   min="0"
                   max="100"
-                  value={formData.discountPercent || 0}
-                  onChange={(e) => handleFieldChange('discountPercent', Number(e.target.value) || 0)}
+                  step="any"
+                  value={formData.discountPercent ?? 0}
+                  onChange={(e) => handleFieldChange('discountPercent', e.target.value === '' ? '' : Number(e.target.value))}
                   className="w-24 px-3 py-1.5 rounded-lg bg-[#0a0908] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-xs text-right"
                 />
               </div>
@@ -1366,8 +1377,9 @@ function DocumentEditorModal({
                   type="number"
                   min="0"
                   max="100"
-                  value={formData.taxPercent || 0}
-                  onChange={(e) => handleFieldChange('taxPercent', Number(e.target.value) || 0)}
+                  step="any"
+                  value={formData.taxPercent ?? 0}
+                  onChange={(e) => handleFieldChange('taxPercent', e.target.value === '' ? '' : Number(e.target.value))}
                   className="w-24 px-3 py-1.5 rounded-lg bg-[#0a0908] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-xs text-right"
                 />
               </div>
