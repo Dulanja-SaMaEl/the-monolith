@@ -536,24 +536,36 @@ const calculateDocTotals = (items = [], discountPercent = 0, taxPercent = 0) => 
   const afterDiscount = subtotal - discount;
   const tax = (afterDiscount * (Number(taxPercent) || 0)) / 100;
   const total = afterDiscount + tax;
-  return { subtotal, discount, tax, total };
+  return { subtotal, discount, discountAmount: discount, tax, taxAmount: tax, total };
+};
+
+const formatDocCurrency = (amount, currency = 'LKR') => {
+  const num = Number(amount) || 0;
+  if (currency === 'LKR') {
+    return `LKR ${num.toLocaleString('en-LK')}`;
+  }
+  return `$${num.toLocaleString('en-US')} USD`;
+};
+
+const getCurrencySymbol = (currency = 'LKR') => {
+  return currency === 'LKR' ? 'Rs.' : '$';
 };
 
 const serviceLineItemPresets = [
-  { label: 'Hospital LIS Analyzer Protocol Driver (ACL TOP / AU 480)', price: 4500, category: 'healthcare' },
-  { label: 'Outpatient Pharmacy Management Module with ACID Medication Ledger', price: 6200, category: 'healthcare' },
-  { label: 'NexusTopUp Microservice: JA3/JA4 TLS Fingerprint Spoofing Engine', price: 8500, category: 'fintech' },
-  { label: 'Redis Redlock Distributed Mutex for Anti-Double-Spending', price: 3800, category: 'fintech' },
-  { label: 'The Menu Enterprise: Contactless QR & WebSocket KDS Platform', price: 9200, category: 'software' },
-  { label: 'Multi-Depot Supply Chain ERP with Automated Inventory Balancing', price: 14500, category: 'software' },
-  { label: 'Zero-Downtime AWS Cloud Infrastructure & Automated CI/CD Pipeline', price: 4800, category: 'cloud' },
-  { label: 'Zero-Trust Network Perimeter & Role-Based Access Control Architecture', price: 5600, category: 'security' },
-  { label: 'Private Retrieval-Augmented Generation (RAG) LLM Intelligence Pipeline', price: 7800, category: 'ai' },
-  { label: 'National Volunteer Campaign: 12 Editorial Print Flyers & Digital Posters', price: 1800, category: 'creative' },
-  { label: '30-Day Multi-Platform Social Media Content Calendar & Storytelling Visuals', price: 1400, category: 'creative' },
-  { label: 'Full Monochromatic Vector Asset Identity & Brand Typography Guidelines', price: 1500, category: 'creative' },
-  { label: 'Paid Ad Campaign Funnel Orchestration (Meta Ads & Google Search/Display)', price: 2000, category: 'creative' },
-  { label: '24/7 SLA Telemetry Monitoring & Emergency Triage Retainer (Monthly)', price: 1200, category: 'support' }
+  { label: 'Hospital LIS Analyzer Protocol Driver (ACL TOP / AU 480)', price: 4500, priceLkr: 1350000, priceUsd: 4500, category: 'healthcare' },
+  { label: 'Outpatient Pharmacy Management Module with ACID Medication Ledger', price: 6200, priceLkr: 1860000, priceUsd: 6200, category: 'healthcare' },
+  { label: 'NexusTopUp Microservice: JA3/JA4 TLS Fingerprint Spoofing Engine', price: 8500, priceLkr: 2550000, priceUsd: 8500, category: 'fintech' },
+  { label: 'Redis Redlock Distributed Mutex for Anti-Double-Spending', price: 3800, priceLkr: 1140000, priceUsd: 3800, category: 'fintech' },
+  { label: 'The Menu Enterprise: Contactless QR & WebSocket KDS Platform', price: 9200, priceLkr: 2760000, priceUsd: 9200, category: 'software' },
+  { label: 'Multi-Depot Supply Chain ERP with Automated Inventory Balancing', price: 14500, priceLkr: 4350000, priceUsd: 14500, category: 'software' },
+  { label: 'Zero-Downtime AWS Cloud Infrastructure & Automated CI/CD Pipeline', price: 4800, priceLkr: 1440000, priceUsd: 4800, category: 'cloud' },
+  { label: 'Zero-Trust Network Perimeter & Role-Based Access Control Architecture', price: 5600, priceLkr: 1680000, priceUsd: 5600, category: 'security' },
+  { label: 'Private Retrieval-Augmented Generation (RAG) LLM Intelligence Pipeline', price: 7800, priceLkr: 2340000, priceUsd: 7800, category: 'ai' },
+  { label: 'National Volunteer Campaign: 12 Editorial Print Flyers & Digital Posters', price: 1800, priceLkr: 540000, priceUsd: 1800, category: 'creative' },
+  { label: '30-Day Multi-Platform Social Media Content Calendar & Storytelling Visuals', price: 1400, priceLkr: 420000, priceUsd: 1400, category: 'creative' },
+  { label: 'Full Monochromatic Vector Asset Identity & Brand Typography Guidelines', price: 1500, priceLkr: 450000, priceUsd: 1500, category: 'creative' },
+  { label: 'Paid Ad Campaign Funnel Orchestration (Meta Ads & Google Search/Display)', price: 2000, priceLkr: 600000, priceUsd: 2000, category: 'creative' },
+  { label: '24/7 SLA Telemetry Monitoring & Emergency Triage Retainer (Monthly)', price: 1200, priceLkr: 360000, priceUsd: 1200, category: 'support' }
 ];
 
 const defaultCompanyProfile = {
@@ -576,7 +588,7 @@ const defaultCompanyProfile = {
     accountNumber: '8014920481',
     branch: 'Kurunegala Corporate Banking',
     swift: 'CCEYLKFX',
-    currency: 'USD ($)'
+    currency: 'LKR & USD Accounts'
   }
 };
 
@@ -592,27 +604,28 @@ const defaultInvoices = [
     issueDate: '2026-09-15',
     dueDate: '2026-10-15',
     domain: 'healthcare',
+    currency: 'LKR',
     status: 'Paid',
     items: [
       {
         description: 'Hospital LIS Analyzer Protocol Driver Integration (ACL TOP & AU 480 WAMP bridge)',
         quantity: 1,
-        unitPrice: 4500
+        unitPrice: 1350000
       },
       {
         description: 'Outpatient Department (OPD) Pharmacy OS Module with ACID Medication Ledger',
         quantity: 1,
-        unitPrice: 6200
+        unitPrice: 1860000
       },
       {
         description: 'On-Site Staff Training, HHIMS Automated Data Sync & Backup Hardening',
         quantity: 1,
-        unitPrice: 2300
+        unitPrice: 690000
       }
     ],
     discountPercent: 0,
     taxPercent: 0,
-    notes: 'Payment confirmed via SWIFT wire transfer. Production SLA telemetry active with 24/7 monitoring.',
+    notes: 'Payment confirmed via Commercial Bank wire transfer. Production SLA telemetry active with 24/7 monitoring.',
     paymentTerms: 'Full settlement received. Thank you for your partnership.'
   },
   {
@@ -626,6 +639,7 @@ const defaultInvoices = [
     issueDate: '2026-09-28',
     dueDate: '2026-10-28',
     domain: 'fintech',
+    currency: 'USD',
     status: 'Pending',
     items: [
       {
@@ -655,22 +669,23 @@ const defaultInvoices = [
     issueDate: '2026-10-01',
     dueDate: '2026-10-15',
     domain: 'creative_marketing',
+    currency: 'LKR',
     status: 'Pending',
     items: [
       {
         description: 'National Volunteer Recruitment Campaign: 12 Editorial Print Flyers & Digital Poster Series',
         quantity: 1,
-        unitPrice: 1800
+        unitPrice: 540000
       },
       {
         description: '30-Day Multi-Platform Social Media Content Calendar & Storytelling Visuals',
         quantity: 1,
-        unitPrice: 1400
+        unitPrice: 420000
       },
       {
         description: 'Full Monochromatic Vector Asset Identity & Brand Typography Guidelines',
         quantity: 1,
-        unitPrice: 1500
+        unitPrice: 450000
       }
     ],
     discountPercent: 0,
@@ -691,22 +706,23 @@ const defaultQuotations = [
     issueDate: '2026-09-20',
     validUntil: '2026-10-20',
     domain: 'creative_marketing',
+    currency: 'LKR',
     status: 'Approved',
     items: [
       {
         description: 'National Volunteer Recruitment Campaign: 12 Editorial Print Flyers & Digital Poster Series',
         quantity: 1,
-        unitPrice: 1800
+        unitPrice: 540000
       },
       {
         description: '30-Day Multi-Platform Social Media Content Calendar & Storytelling Visuals',
         quantity: 1,
-        unitPrice: 1400
+        unitPrice: 420000
       },
       {
         description: 'Full Monochromatic Vector Asset Identity & Brand Typography Guidelines',
         quantity: 1,
-        unitPrice: 1500
+        unitPrice: 450000
       }
     ],
     discountPercent: 0,
@@ -724,6 +740,7 @@ const defaultQuotations = [
     issueDate: '2026-09-25',
     validUntil: '2026-10-25',
     domain: 'software',
+    currency: 'USD',
     status: 'Sent',
     items: [
       {
@@ -757,22 +774,23 @@ const defaultQuotations = [
     issueDate: '2026-09-30',
     validUntil: '2026-10-30',
     domain: 'software',
+    currency: 'LKR',
     status: 'Draft',
     items: [
       {
         description: 'The Menu Enterprise: Contactless QR Dining & Real-Time Pusher WebSocket Kitchen Display System',
         quantity: 1,
-        unitPrice: 9200
+        unitPrice: 2760000
       },
       {
         description: 'Multi-Tenant Billing Engine, Stripe Connect Integration & Dynamic RBAC Permission Layer',
         quantity: 1,
-        unitPrice: 4200
+        unitPrice: 1260000
       },
       {
         description: 'Bespoke Tactile Restaurant Menu Flyer & Table QR Standee Print Collateral Package',
         quantity: 1,
-        unitPrice: 1200
+        unitPrice: 360000
       }
     ],
     discountPercent: 0,
@@ -794,8 +812,7 @@ function AdminLoginModal({
   password,
   setPassword,
   error,
-  onSubmit,
-  onQuickAutofill
+  onSubmit
 }) {
   if (!isOpen) return null;
 
@@ -829,9 +846,7 @@ function AdminLoginModal({
         {/* Content */}
         <form onSubmit={onSubmit} className="p-6 space-y-4 bg-[#0a0908]">
           <div className="p-3.5 rounded-xl bg-[#141311] border border-[#a39d96]/15 text-xs text-[#a39d96] leading-relaxed">
-            Restricted to Founding Architects{' '}
-            <strong className="text-[#f5f4f0]">Dulanja Abeysinghe</strong> &{' '}
-            <strong className="text-[#f5f4f0]">Remashi Diyana</strong>. Manage enterprise invoices, client quotations, and financial ledger.
+            Restricted executive security enclave. Enter your authorized operator credentials to access company invoicing, sales quotations, and financial ledger.
           </div>
 
           {error && (
@@ -849,9 +864,10 @@ function AdminLoginModal({
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Username"
+              placeholder="Enter username"
+              autoComplete="username"
               required
-              className="w-full px-4 py-2.5 rounded-xl bg-[#141311] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-sm focus:outline-none focus:border-[#d6d2cd] transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-[#141311] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-sm focus:outline-none focus:border-[#d6d2cd] transition-colors placeholder:text-[#7a756f]"
             />
           </div>
 
@@ -863,21 +879,16 @@ function AdminLoginModal({
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
+              placeholder="Enter password"
+              autoComplete="current-password"
               required
-              className="w-full px-4 py-2.5 rounded-xl bg-[#141311] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-sm focus:outline-none focus:border-[#d6d2cd] transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-[#141311] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-sm focus:outline-none focus:border-[#d6d2cd] transition-colors placeholder:text-[#7a756f]"
             />
           </div>
 
-          <div className="pt-2 flex items-center justify-between text-[11px] font-mono text-[#7a756f]">
-            <span>Authorized: <code className="text-[#d6d2cd]">duladiya</code></span>
-            <button
-              type="button"
-              onClick={onQuickAutofill}
-              className="text-[#e3dfd8] hover:underline"
-            >
-              Fill Credentials
-            </button>
+          <div className="pt-1 text-[11px] font-mono text-[#7a756f] flex items-center justify-between">
+            <span>Security: Level 5 Enclave</span>
+            <span className="text-[#a39d96]">Dual-Key Protected</span>
           </div>
 
           <button
@@ -906,7 +917,9 @@ function DocumentEditorModal({
   const isInvoice = type === 'invoice';
 
   const [formData, setFormData] = useState(() => {
-    return JSON.parse(JSON.stringify(data));
+    const cloned = JSON.parse(JSON.stringify(data));
+    if (!cloned.currency) cloned.currency = 'LKR';
+    return cloned;
   });
 
   const totals = useMemo(() => {
@@ -929,11 +942,16 @@ function DocumentEditorModal({
   };
 
   const handleAddItem = () => {
+    const isLkr = (formData.currency || 'LKR') === 'LKR';
     setFormData((prev) => ({
       ...prev,
       items: [
         ...(prev.items || []),
-        { description: 'Bespoke Software / Creative Architecture Module', quantity: 1, unitPrice: 2500 }
+        {
+          description: 'Bespoke Software / Creative Architecture Module',
+          quantity: 1,
+          unitPrice: isLkr ? 450000 : 1500
+        }
       ]
     }));
   };
@@ -946,12 +964,32 @@ function DocumentEditorModal({
   };
 
   const handleAddPreset = (preset) => {
+    const isLkr = (formData.currency || 'LKR') === 'LKR';
+    const unitPrice = isLkr
+      ? (preset.priceLkr || (preset.price ? preset.price * 300 : 300000))
+      : (preset.priceUsd || (preset.price ? preset.price : 1000));
+
     setFormData((prev) => ({
       ...prev,
       items: [
         ...(prev.items || []),
-        { description: preset.label, quantity: 1, unitPrice: preset.price }
+        { description: preset.label, quantity: 1, unitPrice }
       ]
+    }));
+  };
+
+  const handleConvertAllRates = () => {
+    const isCurrentlyLkr = (formData.currency || 'LKR') === 'LKR';
+    const targetCurr = isCurrentlyLkr ? 'USD' : 'LKR';
+    const factor = isCurrentlyLkr ? (1 / 300) : 300;
+
+    setFormData((prev) => ({
+      ...prev,
+      currency: targetCurr,
+      items: (prev.items || []).map((it) => ({
+        ...it,
+        unitPrice: Math.round((Number(it.unitPrice) || 0) * factor)
+      }))
     }));
   };
 
@@ -963,6 +1001,9 @@ function DocumentEditorModal({
     }
     onSave(formData);
   };
+
+  const currentCurrency = formData.currency || 'LKR';
+  const currencySymbol = getCurrencySymbol(currentCurrency);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
@@ -993,6 +1034,48 @@ function DocumentEditorModal({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1 bg-[#0a0908] text-xs">
+          {/* Currency Selector & Quick Converter Strip */}
+          <div className="p-4 rounded-2xl bg-[#141311] border border-[#a39d96]/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#a39d96]">
+                Billing Currency:
+              </span>
+              <div className="inline-flex rounded-xl p-1 bg-[#0a0908] border border-[#a39d96]/20 font-mono text-xs">
+                <button
+                  type="button"
+                  onClick={() => handleFieldChange('currency', 'LKR')}
+                  className={`px-3 py-1.5 rounded-lg transition-colors font-semibold ${
+                    currentCurrency === 'LKR'
+                      ? 'bg-[#f5f4f0] text-[#0a0908] shadow-sm'
+                      : 'text-[#a39d96] hover:text-[#f5f4f0]'
+                  }`}
+                >
+                  🇱🇰 LKR (Rs.)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleFieldChange('currency', 'USD')}
+                  className={`px-3 py-1.5 rounded-lg transition-colors font-semibold ${
+                    currentCurrency === 'USD'
+                      ? 'bg-[#f5f4f0] text-[#0a0908] shadow-sm'
+                      : 'text-[#a39d96] hover:text-[#f5f4f0]'
+                  }`}
+                >
+                  🌐 USD ($)
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleConvertAllRates}
+              className="px-3 py-1.5 rounded-lg bg-[#1c1a17] text-[#d6d2cd] border border-[#a39d96]/20 hover:text-[#f5f4f0] hover:bg-[#252320] font-mono text-[11px] transition-colors"
+              title="Automatically convert line item prices between USD and LKR (using standard 1:300 rate)"
+            >
+              🔄 Auto-Convert Rates ({currentCurrency === 'LKR' ? 'LKR → USD' : 'USD → LKR'})
+            </button>
+          </div>
+
           {/* Metadata Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-[#141311] border border-[#a39d96]/15">
             <div>
@@ -1140,19 +1223,24 @@ function DocumentEditorModal({
           {/* Quick Presets Strip */}
           <div className="space-y-2">
             <span className="text-[10px] font-mono text-[#a39d96] uppercase tracking-wider block">
-              + QUICK SERVICE PRESETS (CLICK TO APPEND TO LINE ITEMS):
+              + QUICK SERVICE PRESETS (CLICK TO APPEND TO LINE ITEMS IN {currentCurrency}):
             </span>
             <div className="flex flex-wrap gap-1.5">
-              {serviceLineItemPresets.slice(0, 8).map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleAddPreset(preset)}
-                  className="px-2.5 py-1 rounded-lg bg-[#1c1a17] text-[11px] font-mono text-[#d6d2cd] border border-[#a39d96]/15 hover:border-[#f5f4f0]/50 hover:bg-[#252320] transition-colors"
-                >
-                  + {preset.label.slice(0, 32)}... (${preset.price})
-                </button>
-              ))}
+              {serviceLineItemPresets.slice(0, 8).map((preset, idx) => {
+                const displayPrice = currentCurrency === 'LKR'
+                  ? `Rs. ${(preset.priceLkr || preset.price * 300).toLocaleString()}`
+                  : `$${(preset.priceUsd || preset.price).toLocaleString()}`;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleAddPreset(preset)}
+                    className="px-2.5 py-1 rounded-lg bg-[#1c1a17] text-[11px] font-mono text-[#d6d2cd] border border-[#a39d96]/15 hover:border-[#f5f4f0]/50 hover:bg-[#252320] transition-colors"
+                  >
+                    + {preset.label.slice(0, 30)}... ({displayPrice})
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -1168,7 +1256,7 @@ function DocumentEditorModal({
                 className="px-3 py-1 rounded-lg bg-[#1c1a17] text-xs font-mono text-[#f5f4f0] border border-[#a39d96]/20 hover:bg-[#252320] flex items-center gap-1.5"
               >
                 <Plus className="w-3.5 h-3.5" />
-                Add Item
+                Add Item ({currentCurrency})
               </button>
             </div>
 
@@ -1202,20 +1290,20 @@ function DocumentEditorModal({
                         className="w-full px-2 py-1.5 rounded-lg bg-[#0a0908] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-xs text-right focus:outline-none focus:border-[#d6d2cd]"
                       />
                     </div>
-                    <div className="w-28">
+                    <div className="w-32">
                       <input
                         type="number"
                         min="0"
-                        step="50"
+                        step={currentCurrency === 'LKR' ? '1000' : '50'}
                         value={item.unitPrice}
                         onChange={(e) => handleItemChange(idx, 'unitPrice', e.target.value)}
-                        placeholder="Rate ($)"
+                        placeholder={`Rate (${currencySymbol})`}
                         required
                         className="w-full px-2 py-1.5 rounded-lg bg-[#0a0908] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-xs text-right focus:outline-none focus:border-[#d6d2cd]"
                       />
                     </div>
-                    <span className="w-24 text-right font-mono text-[#f5f4f0] font-semibold text-xs">
-                      ${((item.quantity || 1) * (item.unitPrice || 0)).toLocaleString()}
+                    <span className="w-32 text-right font-mono text-[#f5f4f0] font-semibold text-xs truncate">
+                      {formatDocCurrency((item.quantity || 1) * (item.unitPrice || 0), currentCurrency)}
                     </span>
                     <button
                       type="button"
@@ -1264,26 +1352,31 @@ function DocumentEditorModal({
               </div>
             </div>
 
-            <div className="w-full md:w-64 font-mono space-y-1 text-right">
+            <div className="w-full md:w-80 font-mono space-y-1 text-right">
               <div className="flex justify-between text-[#a39d96]">
                 <span>SUBTOTAL:</span>
-                <span>${totals.subtotal.toLocaleString()}</span>
+                <span>{formatDocCurrency(totals.subtotal, currentCurrency)}</span>
               </div>
               {totals.discountAmount > 0 && (
                 <div className="flex justify-between text-[#7a756f]">
                   <span>DISCOUNT ({formData.discountPercent}%):</span>
-                  <span>-${totals.discountAmount.toLocaleString()}</span>
+                  <span>-{formatDocCurrency(totals.discountAmount, currentCurrency)}</span>
                 </div>
               )}
               {totals.taxAmount > 0 && (
                 <div className="flex justify-between text-[#a39d96]">
                   <span>TAX ({formData.taxPercent}%):</span>
-                  <span>+${totals.taxAmount.toLocaleString()}</span>
+                  <span>+{formatDocCurrency(totals.taxAmount, currentCurrency)}</span>
                 </div>
               )}
               <div className="flex justify-between text-base font-bold text-[#f5f4f0] pt-2 border-t border-[#a39d96]/20">
                 <span>GRAND TOTAL:</span>
-                <span>${totals.total.toLocaleString()} USD</span>
+                <span>{formatDocCurrency(totals.total, currentCurrency)}</span>
+              </div>
+              <div className="text-[10px] text-[#7a756f] pt-0.5">
+                {currentCurrency === 'LKR'
+                  ? `≈ $${Math.round(totals.total / 300).toLocaleString()} USD (@ 300 LKR/USD)`
+                  : `≈ LKR ${(totals.total * 300).toLocaleString()} (@ 300 LKR/USD)`}
               </div>
             </div>
           </div>
@@ -1351,14 +1444,21 @@ function DocumentPrintModal({
 
   const isInvoice = type === 'invoice';
   const totals = calculateDocTotals(data.items || [], data.discountPercent || 0, data.taxPercent || 0);
+  const docCurrency = data.currency || 'LKR';
 
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-4xl rounded-3xl bg-[#141311] border border-[#a39d96]/30 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]">
+    <div
+      id="monolith-print-modal-wrapper"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200"
+    >
+      <div
+        id="monolith-print-modal-inner"
+        className="w-full max-w-4xl rounded-3xl bg-[#141311] border border-[#a39d96]/30 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]"
+      >
         {/* Top Control Bar (Hidden when printing via CSS) */}
         <div className="no-print flex items-center justify-between px-6 py-4 border-b border-[#a39d96]/15 bg-[#181614]">
           <div className="flex items-center gap-2.5">
@@ -1471,8 +1571,8 @@ function DocumentPrintModal({
                     <th className="py-2.5 px-3">#</th>
                     <th className="py-2.5 px-3">Scope Description</th>
                     <th className="py-2.5 px-3 text-right">Qty</th>
-                    <th className="py-2.5 px-3 text-right">Rate ($)</th>
-                    <th className="py-2.5 px-3 text-right">Amount ($)</th>
+                    <th className="py-2.5 px-3 text-right">Rate ({docCurrency})</th>
+                    <th className="py-2.5 px-3 text-right">Amount ({docCurrency})</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#a39d96]/10">
@@ -1484,10 +1584,10 @@ function DocumentPrintModal({
                       </td>
                       <td className="py-3 px-3 text-right text-[#d6d2cd]">{item.quantity}</td>
                       <td className="py-3 px-3 text-right text-[#d6d2cd]">
-                        ${Number(item.unitPrice).toLocaleString()}
+                        {formatDocCurrency(item.unitPrice, docCurrency)}
                       </td>
                       <td className="py-3 px-3 text-right text-[#f5f4f0] font-semibold">
-                        ${((item.quantity || 1) * (item.unitPrice || 0)).toLocaleString()}
+                        {formatDocCurrency((item.quantity || 1) * (item.unitPrice || 0), docCurrency)}
                       </td>
                     </tr>
                   ))}
@@ -1499,35 +1599,40 @@ function DocumentPrintModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-[#a39d96]/20">
               <div className="p-4 rounded-xl bg-[#0a0908] border border-[#a39d96]/15 font-mono text-[11px] space-y-1">
                 <span className="text-[10px] text-[#7a756f] uppercase tracking-wider block mb-1">
-                  OFFICIAL WIRE REMITTANCE DETAILS
+                  OFFICIAL WIRE REMITTANCE DETAILS ({docCurrency})
                 </span>
                 <p className="text-[#f5f4f0] font-semibold">Bank: Commercial Bank of Ceylon PLC</p>
                 <p className="text-[#d6d2cd]">Account Name: The Monolith Systems</p>
-                <p className="text-[#d6d2cd]">Account No: 8014920481</p>
-                <p className="text-[#a39d96]">Branch: Kurunegala Corporate Banking</p>
+                <p className="text-[#d6d2cd]">Account No: 8014920481 ({docCurrency === 'USD' ? 'FCBU USD Wire' : 'LKR Operating'})</p>
+                <p className="text-[#a39d96]">Branch: Kurunegala Corporate Banking (034)</p>
                 <p className="text-[#a39d96]">SWIFT / BIC: CCEYLKFX</p>
               </div>
 
               <div className="font-mono text-xs space-y-1.5 self-end">
                 <div className="flex justify-between text-[#a39d96]">
                   <span>SUBTOTAL:</span>
-                  <span>${totals.subtotal.toLocaleString()} USD</span>
+                  <span>{formatDocCurrency(totals.subtotal, docCurrency)}</span>
                 </div>
                 {totals.discountAmount > 0 && (
                   <div className="flex justify-between text-[#7a756f]">
                     <span>DISCOUNT ({data.discountPercent}%):</span>
-                    <span>-${totals.discountAmount.toLocaleString()} USD</span>
+                    <span>-{formatDocCurrency(totals.discountAmount, docCurrency)}</span>
                   </div>
                 )}
                 {totals.taxAmount > 0 && (
                   <div className="flex justify-between text-[#a39d96]">
                     <span>TAX / VAT ({data.taxPercent}%):</span>
-                    <span>+${totals.taxAmount.toLocaleString()} USD</span>
+                    <span>+{formatDocCurrency(totals.taxAmount, docCurrency)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-base font-bold text-[#f5f4f0] pt-2 border-t border-[#a39d96]/30">
                   <span>TOTAL DUE:</span>
-                  <span>${totals.total.toLocaleString()} USD</span>
+                  <span>{formatDocCurrency(totals.total, docCurrency)}</span>
+                </div>
+                <div className="text-[10px] text-[#7a756f] text-right pt-0.5">
+                  {docCurrency === 'LKR'
+                    ? `≈ $${Math.round(totals.total / 300).toLocaleString()} USD (@ 300 LKR/USD)`
+                    : `≈ LKR ${(totals.total * 300).toLocaleString()} (@ 300 LKR/USD)`}
                 </div>
               </div>
             </div>
@@ -1598,13 +1703,17 @@ function AdminPortalModal({
 }) {
   if (!isOpen) return null;
 
+  const [currencyFilter, setCurrencyFilter] = useState('ALL');
+
   const filteredInvoices = invoices.filter((inv) => {
     const matchesSearch =
       inv.invoiceNumber.toLowerCase().includes(search.toLowerCase()) ||
       inv.clientName.toLowerCase().includes(search.toLowerCase()) ||
       inv.clientCompany.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'All' || inv.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const invCurr = inv.currency || 'LKR';
+    const matchesCurrency = currencyFilter === 'ALL' || invCurr === currencyFilter;
+    return matchesSearch && matchesStatus && matchesCurrency;
   });
 
   const filteredQuotations = quotations.filter((quo) => {
@@ -1613,7 +1722,9 @@ function AdminPortalModal({
       quo.clientName.toLowerCase().includes(search.toLowerCase()) ||
       quo.clientCompany.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'All' || quo.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const quoCurr = quo.currency || 'LKR';
+    const matchesCurrency = currencyFilter === 'ALL' || quoCurr === currencyFilter;
+    return matchesSearch && matchesStatus && matchesCurrency;
   });
 
   return (
@@ -1747,8 +1858,11 @@ function AdminPortalModal({
                     <span>Total Invoiced</span>
                     <DollarSign className="w-3.5 h-3.5 text-[#d6d2cd]" />
                   </div>
-                  <div className="text-2xl font-bold font-sans text-[#f5f4f0]">
-                    ${kpiStats.totalInvoiced.toLocaleString()}
+                  <div className="text-xl font-bold font-sans text-[#f5f4f0]">
+                    LKR {(kpiStats.lkrInvoiced || 0).toLocaleString()}
+                  </div>
+                  <div className="text-xs font-mono text-[#d6d2cd]">
+                    + ${(kpiStats.usdInvoiced || 0).toLocaleString()} USD
                   </div>
                   <p className="text-[10px] font-mono text-[#7a756f]">
                     {kpiStats.invoicesCount} total registered invoices
@@ -1760,8 +1874,11 @@ function AdminPortalModal({
                     <span>Settled / Paid</span>
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#d6d2cd]" />
                   </div>
-                  <div className="text-2xl font-bold font-sans text-[#f5f4f0]">
-                    ${kpiStats.totalPaid.toLocaleString()}
+                  <div className="text-xl font-bold font-sans text-[#f5f4f0]">
+                    LKR {(kpiStats.lkrPaid || 0).toLocaleString()}
+                  </div>
+                  <div className="text-xs font-mono text-[#d6d2cd]">
+                    + ${(kpiStats.usdPaid || 0).toLocaleString()} USD
                   </div>
                   <p className="text-[10px] font-mono text-[#7a756f]">
                     {kpiStats.paidCount} fulfilled enterprise accounts
@@ -1773,8 +1890,11 @@ function AdminPortalModal({
                     <span>Outstanding</span>
                     <Clock className="w-3.5 h-3.5 text-[#d6d2cd]" />
                   </div>
-                  <div className="text-2xl font-bold font-sans text-[#f5f4f0]">
-                    ${kpiStats.totalPending.toLocaleString()}
+                  <div className="text-xl font-bold font-sans text-[#f5f4f0]">
+                    LKR {(kpiStats.lkrPending || 0).toLocaleString()}
+                  </div>
+                  <div className="text-xs font-mono text-[#d6d2cd]">
+                    + ${(kpiStats.usdPending || 0).toLocaleString()} USD
                   </div>
                   <p className="text-[10px] font-mono text-[#7a756f]">
                     Awaiting client wire settlement
@@ -1786,8 +1906,11 @@ function AdminPortalModal({
                     <span>Quotation Pipeline</span>
                     <FileText className="w-3.5 h-3.5 text-[#d6d2cd]" />
                   </div>
-                  <div className="text-2xl font-bold font-sans text-[#f5f4f0]">
-                    ${kpiStats.totalQuotationsValue.toLocaleString()}
+                  <div className="text-xl font-bold font-sans text-[#f5f4f0]">
+                    LKR {(kpiStats.lkrQuotations || 0).toLocaleString()}
+                  </div>
+                  <div className="text-xs font-mono text-[#d6d2cd]">
+                    + ${(kpiStats.usdQuotations || 0).toLocaleString()} USD
                   </div>
                   <p className="text-[10px] font-mono text-[#7a756f]">
                     {kpiStats.approvedQuotes} approved proposals
@@ -1869,7 +1992,7 @@ function AdminPortalModal({
                           <div className="text-right flex items-center gap-3">
                             <div>
                               <span className="font-mono font-bold text-[#f5f4f0] text-xs block">
-                                ${total.toLocaleString()}
+                                {formatDocCurrency(total, inv.currency)}
                               </span>
                               <span className="text-[10px] font-mono text-[#7a756f]">
                                 Due {inv.dueDate}
@@ -1937,7 +2060,7 @@ function AdminPortalModal({
                           <div className="text-right flex items-center gap-2">
                             <div>
                               <span className="font-mono font-bold text-[#f5f4f0] text-xs block">
-                                ${total.toLocaleString()}
+                                {formatDocCurrency(total, quo.currency)}
                               </span>
                               <span className="text-[10px] font-mono text-[#7a756f]">
                                 Valid {quo.validUntil}
@@ -1997,6 +2120,21 @@ function AdminPortalModal({
                       </button>
                     ))}
                   </div>
+                  <div className="hidden sm:flex items-center gap-1 font-mono text-xs pl-2 border-l border-[#a39d96]/20">
+                    {['ALL', 'LKR', 'USD'].map((curr) => (
+                      <button
+                        key={curr}
+                        onClick={() => setCurrencyFilter(curr)}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] transition-colors ${
+                          currencyFilter === curr
+                            ? 'bg-[#f5f4f0] text-[#0a0908] font-bold'
+                            : 'bg-[#0a0908] text-[#7a756f] border border-[#a39d96]/15 hover:text-[#f5f4f0]'
+                        }`}
+                      >
+                        {curr}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <button
@@ -2018,7 +2156,8 @@ function AdminPortalModal({
                         <th className="py-3 px-4">Client / Company</th>
                         <th className="py-3 px-4">Dates</th>
                         <th className="py-3 px-4 text-right">Items</th>
-                        <th className="py-3 px-4 text-right">Total ($USD)</th>
+                        <th className="py-3 px-4 text-center">Curr</th>
+                        <th className="py-3 px-4 text-right">Total</th>
                         <th className="py-3 px-4 text-center">Status</th>
                         <th className="py-3 px-4 text-right">Actions</th>
                       </tr>
@@ -2045,8 +2184,19 @@ function AdminPortalModal({
                             <td className="py-3.5 px-4 text-right text-[#d6d2cd]">
                               {inv.items?.length || 0} items
                             </td>
+                            <td className="py-3.5 px-4 text-center">
+                              <span
+                                className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
+                                  inv.currency === 'USD'
+                                    ? 'bg-blue-950/40 text-blue-300 border-blue-800/40'
+                                    : 'bg-[#252320] text-[#e3dfd8] border-[#a39d96]/30'
+                                }`}
+                              >
+                                {inv.currency || 'LKR'}
+                              </span>
+                            </td>
                             <td className="py-3.5 px-4 text-right font-bold text-[#f5f4f0]">
-                              ${total.toLocaleString()}
+                              {formatDocCurrency(total, inv.currency)}
                             </td>
                             <td className="py-3.5 px-4 text-center">
                               <select
@@ -2100,7 +2250,7 @@ function AdminPortalModal({
                       })}
                       {filteredInvoices.length === 0 && (
                         <tr>
-                          <td colSpan="7" className="py-8 text-center text-[#7a756f]">
+                          <td colSpan="8" className="py-8 text-center text-[#7a756f]">
                             No invoices matching query. Click "Generate Invoice" to create one.
                           </td>
                         </tr>
@@ -2142,6 +2292,21 @@ function AdminPortalModal({
                       </button>
                     ))}
                   </div>
+                  <div className="hidden sm:flex items-center gap-1 font-mono text-xs pl-2 border-l border-[#a39d96]/20">
+                    {['ALL', 'LKR', 'USD'].map((curr) => (
+                      <button
+                        key={curr}
+                        onClick={() => setCurrencyFilter(curr)}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] transition-colors ${
+                          currencyFilter === curr
+                            ? 'bg-[#f5f4f0] text-[#0a0908] font-bold'
+                            : 'bg-[#0a0908] text-[#7a756f] border border-[#a39d96]/15 hover:text-[#f5f4f0]'
+                        }`}
+                      >
+                        {curr}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <button
@@ -2163,7 +2328,8 @@ function AdminPortalModal({
                         <th className="py-3 px-4">Client / Company</th>
                         <th className="py-3 px-4">Dates</th>
                         <th className="py-3 px-4 text-right">Items</th>
-                        <th className="py-3 px-4 text-right">Total ($USD)</th>
+                        <th className="py-3 px-4 text-center">Curr</th>
+                        <th className="py-3 px-4 text-right">Total</th>
                         <th className="py-3 px-4 text-center">Status</th>
                         <th className="py-3 px-4 text-center">Workflow</th>
                         <th className="py-3 px-4 text-right">Actions</th>
@@ -2188,8 +2354,19 @@ function AdminPortalModal({
                             <td className="py-3.5 px-4 text-right text-[#d6d2cd]">
                               {quo.items?.length || 0} items
                             </td>
+                            <td className="py-3.5 px-4 text-center">
+                              <span
+                                className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
+                                  quo.currency === 'USD'
+                                    ? 'bg-blue-950/40 text-blue-300 border-blue-800/40'
+                                    : 'bg-[#252320] text-[#e3dfd8] border-[#a39d96]/30'
+                                }`}
+                              >
+                                {quo.currency || 'LKR'}
+                              </span>
+                            </td>
                             <td className="py-3.5 px-4 text-right font-bold text-[#f5f4f0]">
-                              ${total.toLocaleString()}
+                              {formatDocCurrency(total, quo.currency)}
                             </td>
                             <td className="py-3.5 px-4 text-center">
                               <select
@@ -2252,7 +2429,7 @@ function AdminPortalModal({
                       })}
                       {filteredQuotations.length === 0 && (
                         <tr>
-                          <td colSpan="8" className="py-8 text-center text-[#7a756f]">
+                          <td colSpan="9" className="py-8 text-center text-[#7a756f]">
                             No quotations matching query. Click "Generate Quotation" to create one.
                           </td>
                         </tr>
@@ -2411,8 +2588,8 @@ export default function TheMonolith() {
   const [adminStatusFilter, setAdminStatusFilter] = useState('All');
   const [adminToast, setAdminToast] = useState(null);
 
-  const [loginUsername, setLoginUsername] = useState('duladiya');
-  const [loginPassword, setLoginPassword] = useState('diyanaabeysinghe@9454');
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
   // Auto-sync invoices & quotations to localStorage
@@ -2455,6 +2632,8 @@ export default function TheMonolith() {
     } catch (err) {}
     setIsAdminLoggedIn(false);
     setAdminPortalOpen(false);
+    setLoginUsername('');
+    setLoginPassword('');
     showAdminToast('SESSION TERMINATED // LOGGED OUT', 'info');
   };
 
@@ -2529,6 +2708,7 @@ export default function TheMonolith() {
       clientCompany: quotation.clientCompany,
       clientEmail: quotation.clientEmail,
       clientAddress: quotation.clientAddress,
+      currency: quotation.currency || 'LKR',
       issueDate: new Date().toISOString().slice(0, 10),
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
       domain: quotation.domain || 'software',
@@ -2576,6 +2756,7 @@ export default function TheMonolith() {
         clientCompany: '',
         clientEmail: '',
         clientAddress: '',
+        currency: 'LKR',
         issueDate: new Date().toISOString().slice(0, 10),
         dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
         domain: 'software',
@@ -2584,12 +2765,12 @@ export default function TheMonolith() {
           {
             description: 'Enterprise Systems Architecture & Engineering Sprint',
             quantity: 1,
-            unitPrice: 5000
+            unitPrice: 1500000
           }
         ],
         discountPercent: 0,
         taxPercent: 0,
-        notes: 'Payment via international wire transfer to Commercial Bank of Ceylon PLC.',
+        notes: 'Payment via Commercial Bank of Ceylon PLC wire transfer.',
         paymentTerms: 'Payment due within 30 days of invoice date.'
       }
     });
@@ -2608,6 +2789,7 @@ export default function TheMonolith() {
         clientCompany: '',
         clientEmail: '',
         clientAddress: '',
+        currency: 'LKR',
         issueDate: new Date().toISOString().slice(0, 10),
         validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
         domain: 'software',
@@ -2616,7 +2798,7 @@ export default function TheMonolith() {
           {
             description: 'Full-Lifecycle Venture Architecture (Software Engineering & Marketing)',
             quantity: 1,
-            unitPrice: 8500
+            unitPrice: 2550000
           }
         ],
         discountPercent: 0,
@@ -2645,37 +2827,47 @@ export default function TheMonolith() {
   };
 
   const kpiStats = useMemo(() => {
-    const totalInvoiced = invoices.reduce((acc, inv) => {
+    let lkrInvoiced = 0;
+    let usdInvoiced = 0;
+    let lkrPaid = 0;
+    let usdPaid = 0;
+    let lkrPending = 0;
+    let usdPending = 0;
+    let lkrQuotations = 0;
+    let usdQuotations = 0;
+
+    invoices.forEach((inv) => {
       const { total } = calculateDocTotals(inv.items, inv.discountPercent, inv.taxPercent);
-      return acc + total;
-    }, 0);
+      const curr = inv.currency || 'LKR';
+      if (curr === 'USD') {
+        usdInvoiced += total;
+        if (inv.status === 'Paid') usdPaid += total;
+        else usdPending += total;
+      } else {
+        lkrInvoiced += total;
+        if (inv.status === 'Paid') lkrPaid += total;
+        else lkrPending += total;
+      }
+    });
 
-    const totalPaid = invoices
-      .filter((inv) => inv.status === 'Paid')
-      .reduce((acc, inv) => {
-        const { total } = calculateDocTotals(inv.items, inv.discountPercent, inv.taxPercent);
-        return acc + total;
-      }, 0);
-
-    const totalPending = invoices
-      .filter((inv) => inv.status === 'Pending' || inv.status === 'Draft')
-      .reduce((acc, inv) => {
-        const { total } = calculateDocTotals(inv.items, inv.discountPercent, inv.taxPercent);
-        return acc + total;
-      }, 0);
-
-    const totalQuotationsValue = quotations
-      .filter((q) => q.status === 'Approved' || q.status === 'Sent')
-      .reduce((acc, q) => {
-        const { total } = calculateDocTotals(q.items, q.discountPercent, q.taxPercent);
-        return acc + total;
-      }, 0);
+    quotations.forEach((quo) => {
+      const { total } = calculateDocTotals(quo.items, quo.discountPercent, quo.taxPercent);
+      const curr = quo.currency || 'LKR';
+      if (quo.status === 'Approved' || quo.status === 'Sent') {
+        if (curr === 'USD') usdQuotations += total;
+        else lkrQuotations += total;
+      }
+    });
 
     return {
-      totalInvoiced,
-      totalPaid,
-      totalPending,
-      totalQuotationsValue,
+      lkrInvoiced,
+      usdInvoiced,
+      lkrPaid,
+      usdPaid,
+      lkrPending,
+      usdPending,
+      lkrQuotations,
+      usdQuotations,
       paidCount: invoices.filter((i) => i.status === 'Paid').length,
       approvedQuotes: quotations.filter((q) => q.status === 'Approved').length,
       invoicesCount: invoices.length,
@@ -2731,7 +2923,7 @@ export default function TheMonolith() {
       case 'help':
         newLogs.push({
           type: 'response',
-          text: 'AVAILABLE OPERATIONS:\n  admin       - Open Executive Admin Portal (Login: duladiya / diyanaabeysinghe@9454)\n  invoices    - Access Invoices & Financial Register\n  quotations  - Access Sales Quotations & Proposals Pipeline\n  architects  - Display Founding Architects (Dulanja Abeysinghe & Remashi Diyana) dossier\n  dulanja     - Inspect Principal Systems Architect technical credentials & stack\n  remashi     - Inspect Head of Creative Strategy, Flyer Design & Brand Direction profile\n  services    - Enumerate the 7 Core Services offered by The Monolith\n  marketing   - Inspect Creative Studio, Flyer Design & Paid Ad Campaign services\n  projects    - Output inventory of 12 production systems & engineering deployments\n  stack       - Inspect comprehensive technical stack and architecture matrix\n  estimate    - Run dynamic architecture & marketing scoping calculation\n  status      - Query real-time magnetic shard coherence & core AI state\n  deploy      - Initialize autonomous enclave compute pod\n  nodes       - Output latency matrix across 6 global edge points\n  api         - Inspect latest TypeScript / Python client SDK release\n  benchmark   - Run synthetic 1,000,000 state mutation test\n  contact     - Display direct secure contact coordinates for both architects\n  clear       - Purge terminal buffer'
+          text: 'AVAILABLE OPERATIONS:\n  admin       - Open Executive Admin Portal (Protected Console)\n  invoices    - Access Invoices & Financial Register\n  quotations  - Access Sales Quotations & Proposals Pipeline\n  architects  - Display Founding Architects (Dulanja Abeysinghe & Remashi Diyana) dossier\n  dulanja     - Inspect Principal Systems Architect technical credentials & stack\n  remashi     - Inspect Head of Creative Strategy, Flyer Design & Brand Direction profile\n  services    - Enumerate the 7 Core Services offered by The Monolith\n  marketing   - Inspect Creative Studio, Flyer Design & Paid Ad Campaign services\n  projects    - Output inventory of 12 production systems & engineering deployments\n  stack       - Inspect comprehensive technical stack and architecture matrix\n  estimate    - Run dynamic architecture & marketing scoping calculation\n  status      - Query real-time magnetic shard coherence & core AI state\n  deploy      - Initialize autonomous enclave compute pod\n  nodes       - Output latency matrix across 6 global edge points\n  api         - Inspect latest TypeScript / Python client SDK release\n  benchmark   - Run synthetic 1,000,000 state mutation test\n  contact     - Display direct secure contact coordinates for both architects\n  clear       - Purge terminal buffer'
         });
         break;
       case 'admin':
@@ -2747,7 +2939,7 @@ export default function TheMonolith() {
           setAdminLoginModalOpen(true);
           newLogs.push({
             type: 'response',
-            text: 'SECURITY CHALLENGE INITIATED // OPENING AUTHENTICATION CONSOLE...\nCredentials: duladiya / diyanaabeysinghe@9454'
+            text: 'SECURITY CHALLENGE INITIATED // OPENING AUTHENTICATION CONSOLE...\nEnter authorized credentials to proceed.'
           });
         }
         break;
@@ -5489,10 +5681,6 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         setPassword={setLoginPassword}
         error={loginError}
         onSubmit={handleAdminLogin}
-        onQuickAutofill={() => {
-          setLoginUsername('duladiya');
-          setLoginPassword('diyanaabeysinghe@9454');
-        }}
       />
 
       {/* Admin Portal Modal (Dashboard, Invoices, Quotations, Settings) */}

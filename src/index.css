@@ -80,31 +80,124 @@
   }
 }
 
-/* Document Print Styles */
+/* Document Print Styles: Strict 1-Page / Document-Only Output */
 @media print {
-  body {
-    background-color: #ffffff !important;
-    color: #111111 !important;
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
   }
-  body * {
-    visibility: hidden;
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  #monolith-printable-doc, #monolith-printable-doc * {
-    visibility: visible;
+
+  /* Completely remove background website sections, 3D canvas & modals from the print layout tree */
+  canvas,
+  header,
+  footer,
+  section,
+  .no-print,
+  #hero,
+  #architects,
+  #architect,
+  #services,
+  #cases,
+  #stack,
+  #solutions,
+  #api,
+  #estimator,
+  #infra {
+    display: none !important;
   }
+
+  /* Hide everything under root except the print modal wrapper */
+  #root > div > *:not(#monolith-print-modal-wrapper) {
+    display: none !important;
+  }
+
+  /* Unfold print modal into clean flat container */
+  #monolith-print-modal-wrapper {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    inset: auto !important;
+  }
+
+  #monolith-print-modal-inner {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
   #monolith-printable-doc {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 28px;
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
     background: #ffffff !important;
     color: #111111 !important;
-    box-shadow: none !important;
     border: none !important;
+    box-shadow: none !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
-  .no-print {
-    display: none !important;
+
+  /* Force pure contrast on all document text & borders */
+  #monolith-printable-doc * {
+    color: #111111 !important;
+    border-color: #d1d5db !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  #monolith-printable-doc .print-box {
+    background-color: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  #monolith-printable-doc .print-badge {
+    background-color: #111111 !important;
+    color: #ffffff !important;
+    border: 1px solid #111111 !important;
+  }
+
+  #monolith-printable-doc th {
+    background-color: #f3f4f6 !important;
+    color: #111111 !important;
+    border-bottom: 2px solid #374151 !important;
+  }
+
+  #monolith-printable-doc td {
+    border-bottom: 1px solid #e5e7eb !important;
   }
 }
