@@ -149,7 +149,10 @@
       Palette: createSvg(<><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z" /></>),
       Cloud: createSvg(<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />),
       MonitorSmartphone: createSvg(<><path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8" /><path d="M10 19v-4" /><path d="M6 19h8" /><rect width="6" height="10" x="16" y="12" rx="1" /></>),
-      LockKeyhole: createSvg(<><circle cx="12" cy="16" r="1" /><rect x="3" y="10" width="18" height="12" rx="2" /><path d="M7 10V7a5 5 0 0 1 10 0v3" /></>)
+      LockKeyhole: createSvg(<><circle cx="12" cy="16" r="1" /><rect x="3" y="10" width="18" height="12" rx="2" /><path d="M7 10V7a5 5 0 0 1 10 0v3" /></>),
+      MapPin: createSvg(<><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></>, "w-3.5 h-3.5"),
+      Phone: createSvg(<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />, "w-3.5 h-3.5"),
+      GraduationCap: createSvg(<><path d="M21.42 10.922a1 1 0 0 0-.019-.838L12.83 2.18a2 2 0 0 0-1.66 0L2.6 10.084a1 1 0 0 0 0 1.832l8.57 7.908a2 2 0 0 0 1.66 0l8.57-7.908a1 1 0 0 0 .02-.994z" /><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" /></>, "w-3.5 h-3.5")
     };
 
     const {
@@ -195,7 +198,10 @@
       Palette,
       Cloud,
       MonitorSmartphone,
-      LockKeyhole
+      LockKeyhole,
+      MapPin,
+      Phone,
+      GraduationCap
     } = Icons;
 
 
@@ -243,7 +249,10 @@
   Palette,
   Cloud,
   MonitorSmartphone,
-  LockKeyhole
+  LockKeyhole,
+  MapPin,
+  Phone,
+  GraduationCap
 } from 'lucide-react';
 
 /* =========================================================================
@@ -745,12 +754,18 @@ function App() {
   const [ctaRef, ctaVisible] = useScrollReveal(0.15);
 
   const [projectFilter, setProjectFilter] = useState('All');
-  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedContact, setCopiedContact] = useState('');
+
+  const handleCopy = (text, id) => {
+    navigator.clipboard.writeText(text);
+    setCopiedContact(id);
+    setTimeout(() => setCopiedContact(''), 2000);
+  };
 
   // Active section scroll spy
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['hero', 'architect', 'stack', 'cases', 'services', 'solutions', 'api', 'estimator', 'infra', 'cta'];
+      const sections = ['hero', 'architects', 'architect', 'services', 'cases', 'stack', 'solutions', 'api', 'estimator', 'infra', 'cta'];
       const scrollPos = window.scrollY + 250;
 
       for (const section of sections) {
@@ -759,7 +774,7 @@ function App() {
           const top = el.offsetTop;
           const height = el.offsetHeight;
           if (scrollPos >= top && scrollPos < top + height) {
-            setActiveSection(section);
+            setActiveSection(section === 'architect' ? 'architects' : section);
             break;
           }
         }
@@ -789,15 +804,30 @@ function App() {
       case 'help':
         newLogs.push({
           type: 'response',
-          text: 'AVAILABLE OPERATIONS:\n  architect   - Display Principal Architect Dulanja Abeysinghe profile & credentials\n  services    - Enumerate the 7 Core Services offered by The Monolith\n  marketing   - Inspect Creative Studio, Flyer Design & Paid Ad Campaign services\n  projects    - Output inventory of 12 production systems & engineering deployments\n  stack       - Inspect comprehensive technical stack and architecture matrix\n  estimate    - Run dynamic architecture & marketing scoping calculation\n  status      - Query real-time magnetic shard coherence & core AI state\n  deploy      - Initialize autonomous enclave compute pod\n  nodes       - Output latency matrix across 6 global edge points\n  api         - Inspect latest TypeScript / Python client SDK release\n  benchmark   - Run synthetic 1,000,000 state mutation test\n  contact     - Display direct secure contact coordinates\n  clear       - Purge terminal buffer'
+          text: 'AVAILABLE OPERATIONS:\n  architects  - Display Founding Architects (Dulanja Abeysinghe & Remashi Diyana) dossier\n  dulanja     - Inspect Principal Systems Architect technical credentials & stack\n  remashi     - Inspect Head of Creative Strategy, Flyer Design & Brand Direction profile\n  services    - Enumerate the 7 Core Services offered by The Monolith\n  marketing   - Inspect Creative Studio, Flyer Design & Paid Ad Campaign services\n  projects    - Output inventory of 12 production systems & engineering deployments\n  stack       - Inspect comprehensive technical stack and architecture matrix\n  estimate    - Run dynamic architecture & marketing scoping calculation\n  status      - Query real-time magnetic shard coherence & core AI state\n  deploy      - Initialize autonomous enclave compute pod\n  nodes       - Output latency matrix across 6 global edge points\n  api         - Inspect latest TypeScript / Python client SDK release\n  benchmark   - Run synthetic 1,000,000 state mutation test\n  contact     - Display direct secure contact coordinates for both architects\n  clear       - Purge terminal buffer'
         });
         break;
       case 'architect':
-      case 'dulanja':
+      case 'architects':
+      case 'team':
+      case 'leadership':
       case 'whoami':
         newLogs.push({
           type: 'response',
-          text: 'PRINCIPAL SYSTEMS ARCHITECT:\n  Name: Dulanja Abeysinghe\n  Title: Senior Full-Stack & Systems Engineer\n  Email: dulanja150abeysinghe@gmail.com\n  Domain Focus: High-consequence enterprise SaaS, real-time WebSockets, gaming fintech automation, clinical pharmacy OS, distributed crawlers, and performance ad funnels.\n  Primary Stack: Laravel 11/12, Next.js 14/16, React 19, TypeScript, Alpine.js, Docker, Redis/Redlock, MySQL, PostgreSQL, Tailwind CSS'
+          text: 'THE MONOLITH ARCHITECTS & EXECUTIVE LEADERSHIP:\n\n[01] DULANJA ABEYSINGHE // CO-FOUNDER & PRINCIPAL SYSTEMS ARCHITECT\n  Domain: Backend Systems, High-Concurrency Distributed Systems, Cloud & AI Engineering\n  Education: BSc (Hons) Software Engineering (2nd Upper, Birmingham City Univ, UK)\n  Key Experience: Biotech Software Solutions (Hospital LIS), GrayNode DevOps / NerdTech Labs, r-pac Printcare Lanka, Dula AI\n  Stack: Jakarta EE, Spring Boot, Laravel 11/12, Node.js/Fastify, Redis Redlock, Docker, PostgreSQL\n  Contact: dulanja150abeysinghe@gmail.com | +94 76 591 7189 | linkedin.com/in/dulanja-abeysinghe\n\n[02] REMASHI DIYANA // CO-FOUNDER & HEAD OF CREATIVE STRATEGY & UI/UX\n  Domain: Visual Brand Identity, Tactical Flyer Design, Social Media Marketing & Design Thinking\n  Education: BSW (Hons) NISD Sri Lanka | Dip. International Studies UOK | HND Software Engineering (London Met)\n  Key Experience: Lead Graphic Designer (The Volunteers Academy, The Movement Projects, University Clubs, DIA Academy), Founder DIA Academy, Silvermill Group\n  Toolkit: Canva (Fluent), Adobe Illustrator & Photoshop, Figma Wireframing, Front-End Coding\n  Contact: diyanamashi@gmail.com | +94 713765861 | linkedin.com/in/remashi-diyana-b332a3272'
+        });
+        break;
+      case 'dulanja':
+        newLogs.push({
+          type: 'response',
+          text: 'ARCHITECT DOSSIER // DULANJA ABEYSINGHE:\n  Title: Co-Founder & Principal Systems Architect\n  Domain: Mission-critical enterprise SaaS, hospital LIS, high-concurrency fintech automation, Redis Redlock distributed locks, and RAG pipelines.\n  Education: BSc (Hons) Software Engineering (Second Upper), Birmingham City University, UK.\n  Certifications: Deep Learning A-Z, Machine Learning, The AI Engineer Course, Complete Ethical Hacking.\n  Coordinates: dulanja150abeysinghe@gmail.com | +94 76 591 7189\n  GitHub: github.com/Dulanja-SaMaEl | LinkedIn: linkedin.com/in/dulanja-abeysinghe'
+        });
+        break;
+      case 'remashi':
+      case 'diyana':
+        newLogs.push({
+          type: 'response',
+          text: 'ARCHITECT DOSSIER // REMASHI DIYANA:\n  Title: Co-Founder & Head of Creative Strategy, Brand Direction & UI/UX\n  Domain: Editorial & tactical flyer design, multi-platform social media campaigns, brand identity systems, and human-centered design thinking.\n  Education: BSW (Hons) NISD Sri Lanka, Dip. International Studies (Univ. of Kelaniya), HND Software Engineering (London Met / ESOFT).\n  Key Projects: Primary Graphic Designer at The Volunteers Academy, The Movement Projects, University Clubs, Founder at DIA Academy.\n  Coordinates: diyanamashi@gmail.com | +94 713765861\n  LinkedIn: linkedin.com/in/remashi-diyana-b332a3272'
         });
         break;
       case 'services':
@@ -832,13 +862,13 @@ function App() {
       case 'estimate':
         newLogs.push({
           type: 'response',
-          text: 'ARCHITECTURE ESTIMATION TELEMETRY:\n  Default Scoped Tier: TIER 3 HIGH-CONCURRENCY DISTRIBUTED LATTICE\n  Recommended Base: Laravel 11 + Next.js 16 + Redis Redlock + Pusher WS + Creative Studio Pack\n  Expected Deployment Window: 4 - 8 Weeks\n  Inquiry Channel: dulanja150abeysinghe@gmail.com'
+          text: 'ARCHITECTURE ESTIMATION TELEMETRY:\n  Default Scoped Tier: TIER 3 HIGH-CONCURRENCY DISTRIBUTED LATTICE\n  Recommended Base: Laravel 11 + Next.js 16 + Redis Redlock + Pusher WS + Creative Studio Pack\n  Expected Deployment Window: 4 - 8 Weeks\n  Inquiry Channel: dulanja150abeysinghe@gmail.com, diyanamashi@gmail.com'
         });
         break;
       case 'contact':
         newLogs.push({
           type: 'response',
-          text: 'DIRECT CONTACT CHANNELS:\n  Architect: Dulanja Abeysinghe\n  Email: dulanja150abeysinghe@gmail.com\n  Availability: Enterprise Architecture Consulting, System Builds & Creative Marketing Campaigns\n  Status: AVAILABLE FOR BESPOKE ENGAGEMENTS'
+          text: 'DIRECT CONTACT CHANNELS // THE MONOLITH ARCHITECTS:\n  Principal Systems Architect : Dulanja Abeysinghe (dulanja150abeysinghe@gmail.com | +94 76 591 7189)\n  Head of Creative Strategy    : Remashi Diyana (diyanamashi@gmail.com | +94 713765861)\n  Availability: Enterprise Architecture Consulting, System Builds & Creative Marketing Campaigns\n  Status: AVAILABLE FOR BESPOKE ENGAGEMENTS'
         });
         break;
       case 'status':
@@ -1424,7 +1454,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       window,
       baseStack,
       subject: `[Engagement Inquiry] Scoped Package: ${estimatorDomain.toUpperCase()} (${estimatorScale.toUpperCase()})`,
-      body: `Hello Dulanja,\n\nI scoped an enterprise engagement via The Monolith platform:\n\n- Primary Service Domain: ${estimatorDomain.toUpperCase()}\n- Target Concurrency / Reach: ${estimatorScale.toUpperCase()}\n- Selected Capabilities: ${featureNames}\n- Target Architecture Tier: ${tier}\n- Estimated Window: ${window}\n\nLet's discuss onboarding and delivery.`
+      body: `Hello Dulanja & Remashi,\n\nI scoped an enterprise engagement via The Monolith platform:\n\n- Primary Service Domain: ${estimatorDomain.toUpperCase()}\n- Target Concurrency / Reach: ${estimatorScale.toUpperCase()}\n- Selected Capabilities: ${featureNames}\n- Target Architecture Tier: ${tier}\n- Estimated Window: ${window}\n\nLet's discuss onboarding and delivery.`
     };
   }, [estimatorDomain, estimatorScale, estimatorFeatures]);
 
@@ -1466,13 +1496,13 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           {/* Desktop Nav Links */}
           <div className="hidden lg:flex items-center gap-5 xl:gap-6 text-xs font-medium tracking-wider uppercase text-[#a39d96]">
             <a
-              href="#architect"
+              href="#architects"
               className={`transition-colors duration-200 hover:text-[#f5f4f0] flex items-center gap-1.5 ${
-                activeSection === 'architect' ? 'text-[#f5f4f0]' : ''
+                activeSection === 'architects' || activeSection === 'architect' ? 'text-[#f5f4f0]' : ''
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
-              Architect
+              Architects
             </a>
             <a
               href="#services"
@@ -1563,7 +1593,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#141311]/70 border border-[#a39d96]/20 backdrop-blur-md mb-6 animate-pulse-subtle">
             <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
             <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96]">
-              STUDIO DIRECTORY // PRINCIPAL ARCHITECT DULANJA ABEYSINGHE
+              STUDIO DIRECTORY // FOUNDING ARCHITECTS: DULANJA ABEYSINGHE & REMASHI DIYANA
             </span>
           </div>
 
@@ -1687,9 +1717,9 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         </div>
       </section>
 
-      {/* 3. THE PRINCIPAL ARCHITECT: DULANJA ABEYSINGHE */}
+      {/* 3. THE ARCHITECTS: EXECUTIVE LEADERSHIP & FOUNDING DIRECTORS */}
       <section
-        id="architect"
+        id="architects"
         ref={architectRef}
         className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 bg-[#0a0908]/85 border-t border-[#a39d96]/15 backdrop-blur-md transition-all duration-700 ease-out ${
           architectVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
@@ -1697,133 +1727,418 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       >
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
-          <div className="max-w-3xl mb-16">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
-              // PRINCIPAL SYSTEMS ARCHITECT
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
-              Dulanja Abeysinghe
-            </h2>
-            <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
-              Senior Full-Stack & Distributed Systems Engineer specializing in high-consequence enterprise applications,
-              high-throughput gaming fintech gateways, mission-critical healthcare systems, and creative marketing campaigns.
-            </p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#141311] border border-[#a39d96]/20 text-[10px] font-mono tracking-widest uppercase text-[#d6d2cd] mb-4">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#f5f4f0] animate-pulse" />
+                EXECUTIVE LEADERSHIP & FOUNDING ARCHITECTS
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
+                The Architects of The Monolith
+              </h2>
+              <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
+                A complementary executive council uniting high-throughput distributed systems, cloud infrastructure,
+                and mission-critical software with human-centered brand strategy, editorial flyer design, and conversion campaigns.
+              </p>
+            </div>
+
+            {/* Photo System Badge / Status Indicator */}
+            <div className="flex flex-col sm:items-end gap-1.5 text-xs font-mono text-[#7a756f]">
+              <div className="px-3.5 py-1.5 rounded-full bg-[#141311] border border-[#a39d96]/20 text-[#a39d96] flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
+                <span>PORTRAIT MATRIX: DUAL-MODE VISUALS READY</span>
+              </div>
+              <span className="text-[10px] text-[#7a756f]">Cryptographic Glyphs Active &middot; High-Contrast Photography Supported</span>
+            </div>
           </div>
 
-          {/* Architect Bento Dossier */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
-            {/* Dossier Card 1: Core Credentials & Bio (Col span 2) */}
-            <div className="lg:col-span-2 group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow flex flex-col justify-between">
+          {/* Dual Architects Bento Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            {/* ARCHITECT 1: DULANJA ABEYSINGHE */}
+            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/80 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/40 hover:shadow-taupe-glow flex flex-col justify-between">
               <div>
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 flex items-center justify-center text-[#f5f4f0]">
-                      <User className="w-6 h-6 text-[#d6d2cd]" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-[#f5f4f0]">Dulanja Abeysinghe</h3>
-                      <span className="text-xs font-mono text-[#a39d96]">Senior Full-Stack & Systems Engineer</span>
+                {/* Header Row: Avatar + Core Bio */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-6 pb-6 border-b border-[#a39d96]/15">
+                  {/* Portrait / Cryptographic Monogram Container */}
+                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-inner">
+                    {/* Live Image (supports /team/dulanja.jpg) */}
+                    <img
+                      src="/team/dulanja.jpg"
+                      alt="Dulanja Abeysinghe"
+                      className="w-full h-full object-cover object-top grayscale contrast-125 hover:grayscale-0 transition-all duration-500 z-10"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    {/* Cryptographic Fallback Monogram */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center pointer-events-none bg-gradient-to-b from-[#1c1a17] to-[#121110]">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#f5f4f0] tracking-tighter leading-none mb-1">
+                        DA
+                      </span>
+                      <span className="text-[9px] font-mono tracking-widest text-[#a39d96] uppercase">
+                        SYS // 01
+                      </span>
+                      <span className="text-[8px] font-mono text-[#7a756f] mt-0.5">
+                        7.4863° N, 80.3623° E
+                      </span>
                     </div>
                   </div>
-                  <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-[#1c1a17] text-[#d6d2cd] border border-[#a39d96]/20 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#f5f4f0]" />
-                    ACTIVE SYSTEMS ARCHITECT
-                  </span>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#1c1a17] text-[#d6d2cd] border border-[#a39d96]/20 uppercase tracking-widest">
+                        ARCHITECT // 01
+                      </span>
+                      <span className="text-[10px] font-mono text-[#a39d96] flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#f5f4f0] animate-pulse" />
+                        ACTIVE
+                      </span>
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-bold font-sans text-[#f5f4f0] tracking-tight">
+                      Dulanja Abeysinghe
+                    </h3>
+                    <p className="text-xs font-mono text-[#d6d2cd] mt-0.5">
+                      Co-Founder & Principal Systems Architect
+                    </p>
+                    <div className="flex items-center gap-2 mt-2 text-xs font-mono text-[#7a756f]">
+                      <MapPin className="w-3.5 h-3.5 text-[#a39d96]" />
+                      <span>Kurunegala, Sri Lanka &middot; UTC+5:30</span>
+                    </div>
+                  </div>
                 </div>
 
-                <p className="text-sm sm:text-base text-[#a39d96] font-light leading-relaxed mb-8">
-                  Operating at the intersection of high-availability backend microservices, real-time reactive
-                  frontends, and automated infrastructure. Proven track record deploying complex software suites
-                  across clinical healthcare centers, real-time dining operations, high-velocity digital asset
-                  fulfillment, and conversion-driven brand marketing campaigns.
+                {/* Narrative Bio */}
+                <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  Hands-on software engineer specializing in high-concurrency enterprise multi-tier applications,
+                  high-throughput gaming fintech gateways, on-site hospital Laboratory Information Systems (LIS),
+                  and asynchronous event-driven pipelines. Experienced in designing Redis-backed distributed locks (Redlock),
+                  idempotent transaction handling, and retrieval-augmented generation (RAG) AI tooling.
                 </p>
 
-                {/* Core Technical Arsenal */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs mb-6">
-                  <div className="p-3 rounded-xl bg-[#0a0908]/70 border border-[#a39d96]/10">
-                    <span className="text-[10px] text-[#7a756f] block uppercase mb-1">Backend Core</span>
-                    <span className="text-xs font-semibold text-[#f5f4f0]">Laravel 11 / PHP 8.3</span>
+                {/* Education & Credentials */}
+                <div className="p-4 rounded-2xl bg-[#0a0908]/70 border border-[#a39d96]/10 mb-6 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-[#f5f4f0]">
+                    <GraduationCap className="w-4 h-4 text-[#d6d2cd]" />
+                    <span>Education & Certifications</span>
                   </div>
-                  <div className="p-3 rounded-xl bg-[#0a0908]/70 border border-[#a39d96]/10">
-                    <span className="text-[10px] text-[#7a756f] block uppercase mb-1">Frontend Layer</span>
-                    <span className="text-xs font-semibold text-[#f5f4f0]">Next.js / React 19</span>
+                  <p className="text-xs text-[#d6d2cd] font-mono leading-relaxed">
+                    BSc (Hons) in Software Engineering &mdash; Second Upper Division
+                    <span className="block text-[11px] text-[#7a756f]">Birmingham City University, UK (delivered via Java Institute)</span>
+                  </p>
+                  <p className="text-[11px] text-[#a39d96] font-mono">
+                    Professional Higher Diploma in Software Engineering (Skills & Educational Group Awards, UK, 2025)
+                  </p>
+                  <div className="pt-1.5 border-t border-[#a39d96]/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-[#7a756f]">
+                    <span className="px-2 py-0.5 rounded bg-[#141311] border border-[#a39d96]/10 text-[#d6d2cd]">Deep Learning A-Z</span>
+                    <span className="px-2 py-0.5 rounded bg-[#141311] border border-[#a39d96]/10 text-[#d6d2cd]">Machine Learning</span>
+                    <span className="px-2 py-0.5 rounded bg-[#141311] border border-[#a39d96]/10 text-[#d6d2cd]">The AI Engineer</span>
+                    <span className="px-2 py-0.5 rounded bg-[#141311] border border-[#a39d96]/10 text-[#d6d2cd]">Ethical Hacking</span>
                   </div>
-                  <div className="p-3 rounded-xl bg-[#0a0908]/70 border border-[#a39d96]/10">
-                    <span className="text-[10px] text-[#7a756f] block uppercase mb-1">Real-Time</span>
-                    <span className="text-xs font-semibold text-[#f5f4f0]">Pusher / Echo WS</span>
+                </div>
+
+                {/* Leadership & Industry Track Record */}
+                <div className="mb-6 space-y-2.5">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7a756f] block">
+                    Key Leadership & Industry Roles
+                  </span>
+                  <div className="space-y-2 font-mono text-xs">
+                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
+                      <Briefcase className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="text-[#f5f4f0] font-medium block">Biotech Software Solutions &middot; Junior Software Engineer</span>
+                        <span className="text-[11px] text-[#7a756f]">Hospital LIS on-site engineering (Peradeniya, Ragama, Kurunegala); Pharmacy Management System OPD integration; ACL TOP/AU 480 analyzer drivers.</span>
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
+                      <Briefcase className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="text-[#f5f4f0] font-medium block">GrayNode DevOps / NerdTech Labs &middot; Co-Founder & Lead Developer</span>
+                        <span className="text-[11px] text-[#7a756f]">Product architecture strategy, LLM customer FAQ intelligence, high-reliability engineering culture.</span>
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
+                      <Briefcase className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="text-[#f5f4f0] font-medium block">r-pac Printcare Lanka &middot; Software Developer & Automation</span>
+                        <span className="text-[11px] text-[#7a756f]">Java/MySQL production scheduling optimization, C#/ASP.NET/PHP internal decision tools.</span>
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="text-[#f5f4f0] font-medium block">Dula AI &middot; AI Educational Content Creator</span>
+                        <span className="text-[11px] text-[#7a756f]">Authoring structured technical learning roadmaps across Data Science, ML, and LLMs.</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="p-3 rounded-xl bg-[#0a0908]/70 border border-[#a39d96]/10">
-                    <span className="text-[10px] text-[#7a756f] block uppercase mb-1">Data Storage</span>
-                    <span className="text-xs font-semibold text-[#f5f4f0]">PostgreSQL / MySQL</span>
+                </div>
+
+                {/* Core Arsenal Tags */}
+                <div className="mb-6">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7a756f] block mb-2">
+                    Architectural Stack
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 text-xs font-mono">
+                    {['Java / Jakarta EE', 'Spring Boot', 'Laravel 11/12', 'Node.js / Fastify', 'Redis Redlock', 'BullMQ', 'PostgreSQL (ACID)', 'Docker', 'LangChain / RAG', 'Prometheus / Grafana'].map((t) => (
+                      <span key={t} className="px-2.5 py-1 rounded-lg bg-[#0a0908] border border-[#a39d96]/15 text-[#d6d2cd]">
+                        {t}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              {/* Contact Strip */}
-              <div className="pt-6 border-t border-[#a39d96]/15 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
-                <div className="flex items-center gap-3">
+              {/* Contact & Dispatch Strip */}
+              <div className="pt-6 border-t border-[#a39d96]/15 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
-                    onClick={() => {
-                      navigator.clipboard.writeText('dulanja150abeysinghe@gmail.com');
-                      setCopiedEmail(true);
-                      setTimeout(() => setCopiedEmail(false), 2000);
-                    }}
-                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 transition-colors"
+                    onClick={() => handleCopy('dulanja150abeysinghe@gmail.com', 'dulanja-email')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 transition-colors"
                   >
                     <Mail className="w-3.5 h-3.5 text-[#d6d2cd]" />
-                    <span>dulanja150abeysinghe@gmail.com</span>
-                    {copiedEmail ? <Check className="w-3.5 h-3.5 text-[#f5f4f0]" /> : <Copy className="w-3.5 h-3.5 text-[#a39d96]" />}
+                    <span>Email</span>
+                    {copiedContact === 'dulanja-email' ? <Check className="w-3 h-3 text-[#f5f4f0]" /> : <Copy className="w-3 h-3 text-[#a39d96]" />}
+                  </button>
+
+                  <button
+                    onClick={() => handleCopy('+94 76 591 7189', 'dulanja-phone')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                    <span>+94 76 591 7189</span>
+                    {copiedContact === 'dulanja-phone' ? <Check className="w-3 h-3 text-[#f5f4f0]" /> : <Copy className="w-3 h-3 text-[#a39d96]" />}
                   </button>
                 </div>
 
-                <a
-                  href="mailto:dulanja150abeysinghe@gmail.com"
-                  className="text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors uppercase font-semibold"
-                >
-                  DISPATCH INQUIRY <ArrowRight className="w-3.5 h-3.5" />
-                </a>
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://linkedin.com/in/dulanja-abeysinghe"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors uppercase"
+                  >
+                    LinkedIn <ExternalLink className="w-3 h-3" />
+                  </a>
+                  <a
+                    href="https://github.com/Dulanja-SaMaEl"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors uppercase"
+                  >
+                    GitHub <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
               </div>
             </div>
 
-            {/* Dossier Card 2: Production Disciplines (Col span 1) */}
-            <div className="lg:col-span-1 group relative p-8 rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow flex flex-col justify-between">
+            {/* ARCHITECT 2: REMASHI DIYANA */}
+            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/80 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/40 hover:shadow-taupe-glow flex flex-col justify-between">
               <div>
-                <div className="p-3 w-fit rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#d6d2cd] mb-6">
-                  <Award className="w-6 h-6" />
+                {/* Header Row: Avatar + Core Bio */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-6 pb-6 border-b border-[#a39d96]/15">
+                  {/* Portrait / Cryptographic Monogram Container */}
+                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-inner">
+                    {/* Live Image (supports /team/remashi.jpg) */}
+                    <img
+                      src="/team/remashi.jpg"
+                      alt="Remashi Diyana"
+                      className="w-full h-full object-cover object-top grayscale contrast-125 hover:grayscale-0 transition-all duration-500 z-10"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    {/* Cryptographic Fallback Monogram */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center pointer-events-none bg-gradient-to-b from-[#1c1a17] to-[#121110]">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#f5f4f0] tracking-tighter leading-none mb-1">
+                        RD
+                      </span>
+                      <span className="text-[9px] font-mono tracking-widest text-[#a39d96] uppercase">
+                        CRE // 02
+                      </span>
+                      <span className="text-[8px] font-mono text-[#7a756f] mt-0.5">
+                        7.3333° N, 80.1333° E
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#1c1a17] text-[#d6d2cd] border border-[#a39d96]/20 uppercase tracking-widest">
+                        ARCHITECT // 02
+                      </span>
+                      <span className="text-[10px] font-mono text-[#a39d96] flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#f5f4f0] animate-pulse" />
+                        ACTIVE
+                      </span>
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-bold font-sans text-[#f5f4f0] tracking-tight">
+                      Remashi Diyana
+                    </h3>
+                    <p className="text-xs font-mono text-[#d6d2cd] mt-0.5">
+                      Co-Founder & Head of Creative Strategy & UI/UX
+                    </p>
+                    <div className="flex items-center gap-2 mt-2 text-xs font-mono text-[#7a756f]">
+                      <MapPin className="w-3.5 h-3.5 text-[#a39d96]" />
+                      <span>Giriulla / Kurunegala, Sri Lanka &middot; UTC+5:30</span>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-[#f5f4f0] tracking-tight mb-2">
-                  Engineering Axioms
-                </h3>
-                <p className="text-xs text-[#a39d96] font-light leading-relaxed mb-6">
-                  Bespoke software built for enterprise reliability, high concurrency, and zero data degradation.
+
+                {/* Narrative Bio */}
+                <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  Multidisciplinary creative strategist combining a technical background in Software Engineering with Social Work
+                  and International Studies. Spearheading high-impact visual branding, tactical promotional flyers, community
+                  outreach campaigns, and intuitive UI/UX design systems driven by human behavior and market psychology.
                 </p>
 
-                <div className="space-y-3 font-mono text-xs">
-                  <div className="p-3 rounded-xl bg-[#0a0908]/80 border border-[#a39d96]/10">
-                    <span className="text-[10px] text-[#7a756f] block uppercase">Zero-Downtime WebSockets</span>
-                    <span className="text-xs text-[#f5f4f0] mt-0.5 block">Sub-second event dispatching</span>
+                {/* Education & Credentials */}
+                <div className="p-4 rounded-2xl bg-[#0a0908]/70 border border-[#a39d96]/10 mb-6 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-[#f5f4f0]">
+                    <GraduationCap className="w-4 h-4 text-[#d6d2cd]" />
+                    <span>Education & Multidisciplinary Academics</span>
                   </div>
-                  <div className="p-3 rounded-xl bg-[#0a0908]/80 border border-[#a39d96]/10">
-                    <span className="text-[10px] text-[#7a756f] block uppercase">ACID Medical Ledger</span>
-                    <span className="text-xs text-[#f5f4f0] mt-0.5 block">Zero prescription discrepancies</span>
+                  <p className="text-xs text-[#d6d2cd] font-mono leading-relaxed">
+                    Bachelor of Social Work (Honours) &mdash; Second-Year Undergraduate
+                    <span className="block text-[11px] text-[#7a756f]">National Institute of Social Development (NISD), Sri Lanka (2024 &ndash; Present)</span>
+                  </p>
+                  <p className="text-[11px] text-[#a39d96] font-mono">
+                    Diploma in International Studies &mdash; University of Kelaniya, Sri Lanka (2026 &ndash; Present)
+                  </p>
+                  <p className="text-[11px] text-[#7a756f] font-mono">
+                    Higher National Diploma (HND) in Software Engineering & BEng (Hons) studies &mdash; ESOFT Metro Campus / London Metropolitan University, UK
+                  </p>
+                </div>
+
+                {/* Leadership & Industry Track Record */}
+                <div className="mb-6 space-y-2.5">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7a756f] block">
+                    Creative Leadership & Brand Campaigns
+                  </span>
+                  <div className="space-y-2 font-mono text-xs">
+                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
+                      <Palette className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="text-[#f5f4f0] font-medium block">The Volunteers Academy &middot; Primary Graphic Designer</span>
+                        <span className="text-[11px] text-[#7a756f]">High-engagement promotional flyers, event branding, and digital media assets driving national volunteer recruitment.</span>
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
+                      <Megaphone className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="text-[#f5f4f0] font-medium block">The Movement Projects &middot; Visual Campaign Strategist</span>
+                        <span className="text-[11px] text-[#7a756f]">Impactful visual campaigns and editorial social media layouts aligned with public advocacy and outreach.</span>
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
+                      <Award className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="text-[#f5f4f0] font-medium block">DIA Academy &middot; Founder & Lead Educator</span>
+                        <span className="text-[11px] text-[#7a756f]">Spearheaded entire brand identity, educational flyer series, promotional graphics, curriculum, and operations.</span>
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
+                      <Code className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="text-[#f5f4f0] font-medium block">Silvermill Group &middot; Application Developer Intern</span>
+                        <span className="text-[11px] text-[#7a756f]">Assisted internal software optimization and corporate technical workflow alignment.</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="p-3 rounded-xl bg-[#0a0908]/80 border border-[#a39d96]/10">
-                    <span className="text-[10px] text-[#7a756f] block uppercase">Automated API Reconcile</span>
-                    <span className="text-xs text-[#f5f4f0] mt-0.5 block">Sub-850ms fintech fulfilment</span>
+                </div>
+
+                {/* Core Creative Toolkit */}
+                <div className="mb-6">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7a756f] block mb-2">
+                    Creative & Strategic Toolkit
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 text-xs font-mono">
+                    {['Editorial Flyer Design', 'Visual Brand Identity', 'Social Media Campaigns', 'Canva (Fluent)', 'Adobe Illustrator', 'Adobe Photoshop', 'UI/UX Wireframing', 'Design Thinking', 'Front-End Coding'].map((t) => (
+                      <span key={t} className="px-2.5 py-1 rounded-lg bg-[#0a0908] border border-[#a39d96]/15 text-[#d6d2cd]">
+                        {t}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              <button
-                onClick={() => {
-                  setTerminalOpen(true);
-                  setTerminalInput('architect');
-                }}
-                className="mt-6 w-full py-2.5 rounded-full bg-[#1c1a17] text-xs font-mono text-[#d6d2cd] border border-[#a39d96]/20 hover:text-[#f5f4f0] hover:border-[#d6d2cd]/40 transition-colors flex items-center justify-center gap-2"
-              >
-                <TerminalIcon className="w-3.5 h-3.5" />
-                QUERY ARCHITECT IN TERMINAL
-              </button>
+              {/* Contact & Dispatch Strip */}
+              <div className="pt-6 border-t border-[#a39d96]/15 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => handleCopy('diyanamashi@gmail.com', 'remashi-email')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 transition-colors"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                    <span>Email</span>
+                    {copiedContact === 'remashi-email' ? <Check className="w-3 h-3 text-[#f5f4f0]" /> : <Copy className="w-3 h-3 text-[#a39d96]" />}
+                  </button>
+
+                  <button
+                    onClick={() => handleCopy('+94 713765861', 'remashi-phone')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                    <span>+94 713765861</span>
+                    {copiedContact === 'remashi-phone' ? <Check className="w-3 h-3 text-[#f5f4f0]" /> : <Copy className="w-3 h-3 text-[#a39d96]" />}
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://www.linkedin.com/in/remashi-diyana-b332a3272"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors uppercase"
+                  >
+                    LinkedIn <ExternalLink className="w-3 h-3" />
+                  </a>
+                  <a
+                    href="mailto:diyanamashi@gmail.com?subject=[Creative%20Studio%20Inquiry]%20Branding%20%26%20Flyer%20Design"
+                    className="text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors uppercase font-semibold"
+                  >
+                    DISPATCH BRIEF <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Architectural Synergy: The Dual Engine Synthesis Banner */}
+          <div className="p-8 sm:p-10 rounded-3xl bg-[#141311]/60 border border-[#a39d96]/15 backdrop-blur-md">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+              <div className="max-w-2xl">
+                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#a39d96] block mb-2">
+                  THE DUAL-ENGINE PARADIGM // ABSOLUTE PERMANENCE
+                </span>
+                <h3 className="text-xl sm:text-2xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-2">
+                  Where Bare-Metal Code Meets Editorial Visual Prestige
+                </h3>
+                <p className="text-sm text-[#a39d96] font-light leading-relaxed">
+                  Most software agencies either produce robust code with unstyled aesthetics, or sleek designs
+                  with fragile architecture. At The Monolith, our dual leadership converges mission-critical backend
+                  engineering with high-converting brand campaigns and tactical flyer design &mdash; delivering whole venture ecosystems ready to scale.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => {
+                    setTerminalOpen(true);
+                    setTerminalInput('architects');
+                  }}
+                  className="px-5 py-3 rounded-full bg-[#1c1a17] text-xs font-mono text-[#d6d2cd] border border-[#a39d96]/20 hover:text-[#f5f4f0] hover:border-[#d6d2cd]/40 transition-colors flex items-center gap-2"
+                >
+                  <TerminalIcon className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  QUERY COUNCIL IN TERMINAL
+                </button>
+
+                <a
+                  href="#estimator"
+                  className="px-6 py-3 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-widest uppercase transition-all duration-300 hover:bg-[#f5f4f0] shadow-taupe-glow flex items-center gap-1.5"
+                >
+                  SCOPE VENTURE <ArrowRight className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -2868,13 +3183,13 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               Bespoke enterprise software, immutable infrastructure, and high-concurrency systems.
             </p>
             <p className="text-xs font-mono text-[#a39d96]">
-              Engineered by <span className="text-[#f5f4f0] font-semibold">Dulanja Abeysinghe</span> &middot; Senior Full-Stack & Systems Engineer
+              Engineered by <span className="text-[#f5f4f0] font-semibold">Dulanja Abeysinghe</span> (Principal Systems Architect) & <span className="text-[#f5f4f0] font-semibold">Remashi Diyana</span> (Head of Creative Strategy)
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-5 sm:gap-6 text-xs font-mono text-[#a39d96]">
-            <a href="#architect" className="hover:text-[#f5f4f0] transition-colors">
-              ARCHITECT
+            <a href="#architects" className="hover:text-[#f5f4f0] transition-colors">
+              ARCHITECTS
             </a>
             <a href="#services" className="hover:text-[#f5f4f0] transition-colors">
               SERVICES
@@ -2900,18 +3215,28 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           </div>
 
           <div className="flex flex-col md:items-end text-xs font-mono text-[#7a756f] gap-1.5">
-            <a
-              href="mailto:dulanja150abeysinghe@gmail.com"
-              className="text-[#d6d2cd] hover:text-[#f5f4f0] transition-colors flex items-center gap-1.5"
-            >
-              <Mail className="w-3.5 h-3.5 text-[#a39d96]" />
-              dulanja150abeysinghe@gmail.com
-            </a>
+            <div className="flex flex-wrap items-center gap-3">
+              <a
+                href="mailto:dulanja150abeysinghe@gmail.com"
+                className="text-[#d6d2cd] hover:text-[#f5f4f0] transition-colors flex items-center gap-1.5"
+              >
+                <Mail className="w-3.5 h-3.5 text-[#a39d96]" />
+                dulanja150abeysinghe@gmail.com
+              </a>
+              <span className="text-[#a39d96]/30">&middot;</span>
+              <a
+                href="mailto:diyanamashi@gmail.com"
+                className="text-[#d6d2cd] hover:text-[#f5f4f0] transition-colors flex items-center gap-1.5"
+              >
+                <Mail className="w-3.5 h-3.5 text-[#a39d96]" />
+                diyanamashi@gmail.com
+              </a>
+            </div>
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#f5f4f0]" />
-              <span className="text-[#a39d96]">CORE AI 100.00% NOMINAL</span>
+              <span className="text-[#a39d96]">CORE AI & CREATIVE FABRIC NOMINAL</span>
             </div>
-            <span>&copy; 2026 THE MONOLITH &middot; DULANJA ABEYSINGHE</span>
+            <span>&copy; 2026 THE MONOLITH &middot; DULANJA ABEYSINGHE & REMASHI DIYANA</span>
           </div>
         </div>
       </footer>
