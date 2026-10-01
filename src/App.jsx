@@ -38,7 +38,12 @@ import {
   CheckCircle2,
   Boxes,
   HelpCircle,
-  TrendingUp
+  TrendingUp,
+  Megaphone,
+  Palette,
+  Cloud,
+  MonitorSmartphone,
+  LockKeyhole
 } from 'lucide-react';
 
 /* =========================================================================
@@ -502,13 +507,17 @@ export default function TheMonolith() {
   // Technical Arsenal Matrix active tab
   const [activeStackTab, setActiveStackTab] = useState('backend');
 
+  // Core Services Active Pillar Tab
+  const [activeServicePillar, setActiveServicePillar] = useState('software');
+
   // Interactive Project Scoper state
-  const [estimatorDomain, setEstimatorDomain] = useState('fintech');
+  const [estimatorDomain, setEstimatorDomain] = useState('software');
   const [estimatorScale, setEstimatorScale] = useState('high');
   const [estimatorFeatures, setEstimatorFeatures] = useState([
     'websockets',
     'redis',
-    'acid'
+    'acid',
+    'marketing_flyers'
   ]);
   const [briefCopied, setBriefCopied] = useState(false);
 
@@ -517,7 +526,7 @@ export default function TheMonolith() {
     { type: 'system', text: 'THE MONOLITH OS [Version 5.2.0-Core]' },
     { type: 'system', text: 'Principal Systems Architect: Dulanja Abeysinghe' },
     { type: 'system', text: '320 Magnetic Shards Synchronized. Core AI Light at 100% nominal output.' },
-    { type: 'system', text: 'Type "help" or "architect" for a list of available cluster operations.' }
+    { type: 'system', text: 'Type "help", "services", or "architect" for a list of available cluster operations.' }
   ]);
   const [terminalInput, setTerminalInput] = useState('');
   const terminalEndRef = useRef(null);
@@ -527,10 +536,10 @@ export default function TheMonolith() {
   const [logosRef, logosVisible] = useScrollReveal(0.15);
   const [architectRef, architectVisible] = useScrollReveal(0.15);
   const [stackRef, stackVisible] = useScrollReveal(0.15);
-  const [solutionsRef, solutionsVisible] = useScrollReveal(0.15);
-  const [apiRef, apiVisible] = useScrollReveal(0.15);
   const [casesRef, casesVisible] = useScrollReveal(0.15);
   const [servicesRef, servicesVisible] = useScrollReveal(0.15);
+  const [solutionsRef, solutionsVisible] = useScrollReveal(0.15);
+  const [apiRef, apiVisible] = useScrollReveal(0.15);
   const [estimatorRef, estimatorVisible] = useScrollReveal(0.15);
   const [infraRef, infraVisible] = useScrollReveal(0.15);
   const [ctaRef, ctaVisible] = useScrollReveal(0.15);
@@ -541,7 +550,7 @@ export default function TheMonolith() {
   // Active section scroll spy
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['hero', 'architect', 'stack', 'solutions', 'api', 'cases', 'services', 'estimator', 'infra', 'cta'];
+      const sections = ['hero', 'architect', 'stack', 'cases', 'services', 'solutions', 'api', 'estimator', 'infra', 'cta'];
       const scrollPos = window.scrollY + 250;
 
       for (const section of sections) {
@@ -580,7 +589,7 @@ export default function TheMonolith() {
       case 'help':
         newLogs.push({
           type: 'response',
-          text: 'AVAILABLE OPERATIONS:\n  architect   - Display Principal Architect Dulanja Abeysinghe profile & credentials\n  projects    - Output inventory of 12 production systems & engineering deployments\n  stack       - Inspect comprehensive technical stack and architecture matrix\n  services    - Enumerate available enterprise service engagement tiers\n  estimate    - Run dynamic architecture scoping calculation\n  status      - Query real-time magnetic shard coherence & core AI state\n  deploy      - Initialize autonomous enclave compute pod\n  nodes       - Output latency matrix across 6 global edge points\n  api         - Inspect latest TypeScript / Python client SDK release\n  benchmark   - Run synthetic 1,000,000 state mutation test\n  contact     - Display direct secure contact coordinates\n  clear       - Purge terminal buffer'
+          text: 'AVAILABLE OPERATIONS:\n  architect   - Display Principal Architect Dulanja Abeysinghe profile & credentials\n  services    - Enumerate the 7 Core Services offered by The Monolith\n  marketing   - Inspect Creative Studio, Flyer Design & Paid Ad Campaign services\n  projects    - Output inventory of 12 production systems & engineering deployments\n  stack       - Inspect comprehensive technical stack and architecture matrix\n  estimate    - Run dynamic architecture & marketing scoping calculation\n  status      - Query real-time magnetic shard coherence & core AI state\n  deploy      - Initialize autonomous enclave compute pod\n  nodes       - Output latency matrix across 6 global edge points\n  api         - Inspect latest TypeScript / Python client SDK release\n  benchmark   - Run synthetic 1,000,000 state mutation test\n  contact     - Display direct secure contact coordinates\n  clear       - Purge terminal buffer'
         });
         break;
       case 'architect':
@@ -588,7 +597,22 @@ export default function TheMonolith() {
       case 'whoami':
         newLogs.push({
           type: 'response',
-          text: 'PRINCIPAL SYSTEMS ARCHITECT:\n  Name: Dulanja Abeysinghe\n  Title: Senior Full-Stack & Systems Engineer\n  Email: dulanja150abeysinghe@gmail.com\n  Domain Focus: High-consequence enterprise SaaS, real-time WebSockets, gaming fintech automation, clinical pharmacy OS, and distributed crawlers.\n  Primary Stack: Laravel 11/12, Next.js 14/16, React 19, TypeScript, Alpine.js, Docker, Redis/Redlock, MySQL, PostgreSQL, Tailwind CSS'
+          text: 'PRINCIPAL SYSTEMS ARCHITECT:\n  Name: Dulanja Abeysinghe\n  Title: Senior Full-Stack & Systems Engineer\n  Email: dulanja150abeysinghe@gmail.com\n  Domain Focus: High-consequence enterprise SaaS, real-time WebSockets, gaming fintech automation, clinical pharmacy OS, distributed crawlers, and performance ad funnels.\n  Primary Stack: Laravel 11/12, Next.js 14/16, React 19, TypeScript, Alpine.js, Docker, Redis/Redlock, MySQL, PostgreSQL, Tailwind CSS'
+        });
+        break;
+      case 'services':
+      case 'offerings':
+        newLogs.push({
+          type: 'response',
+          text: 'CORE ENTERPRISE SERVICES OFFERED:\n  1. Custom Software Engineering (Enterprise Apps, SaaS, Web/Mobile PWAs, Monolith Modernization)\n  2. AI, Data & Machine Learning (Predictive Analytics, Custom RAG, Data Lakes, Computer Vision)\n  3. Cloud Infrastructure & DevOps (Zero-Downtime Migration, CI/CD, Kubernetes, Serverless)\n  4. Cybersecurity & Risk Management (Zero-Trust, Red Teaming, HIPAA/SOC2 Compliance, JA3 TLS Bypass)\n  5. Strategy, UI/UX & Consulting (Digital Transformation, Rapid Prototyping, Brutalist Design Systems)\n  6. Managed IT & 24/7 SLA Support (Continuous Engineering, 24/7 Telemetry Triage, Auto-Backups)\n  7. Brand Growth & Creative Studio (Flyer Designing, Social Media Marketing, Meta/Google Ad Campaigns)'
+        });
+        break;
+      case 'marketing':
+      case 'creative':
+      case 'flyers':
+        newLogs.push({
+          type: 'response',
+          text: 'BRAND GROWTH, SOCIAL MEDIA MARKETING & CREATIVE STUDIO:\n  - Tactical Flyer & Collateral Design: Editorial print & digital event flyers, promotional banners, pitch decks.\n  - Social Media Marketing: Audience expansion, organic content calendar strategy, viral campaign distribution.\n  - Paid Ad Campaign Orchestration: Multi-channel conversion funnels across Meta Ads, Google Ads, LinkedIn.\n  - Visual Identity & Brand Positioning: Bespoke vector logos, custom typography guidelines, social media asset kits.'
         });
         break;
       case 'projects':
@@ -605,23 +629,16 @@ export default function TheMonolith() {
           text: 'TECHNICAL ARSENAL MATRIX:\n  Backend Core     : Laravel 11/12 (PHP 8.3), Node.js, Express, Docker Compose, Redis (Redlock Mutex)\n  Frontend & Craft : Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Alpine.js, Three.js\n  Real-Time Comms  : Pusher WebSockets, Laravel Echo, JA3/JA4 TLS Spoofing, HMAC Webhooks\n  Data Storage     : PostgreSQL, MySQL (ACID Transactions), Supabase, Prometheus, Grafana'
         });
         break;
-      case 'services':
-      case 'tiers':
-        newLogs.push({
-          type: 'response',
-          text: 'ENTERPRISE ENGAGEMENT PROTOCOLS:\n  Tier 1: Turnkey System Architecture (Full Lifecycle Discovery, Schema & Zero-Downtime Deployment)\n  Tier 2: High-Throughput API & Microservices Modernization (Redis Caching, Redlock, WebSocket KDS)\n  Tier 3: Fractional Principal Systems Engineering (Strategic Auditing, Queue Optimization, Scale Review)'
-        });
-        break;
       case 'estimate':
         newLogs.push({
           type: 'response',
-          text: 'ARCHITECTURE ESTIMATION TELEMETRY:\n  Default Scoped Tier: TIER 3 HIGH-CONCURRENCY DISTRIBUTED LATTICE\n  Recommended Base: Laravel 11 + Next.js 16 + Redis Redlock + Pusher WS\n  Expected Deployment Window: 4 - 8 Weeks\n  Inquiry Channel: dulanja150abeysinghe@gmail.com'
+          text: 'ARCHITECTURE ESTIMATION TELEMETRY:\n  Default Scoped Tier: TIER 3 HIGH-CONCURRENCY DISTRIBUTED LATTICE\n  Recommended Base: Laravel 11 + Next.js 16 + Redis Redlock + Pusher WS + Creative Studio Pack\n  Expected Deployment Window: 4 - 8 Weeks\n  Inquiry Channel: dulanja150abeysinghe@gmail.com'
         });
         break;
       case 'contact':
         newLogs.push({
           type: 'response',
-          text: 'DIRECT CONTACT CHANNELS:\n  Architect: Dulanja Abeysinghe\n  Email: dulanja150abeysinghe@gmail.com\n  Availability: Enterprise Architecture Consulting & High-Consequence Deployments\n  Status: AVAILABLE FOR BESPOKE ENGAGEMENTS'
+          text: 'DIRECT CONTACT CHANNELS:\n  Architect: Dulanja Abeysinghe\n  Email: dulanja150abeysinghe@gmail.com\n  Availability: Enterprise Architecture Consulting, System Builds & Creative Marketing Campaigns\n  Status: AVAILABLE FOR BESPOKE ENGAGEMENTS'
         });
         break;
       case 'status':
@@ -966,13 +983,228 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
     ]
   };
 
+  // 7 Industry-Standard Core Services & Creative Studio Offerings
+  const coreServicesPillars = {
+    software: {
+      id: 'software',
+      title: 'Custom Software Engineering',
+      tagline: 'Bespoke, ground-up systems architecture tailored to corporate workflows',
+      icon: Code,
+      badge: 'PILLAR 01 // BESPOKE ENGINEERING',
+      subservices: [
+        {
+          title: 'Enterprise Application Development',
+          desc: 'Building massive, scalable internal tools, bespoke ERPs, and automated CRMs tailored to complex corporate workflows and multi-role operations.',
+          deliverables: ['Custom ERP / CRM', 'Multi-Station Dispatch', 'ACID Transactions']
+        },
+        {
+          title: 'SaaS Product Architecture',
+          desc: 'Architecting subscription-based multi-tenant cloud platforms with dynamic billing, role-based access controls, and strict tenant isolation.',
+          deliverables: ['Multi-Tenant Billing', 'Tenant Isolation', 'Stripe / Payment Sync']
+        },
+        {
+          title: 'Web & Mobile Application Development',
+          desc: 'High-performance Progressive Web Apps (PWAs), reactive web interfaces, and responsive cross-platform applications built for sub-second interactions.',
+          deliverables: ['Next.js 16 / React 19', 'PWAs & Mobile Views', 'Zero-Reload State']
+        },
+        {
+          title: 'Legacy System Modernization',
+          desc: 'Deconstructing outdated, fragile monolithic codebases and refactoring them into decoupled, high-throughput microservices and API gateways.',
+          deliverables: ['Monolith Decomposition', 'Zero-Downtime Cutover', 'Microservice Enclaves']
+        }
+      ]
+    },
+    ai: {
+      id: 'ai',
+      title: 'AI, Data, & Machine Learning',
+      tagline: 'Deep intelligence, predictive pipelines, and automated retrieval systems',
+      icon: Sparkles,
+      badge: 'PILLAR 02 // INTELLIGENCE & DATA',
+      subservices: [
+        {
+          title: 'Predictive Analytics & Forecasting',
+          desc: 'Training regression and classification models on historical enterprise data to forecast future trends, supply chain demand, and user behavior.',
+          deliverables: ['Trend Forecasting Models', 'Anomaly Detection', 'Predictive Replenishment']
+        },
+        {
+          title: 'Generative AI & Custom RAG Pipelines',
+          desc: 'Implementing LLMs, custom vector embeddings, and Retrieval-Augmented Generation (RAG) pipelines for automated customer triage and internal knowledge retrieval.',
+          deliverables: ['Custom RAG Knowledge Bases', 'Vector DB Integration', 'LLM Agent Orchestration']
+        },
+        {
+          title: 'Data Engineering & Mass Pipelines',
+          desc: 'Architecting scalable infrastructure to ingest, normalize, clean, and store massive data volumes across Data Lakes and analytical warehouses.',
+          deliverables: ['ETL / ELT Pipelines', 'Distributed Crawling', 'Relational Data Lakes']
+        },
+        {
+          title: 'Computer Vision & Real-Time NLP',
+          desc: 'Building neural systems capable of parsing images, processing video streams, and extracting structured semantic sentiment from human language in real-time.',
+          deliverables: ['Edge Video Processing', 'Barcode / OCR Ingestion', 'Semantic Sentiment Triage']
+        }
+      ]
+    },
+    cloud: {
+      id: 'cloud',
+      title: 'Cloud Infrastructure & DevOps',
+      tagline: 'High-availability infrastructure, automated CI/CD, and serverless scaling',
+      icon: Cloud,
+      badge: 'PILLAR 03 // INFRASTRUCTURE & DEVOPS',
+      subservices: [
+        {
+          title: 'Cloud Architecture & Zero-Downtime Migration',
+          desc: 'Migrating legacy on-premise hardware and erratic servers to AWS, Google Cloud, or Azure with deterministic parity and zero operational downtime.',
+          deliverables: ['Multi-Cloud Migration', 'VPC & Subnet Hardening', 'Zero-Downtime Switch']
+        },
+        {
+          title: 'DevOps & Automated CI/CD Pipelines',
+          desc: 'Automating continuous integration, automated regression testing, Docker artifact creation, and seamless rolling production deployments.',
+          deliverables: ['Automated Test Suites', 'GitHub Actions / GitLab CI', 'Instant Rollback Protocols']
+        },
+        {
+          title: 'Kubernetes & Container Orchestration',
+          desc: 'Managing containerized microservice clusters to guarantee high availability, automatic load balancing, and self-healing worker pods under load.',
+          deliverables: ['Docker Microservices', 'High-Availability Pods', 'Horizontal Auto-Scaling']
+        },
+        {
+          title: 'Serverless & Event-Driven Topology',
+          desc: 'Architecting event-driven pipelines that cost zero dollars during idle periods and scale instantly to absorb tens of thousands of concurrent requests.',
+          deliverables: ['Event-Driven Micro-Functions', 'Zero-Idle Cost Model', 'Sub-Millisecond Cold Starts']
+        }
+      ]
+    },
+    cybersecurity: {
+      id: 'cybersecurity',
+      title: 'Cybersecurity & Risk Management',
+      tagline: 'Zero-trust architecture, red teaming, and regulatory compliance',
+      icon: Shield,
+      badge: 'PILLAR 04 // DEFENSE & COMPLIANCE',
+      subservices: [
+        {
+          title: 'Zero-Trust Network Architecture',
+          desc: 'Designing security models where no user, service, or device is implicitly trusted, enforcing hardware-level token verification across all boundary crossings.',
+          deliverables: ['Null-Field Perimeters', 'Hardware-Enforced Enclaves', 'Role-Based RBAC']
+        },
+        {
+          title: 'Penetration Testing (Red Teaming)',
+          desc: 'Ethically probing software layers, API endpoints, and network conduits to expose vulnerabilities and race conditions before malicious actors exploit them.',
+          deliverables: ['Vulnerability Assessment', 'API Fuzzing & Exploit Audits', 'Hardened Remediation Plan']
+        },
+        {
+          title: 'Compliance & Regulatory Auditing',
+          desc: 'Ensuring architectures satisfy rigorous regulatory mandates including HIPAA medical ledgers, SOC2 Type II, and GDPR European privacy frameworks.',
+          deliverables: ['HIPAA Clinical Compliance', 'Immutable Audit Trails', 'GDPR / SOC2 Preparedness']
+        },
+        {
+          title: 'Anti-WAF & Low-Level Security Mimicry',
+          desc: 'Engineering custom TLS fingerprint spoofing (JA3/JA4) and distributed Redlock mutexes to protect fintech and automation pipelines from bot blocks and double charges.',
+          deliverables: ['JA3 / JA4 TLS Spoofing', 'Redlock Distributed Locks', 'Anti-Bot Evasion']
+        }
+      ]
+    },
+    design: {
+      id: 'design',
+      title: 'Strategy, UI/UX, & Consulting',
+      tagline: 'Digital transformation consulting, rapid prototyping, and brutalist design systems',
+      icon: Compass,
+      badge: 'PILLAR 05 // STRATEGY & UI/UX',
+      subservices: [
+        {
+          title: 'Digital Transformation Consulting',
+          desc: 'Advising executive leadership and legacy enterprises on digitizing manual workflows, eliminating operational friction, and upgrading legacy business models.',
+          deliverables: ['Digital Roadmap Blueprints', 'Tech Stack Selection', 'Operational Automation']
+        },
+        {
+          title: 'Product Discovery & Prototyping',
+          desc: 'Rapidly wireframing, building interactive prototypes, and testing technical concepts with real users before committing capital to full-scale development.',
+          deliverables: ['Interactive Clickable Mocks', 'User Flow Architecture', 'Feasibility Audits']
+        },
+        {
+          title: 'Bespoke UI/UX Design Systems',
+          desc: 'Creating unified, high-craft design languages (like the cinematic brutalism of The Monolith) with accessible 8pt spatial grids and reusable component libraries.',
+          deliverables: ['Tactile Glassmorphism', 'WCAG AA Accessibility', 'Reusable Component Library']
+        },
+        {
+          title: 'Systems & Performance Auditing',
+          desc: 'Conducting comprehensive audits on existing codebases, pinpointing database query bottlenecks, and providing step-by-step optimization blueprints.',
+          deliverables: ['P99 Latency Profiling', 'DB Index Optimization', 'Architectural Refactor Plan']
+        }
+      ]
+    },
+    managed_it: {
+      id: 'managed_it',
+      title: 'Managed IT & Post-Launch Support',
+      tagline: '24/7 SLA server health monitoring, disaster recovery, and continuous iteration',
+      icon: Activity,
+      badge: 'PILLAR 06 // RELIABILITY & SLAS',
+      subservices: [
+        {
+          title: '24/7 SLA Telemetry & Emergency Triage',
+          desc: 'Dedicated around-the-clock cluster monitoring, automated anomaly alerts, and rapid sub-hour response teams resolving critical edge failures.',
+          deliverables: ['24/7 Automated Paging', 'Sub-Hour Critical SLA', 'Live Telemetry Dashboards']
+        },
+        {
+          title: 'Continuous Feature Iteration',
+          desc: 'Acting as an embedded, long-term engineering partner continuously rolling out performance enhancements, user feature requests, and API updates.',
+          deliverables: ['Bi-Weekly Feature Sprints', 'Backlog Prioritization', 'Continuous Code Refactoring']
+        },
+        {
+          title: 'Database Maintenance & Disaster Backups',
+          desc: 'Routine zero-downtime database optimization, automated table vacuuming, and encrypted offsite multi-region backups guaranteeing rapid disaster recovery.',
+          deliverables: ['Automated Offsite Snapshots', 'Disaster Recovery Drill', 'Zero-Downtime Maintenance']
+        },
+        {
+          title: 'Security Patching & Kernel Upgrades',
+          desc: 'Proactive vulnerability scanning, automated dependency patching, and operating system kernel updates to protect production servers from emerging CVEs.',
+          deliverables: ['Proactive CVE Patching', 'Dependency Hardening', 'Zero-Downtime Kernel Updates']
+        }
+      ]
+    },
+    creative_marketing: {
+      id: 'creative_marketing',
+      title: 'Brand Growth, Social Media Marketing & Creative Studio',
+      tagline: 'Social media marketing, flyer design, performance ad campaigns & visual assets',
+      icon: Megaphone,
+      badge: 'PILLAR 07 // MARKETING & CREATIVE STUDIO',
+      subservices: [
+        {
+          title: 'Social Media Marketing & Brand Strategy',
+          desc: 'End-to-end social media growth campaigns, viral content calendars, community management, and multi-platform organic audience expansion.',
+          deliverables: ['Social Content Calendar', 'Brand Voice Guidelines', 'Organic Growth Funnels']
+        },
+        {
+          title: 'Tactical Flyer & Collateral Design',
+          desc: 'High-impact editorial event flyers, digital product promotional banners, print marketing collateral, investor pitch decks, and commercial brochures.',
+          deliverables: ['Print & Digital Flyers', 'Product Promo Banners', 'Investor Pitch Decks']
+        },
+        {
+          title: 'Paid Ad Campaign Orchestration',
+          desc: 'Data-driven paid conversion campaigns across Meta (Facebook & Instagram Ads), Google Ads (Search & Display), and LinkedIn Ads with continuous ROAS optimization.',
+          deliverables: ['Meta & Google Ad Sets', 'A/B Creative Split-Testing', 'Conversion Funnel Tracking']
+        },
+        {
+          title: 'Brand Identity & Visual Positioning',
+          desc: 'Bespoke vector logo design, custom typographic styling, social media kit templates, vector icon packs, and comprehensive visual style guides.',
+          deliverables: ['Vector Logo Marks', 'Typography & Palette Guide', 'Social Media Asset Kit']
+        }
+      ]
+    }
+  };
+
   // Dynamic Scoper Calculation
   const estimatedBrief = useMemo(() => {
     let tier = 'TIER 2: RESILIENT PRODUCTION ARCHITECTURE';
     let window = '3 - 6 Weeks';
     let baseStack = 'Laravel 11 + React 19 / Next.js';
 
-    if (estimatorScale === 'extreme' || estimatorDomain === 'fintech') {
+    if (estimatorDomain === 'creative_marketing') {
+      tier = 'TIER 1: CREATIVE GROWTH & MARKETING CAMPAIGN';
+      window = '1 - 3 Weeks';
+      baseStack = 'Figma Design System + Meta/Google Ad Manager + Content Engine';
+    } else if (estimatorDomain === 'full_launch') {
+      tier = 'TIER 4: COMPLETE VENTURE LAUNCH (SOFTWARE + MARKETING)';
+      window = '8 - 14 Weeks';
+      baseStack = 'Full-Stack Architecture + GTM Paid Ads + Tactical Flyer Campaign';
+    } else if (estimatorScale === 'extreme' || estimatorDomain === 'fintech') {
       tier = 'TIER 3: HIGH-CONCURRENCY DISTRIBUTED LATTICE';
       window = '6 - 10 Weeks';
       baseStack = 'Laravel Microservices + Docker + Redis Redlock + Next.js 16';
@@ -991,8 +1223,8 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       tier,
       window,
       baseStack,
-      subject: `[Architecture Inquiry] Scoped Engagement: ${estimatorDomain.toUpperCase()} (${estimatorScale.toUpperCase()})`,
-      body: `Hello Dulanja,\n\nI scoped an architecture engagement via The Monolith platform:\n\n- Domain: ${estimatorDomain.toUpperCase()}\n- Target Concurrency: ${estimatorScale.toUpperCase()}\n- Core Capabilities: ${featureNames}\n- Target Architecture Tier: ${tier}\n- Estimated Window: ${window}\n\nLet's schedule an initial architecture review.`
+      subject: `[Engagement Inquiry] Scoped Package: ${estimatorDomain.toUpperCase()} (${estimatorScale.toUpperCase()})`,
+      body: `Hello Dulanja,\n\nI scoped an enterprise engagement via The Monolith platform:\n\n- Primary Service Domain: ${estimatorDomain.toUpperCase()}\n- Target Concurrency / Reach: ${estimatorScale.toUpperCase()}\n- Selected Capabilities: ${featureNames}\n- Target Architecture Tier: ${tier}\n- Estimated Window: ${window}\n\nLet's discuss onboarding and delivery.`
     };
   }, [estimatorDomain, estimatorScale, estimatorFeatures]);
 
@@ -1001,6 +1233,9 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
     );
   };
+
+  const currentPillar = coreServicesPillars[activeServicePillar];
+  const PillarIcon = currentPillar.icon;
 
   return (
     <div className="relative min-h-screen bg-[#0a0908] text-[#f5f4f0] font-sans antialiased selection:bg-[#d6d2cd]/20 selection:text-[#f5f4f0]">
@@ -1029,7 +1264,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           </a>
 
           {/* Desktop Nav Links */}
-          <div className="hidden lg:flex items-center gap-6 xl:gap-7 text-xs font-medium tracking-wider uppercase text-[#a39d96]">
+          <div className="hidden lg:flex items-center gap-5 xl:gap-6 text-xs font-medium tracking-wider uppercase text-[#a39d96]">
             <a
               href="#architect"
               className={`transition-colors duration-200 hover:text-[#f5f4f0] flex items-center gap-1.5 ${
@@ -1040,12 +1275,12 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               Architect
             </a>
             <a
-              href="#stack"
+              href="#services"
               className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'stack' ? 'text-[#f5f4f0]' : ''
+                activeSection === 'services' ? 'text-[#f5f4f0]' : ''
               }`}
             >
-              Stack
+              Services
             </a>
             <a
               href="#cases"
@@ -1056,20 +1291,20 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               Projects
             </a>
             <a
+              href="#stack"
+              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
+                activeSection === 'stack' ? 'text-[#f5f4f0]' : ''
+              }`}
+            >
+              Stack
+            </a>
+            <a
               href="#solutions"
               className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
                 activeSection === 'solutions' ? 'text-[#f5f4f0]' : ''
               }`}
             >
               Solutions
-            </a>
-            <a
-              href="#services"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'services' ? 'text-[#f5f4f0]' : ''
-              }`}
-            >
-              Services
             </a>
             <a
               href="#estimator"
@@ -1142,37 +1377,37 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
           {/* Subtitle */}
           <p className="text-lg sm:text-xl text-[#a39d96] font-light leading-relaxed max-w-2xl mb-10">
-            Bespoke enterprise software, high-throughput distributed systems, and real-time
-            architectures built for absolute permanence.
+            Bespoke enterprise software, high-throughput distributed systems, real-time architectures,
+            and high-impact creative marketing campaigns built for absolute permanence.
           </p>
 
           {/* Call-To-Action Pill Buttons */}
           <div className="flex flex-wrap items-center gap-4 sm:gap-5">
             <a
-              href="#estimator"
+              href="#services"
               className="px-8 py-3.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-widest uppercase transition-all duration-300 hover:bg-[#f5f4f0] shadow-taupe-glow hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
             >
-              INITIALIZE ENGAGEMENT
+              EXPLORE 7 SERVICES
               <ArrowRight className="w-3.5 h-3.5 text-[#0a0908]" />
             </a>
 
             <a
-              href="#cases"
+              href="#estimator"
               className="px-7 py-3.5 rounded-full bg-[#141311]/60 text-[#f5f4f0] border border-[#a39d96]/30 font-medium text-xs tracking-widest uppercase backdrop-blur-md transition-all duration-300 hover:border-[#d6d2cd] hover:bg-[#7a756f]/20 hover:text-[#f5f4f0]"
             >
-              VIEW 12 REPOSITORIES
+              SCOPE AN ENGAGEMENT
             </a>
           </div>
 
           {/* Telemetry Stats Strip */}
           <div className="mt-16 pt-8 border-t border-[#a39d96]/15 flex flex-wrap items-center gap-8 sm:gap-14 text-xs font-mono text-[#7a756f]">
             <div>
-              <span className="text-[#f5f4f0] block text-sm font-semibold">12 Repositories</span>
-              <span>Production Systems Engineered</span>
+              <span className="text-[#f5f4f0] block text-sm font-semibold">7 Core Pillars</span>
+              <span>Full Lifecycle Engineering & Marketing</span>
             </div>
             <div>
-              <span className="text-[#f5f4f0] block text-sm font-semibold">&lt; 1.4s Latency</span>
-              <span>Warm Session Caching</span>
+              <span className="text-[#f5f4f0] block text-sm font-semibold">12 Repositories</span>
+              <span>Production Systems Engineered</span>
             </div>
             <div>
               <span className="text-[#f5f4f0] block text-sm font-semibold">100% Zero-Loss</span>
@@ -1271,7 +1506,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             </h2>
             <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
               Senior Full-Stack & Distributed Systems Engineer specializing in high-consequence enterprise applications,
-              high-throughput gaming fintech gateways, mission-critical healthcare systems, and reactive WebSockets.
+              high-throughput gaming fintech gateways, mission-critical healthcare systems, and creative marketing campaigns.
             </p>
           </div>
 
@@ -1300,7 +1535,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                   Operating at the intersection of high-availability backend microservices, real-time reactive
                   frontends, and automated infrastructure. Proven track record deploying complex software suites
                   across clinical healthcare centers, real-time dining operations, high-velocity digital asset
-                  fulfillment, and cognitive engineering operating systems.
+                  fulfillment, and conversion-driven brand marketing campaigns.
                 </p>
 
                 {/* Core Technical Arsenal */}
@@ -1394,7 +1629,242 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         </div>
       </section>
 
-      {/* 4. TECHNICAL ARSENAL MATRIX */}
+      {/* 4. CORE SERVICES OFFERED BY THE MONOLITH (7 PILLARS) */}
+      <section
+        id="services"
+        ref={servicesRef}
+        className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 border-t border-[#a39d96]/15 bg-[#0a0908]/85 backdrop-blur-md transition-all duration-700 ease-out ${
+          servicesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Section Header */}
+          <div className="max-w-3xl mb-14">
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
+              // CORE SERVICES & SOLUTIONS DIRECTORY
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
+              Enterprise Engineering & Creative Growth
+            </h2>
+            <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
+              Industry-standard solutions covering bespoke software architecture, neural data pipelines,
+              zero-trust cloud security, and tactical social media marketing campaigns.
+            </p>
+          </div>
+
+          {/* 7 Pillars Interactive Tab Switcher */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-10 text-xs font-mono">
+            {[
+              { id: 'software', label: '1. Custom Software', icon: Code },
+              { id: 'ai', label: '2. AI & Data ML', icon: Sparkles },
+              { id: 'cloud', label: '3. Cloud & DevOps', icon: Cloud },
+              { id: 'cybersecurity', label: '4. Cybersecurity', icon: Shield },
+              { id: 'design', label: '5. UI/UX & Strategy', icon: Compass },
+              { id: 'managed_it', label: '6. Managed IT & SLAs', icon: Activity },
+              { id: 'creative_marketing', label: '7. Marketing & Flyers', icon: Megaphone }
+            ].map((pillar) => {
+              const IconComp = pillar.icon;
+              const isActive = activeServicePillar === pillar.id;
+              return (
+                <button
+                  key={pillar.id}
+                  onClick={() => setActiveServicePillar(pillar.id)}
+                  className={`px-4 py-2.5 rounded-full transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${
+                    isActive
+                      ? 'bg-[#e3dfd8] text-[#0a0908] font-bold shadow-taupe-glow'
+                      : 'bg-[#141311] text-[#a39d96] hover:text-[#f5f4f0] border border-[#a39d96]/15 hover:border-[#d6d2cd]/30'
+                  }`}
+                >
+                  <IconComp className="w-3.5 h-3.5" />
+                  <span>{pillar.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Pillar Showcase Banner */}
+          <div className="p-8 sm:p-10 rounded-3xl bg-[#141311]/90 border border-[#a39d96]/20 shadow-2xl mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className="p-4 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#f5f4f0]">
+                <PillarIcon className="w-8 h-8 text-[#d6d2cd]" />
+              </div>
+              <div>
+                <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96] block mb-1">
+                  {currentPillar.badge}
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-bold text-[#f5f4f0] mb-1">
+                  {currentPillar.title}
+                </h3>
+                <p className="text-sm text-[#a39d96] font-light max-w-2xl">
+                  {currentPillar.tagline}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <a
+                href="#estimator"
+                onClick={() => setEstimatorDomain(currentPillar.id === 'creative_marketing' ? 'creative_marketing' : 'software')}
+                className="px-6 py-2.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-wider uppercase hover:bg-[#f5f4f0] transition-colors whitespace-nowrap"
+              >
+                SCOPE THIS PILLAR
+              </a>
+            </div>
+          </div>
+
+          {/* Sub-services 4-Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {currentPillar.subservices.map((sub, sIdx) => (
+              <div
+                key={sIdx}
+                className="group p-8 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-mono tracking-widest uppercase text-[#7a756f]">
+                      CAPABILITY 0{sIdx + 1}
+                    </span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
+                  </div>
+                  <h4 className="text-xl font-bold text-[#f5f4f0] group-hover:text-[#e3dfd8] transition-colors mb-3">
+                    {sub.title}
+                  </h4>
+                  <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                    {sub.desc}
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-[#a39d96]/10 flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-mono text-[#7a756f] uppercase mr-1">Deliverables:</span>
+                  {sub.deliverables.map((deliv, dIdx) => (
+                    <span
+                      key={dIdx}
+                      className="px-2.5 py-1 rounded-lg bg-[#1c1a17] text-[10px] font-mono text-[#d6d2cd] border border-[#a39d96]/15"
+                    >
+                      {deliv}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. PRODUCTION SYSTEMS & REPOSITORIES (12 BUILDS) */}
+      <section
+        id="cases"
+        ref={casesRef}
+        className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 bg-[#0a0908]/75 border-t border-[#a39d96]/10 transition-all duration-700 ease-out ${
+          casesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Header & Filter Controls */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <div className="max-w-2xl">
+              <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
+                // PRODUCTION SYSTEMS & REPOSITORIES
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
+                Systems Engineered by Dulanja
+              </h2>
+              <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
+                Twelve production-grade applications and distributed architectures engineered across fintech,
+                clinical healthcare, real-time hospitality, media streaming, and automated developer tooling.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-mono text-[#a39d96]">
+              <span className="w-2 h-2 rounded-full bg-[#d6d2cd]" />
+              <span>{caseStudies.length} PRODUCTION REPOSITORIES</span>
+            </div>
+          </div>
+
+          {/* Filter Bar */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-10 text-xs font-mono">
+            {['All', 'Fintech & APIs', 'Enterprise SaaS', 'Healthcare & Clinical', 'Dev Tooling & AI', 'Media & Streaming'].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setProjectFilter(cat)}
+                className={`px-4 py-2 rounded-full transition-all duration-200 whitespace-nowrap ${
+                  projectFilter === cat
+                    ? 'bg-[#e3dfd8] text-[#0a0908] font-bold shadow-taupe-glow'
+                    : 'bg-[#141311] text-[#a39d96] hover:text-[#f5f4f0] border border-[#a39d96]/15 hover:border-[#d6d2cd]/30'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Cinematic Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.map((study) => (
+              <div
+                key={study.id}
+                onClick={() => setSelectedCaseStudy(study)}
+                className="group relative cursor-pointer rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 p-7 sm:p-8 transition-all duration-500 hover:border-[#d6d2cd]/40 hover:bg-[#1a1815]/90 hover:shadow-taupe-glow flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="text-[11px] font-mono tracking-widest text-[#a39d96] uppercase">
+                      {study.category}
+                    </span>
+                    <span className="text-[10px] font-mono tracking-wider px-2 py-0.5 rounded-full bg-[#1c1a17] text-[#d6d2cd] border border-[#a39d96]/20">
+                      {study.client}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl sm:text-2xl font-bold text-[#f5f4f0] group-hover:text-[#e3dfd8] transition-colors duration-300 mb-2">
+                    {study.title}
+                  </h3>
+                  <p className="text-xs font-medium text-[#d6d2cd] mb-3 leading-snug">{study.headline}</p>
+                  <p className="text-xs text-[#a39d96] font-light leading-relaxed mb-5 line-clamp-3">
+                    {study.summary}
+                  </p>
+
+                  {/* Stack Tags */}
+                  <div className="flex flex-wrap gap-1.5 mb-5">
+                    {study.stack.slice(0, 3).map((tech, tIdx) => (
+                      <span
+                        key={tIdx}
+                        className="px-2 py-0.5 rounded-md bg-[#1c1a17] text-[10px] font-mono text-[#a39d96] border border-[#a39d96]/10"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                    {study.stack.length > 3 && (
+                      <span className="px-1.5 py-0.5 rounded-md bg-[#1c1a17] text-[10px] font-mono text-[#7a756f]">
+                        +{study.stack.length - 3}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="grid grid-cols-3 gap-2 pt-4 border-t border-[#a39d96]/10 mb-4 font-mono text-xs">
+                    {study.metrics.map((m, i) => (
+                      <div key={i} className="p-2 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10">
+                        <span className="text-[9px] text-[#7a756f] block uppercase truncate mb-0.5">{m.label}</span>
+                        <span className="text-[11px] font-semibold text-[#f5f4f0] truncate block">{m.val}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs font-mono tracking-wider text-[#a39d96] group-hover:text-[#f5f4f0] transition-colors duration-300">
+                    <span className="uppercase text-[10px]">SPECIFICATION</span>
+                    <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-300 text-[11px]">
+                      INSPECT <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. TECHNICAL ARSENAL MATRIX */}
       <section
         id="stack"
         ref={stackRef}
@@ -1468,7 +1938,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         </div>
       </section>
 
-      {/* 5. SOLUTIONS & BENTO CAPABILITIES */}
+      {/* 7. SOLUTIONS & BENTO CAPABILITIES */}
       <section
         id="solutions"
         ref={solutionsRef}
@@ -1659,7 +2129,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         </div>
       </section>
 
-      {/* 6. TECHNICAL PROTOCOLS (API & DEVELOPER EXPERIENCE) */}
+      {/* 8. TECHNICAL PROTOCOLS (API & DEVELOPER EXPERIENCE) */}
       <section
         id="api"
         ref={apiRef}
@@ -1770,274 +2240,6 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         </div>
       </section>
 
-      {/* 7. PRODUCTION SYSTEMS & CASE STUDIES (12 REPOSITORIES) */}
-      <section
-        id="cases"
-        ref={casesRef}
-        className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 bg-[#0a0908]/75 border-t border-[#a39d96]/10 transition-all duration-700 ease-out ${
-          casesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto">
-          {/* Header & Filter Controls */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-            <div className="max-w-2xl">
-              <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
-                // PRODUCTION SYSTEMS & REPOSITORIES
-              </span>
-              <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
-                Systems Engineered by Dulanja
-              </h2>
-              <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
-                Twelve production-grade applications and distributed architectures engineered across fintech,
-                clinical healthcare, real-time hospitality, media streaming, and automated developer tooling.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-mono text-[#a39d96]">
-              <span className="w-2 h-2 rounded-full bg-[#d6d2cd]" />
-              <span>{caseStudies.length} PRODUCTION REPOSITORIES</span>
-            </div>
-          </div>
-
-          {/* Filter Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-10 text-xs font-mono">
-            {['All', 'Fintech & APIs', 'Enterprise SaaS', 'Healthcare & Clinical', 'Dev Tooling & AI', 'Media & Streaming'].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setProjectFilter(cat)}
-                className={`px-4 py-2 rounded-full transition-all duration-200 whitespace-nowrap ${
-                  projectFilter === cat
-                    ? 'bg-[#e3dfd8] text-[#0a0908] font-bold shadow-taupe-glow'
-                    : 'bg-[#141311] text-[#a39d96] hover:text-[#f5f4f0] border border-[#a39d96]/15 hover:border-[#d6d2cd]/30'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Cinematic Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((study) => (
-              <div
-                key={study.id}
-                onClick={() => setSelectedCaseStudy(study)}
-                className="group relative cursor-pointer rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 p-7 sm:p-8 transition-all duration-500 hover:border-[#d6d2cd]/40 hover:bg-[#1a1815]/90 hover:shadow-taupe-glow flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-5">
-                    <span className="text-[11px] font-mono tracking-widest text-[#a39d96] uppercase">
-                      {study.category}
-                    </span>
-                    <span className="text-[10px] font-mono tracking-wider px-2 py-0.5 rounded-full bg-[#1c1a17] text-[#d6d2cd] border border-[#a39d96]/20">
-                      {study.client}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl sm:text-2xl font-bold text-[#f5f4f0] group-hover:text-[#e3dfd8] transition-colors duration-300 mb-2">
-                    {study.title}
-                  </h3>
-                  <p className="text-xs font-medium text-[#d6d2cd] mb-3 leading-snug">{study.headline}</p>
-                  <p className="text-xs text-[#a39d96] font-light leading-relaxed mb-5 line-clamp-3">
-                    {study.summary}
-                  </p>
-
-                  {/* Stack Tags */}
-                  <div className="flex flex-wrap gap-1.5 mb-5">
-                    {study.stack.slice(0, 3).map((tech, tIdx) => (
-                      <span
-                        key={tIdx}
-                        className="px-2 py-0.5 rounded-md bg-[#1c1a17] text-[10px] font-mono text-[#a39d96] border border-[#a39d96]/10"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                    {study.stack.length > 3 && (
-                      <span className="px-1.5 py-0.5 rounded-md bg-[#1c1a17] text-[10px] font-mono text-[#7a756f]">
-                        +{study.stack.length - 3}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="grid grid-cols-3 gap-2 pt-4 border-t border-[#a39d96]/10 mb-4 font-mono text-xs">
-                    {study.metrics.map((m, i) => (
-                      <div key={i} className="p-2 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10">
-                        <span className="text-[9px] text-[#7a756f] block uppercase truncate mb-0.5">{m.label}</span>
-                        <span className="text-[11px] font-semibold text-[#f5f4f0] truncate block">{m.val}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs font-mono tracking-wider text-[#a39d96] group-hover:text-[#f5f4f0] transition-colors duration-300">
-                    <span className="uppercase text-[10px]">SPECIFICATION</span>
-                    <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-300 text-[11px]">
-                      INSPECT <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 8. SERVICE ENGAGEMENT MODELS (HOW TO ENGAGE) */}
-      <section
-        id="services"
-        ref={servicesRef}
-        className={`relative z-10 py-32 px-6 sm:px-12 lg:px-24 border-t border-[#a39d96]/15 bg-[#0a0908]/85 backdrop-blur-md transition-all duration-700 ease-out ${
-          servicesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="max-w-3xl mb-16">
-            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
-              // ENGAGEMENT PROTOCOLS
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
-              How Enterprise Clients Engage
-            </h2>
-            <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
-              Transparent, high-velocity engineering engagement tiers structured for founders, enterprise technical leads, and venture studios.
-            </p>
-          </div>
-
-          {/* 3 Service Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Service 1 */}
-            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between">
-              <div>
-                <span className="text-xs font-mono text-[#a39d96] tracking-widest block uppercase mb-3">
-                  TIER 01 // TURNKEY
-                </span>
-                <h3 className="text-2xl font-bold text-[#f5f4f0] mb-3">
-                  Turnkey System Architecture
-                </h3>
-                <p className="text-xs sm:text-sm text-[#a39d96] font-light leading-relaxed mb-6">
-                  End-to-end architecture, development, and deployment of complex enterprise software platforms from ground zero.
-                </p>
-
-                <ul className="space-y-3 font-mono text-xs text-[#d6d2cd] mb-8">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>Full Domain & Schema Design</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>Sub-100ms API Microservices</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>Reactive Frontend (Next.js/React)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>Automated CI/CD & Enclave Launch</span>
-                  </li>
-                </ul>
-              </div>
-
-              <a
-                href="#estimator"
-                className="w-full py-3 rounded-full bg-[#1c1a17] text-xs font-mono text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 hover:bg-[#252320] transition-colors flex items-center justify-center gap-2"
-              >
-                SCOPE THIS ENGAGEMENT <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-
-            {/* Service 2 */}
-            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/90 backdrop-blur-xl border border-[#d6d2cd]/30 shadow-taupe-glow hover:border-[#f5f4f0] transition-all duration-300 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-mono text-[#d6d2cd] tracking-widest uppercase">
-                    TIER 02 // MODERNIZATION
-                  </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold">
-                    MOST REQUESTED
-                  </span>
-                </div>
-                <h3 className="text-2xl font-bold text-[#f5f4f0] mb-3">
-                  High-Throughput API Modernization
-                </h3>
-                <p className="text-xs sm:text-sm text-[#a39d96] font-light leading-relaxed mb-6">
-                  Performance re-engineering for platforms facing latency bottlenecks, race conditions, or scaling walls.
-                </p>
-
-                <ul className="space-y-3 font-mono text-xs text-[#d6d2cd] mb-8">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>Warm Redis Session & Mutex Caching</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>Redlock Double-Claim Prevention</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>Pusher WebSockets Real-Time Sync</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>TLS/WAF Bypass & Prometheus Telemetry</span>
-                  </li>
-                </ul>
-              </div>
-
-              <a
-                href="#estimator"
-                className="w-full py-3 rounded-full bg-[#e3dfd8] text-xs font-mono font-bold text-[#0a0908] hover:bg-[#f5f4f0] shadow-taupe-glow transition-all flex items-center justify-center gap-2"
-              >
-                INITIALIZE MODERNIZATION <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-
-            {/* Service 3 */}
-            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between">
-              <div>
-                <span className="text-xs font-mono text-[#a39d96] tracking-widest block uppercase mb-3">
-                  TIER 03 // ADVISORY
-                </span>
-                <h3 className="text-2xl font-bold text-[#f5f4f0] mb-3">
-                  Fractional Principal Systems Engineer
-                </h3>
-                <p className="text-xs sm:text-sm text-[#a39d96] font-light leading-relaxed mb-6">
-                  High-leverage architectural guidance, code reviews, and scalability roadmap consulting for engineering teams.
-                </p>
-
-                <ul className="space-y-3 font-mono text-xs text-[#d6d2cd] mb-8">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>Deep Architectural Audits</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>Database Schema & ACID Proofing</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>Queue Worker Tuning & Deadlock Fixes</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>Weekly Strategic Architectural Reviews</span>
-                  </li>
-                </ul>
-              </div>
-
-              <a
-                href="#estimator"
-                className="w-full py-3 rounded-full bg-[#1c1a17] text-xs font-mono text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 hover:bg-[#252320] transition-colors flex items-center justify-center gap-2"
-              >
-                REQUEST FRACTIONAL LEAD <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* 9. INTERACTIVE PROJECT SCOPER & ESTIMATOR */}
       <section
         id="estimator"
@@ -2053,10 +2255,10 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               // ARCHITECTURE ESTIMATOR
             </span>
             <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
-              Scope Your Next Architecture
+              Scope Your Next Architecture & Campaign
             </h2>
             <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
-              Configure your domain requirements, target scale, and required primitives to synthesize an immediate architectural profile.
+              Configure your primary domain, target scale, and required software or marketing capabilities to synthesize an immediate engagement blueprint.
             </p>
           </div>
 
@@ -2067,15 +2269,15 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               {/* Step 1: Select Domain */}
               <div className="p-7 rounded-3xl bg-[#141311]/80 border border-[#a39d96]/15">
                 <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96] block mb-4">
-                  01 // SELECT PROJECT DOMAIN
+                  01 // SELECT PRIMARY SERVICE DOMAIN
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs">
                   {[
-                    { id: 'fintech', label: 'Fintech & Automation' },
-                    { id: 'saas', label: 'Real-Time SaaS' },
+                    { id: 'software', label: 'Custom Software Dev' },
+                    { id: 'fintech', label: 'Gaming Fintech & APIs' },
                     { id: 'healthcare', label: 'Clinical Healthcare' },
-                    { id: 'ecommerce', label: 'E-Commerce / ERP' },
-                    { id: 'crawlers', label: 'Data Mining & AI' }
+                    { id: 'creative_marketing', label: 'Marketing & Flyer Design' },
+                    { id: 'full_launch', label: 'Full Software + Marketing GTM' }
                   ].map((dom) => (
                     <button
                       key={dom.id}
@@ -2096,13 +2298,13 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               {/* Step 2: Concurrency & Scale */}
               <div className="p-7 rounded-3xl bg-[#141311]/80 border border-[#a39d96]/15">
                 <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96] block mb-4">
-                  02 // TARGET CONCURRENCY & TRAFFIC LOAD
+                  02 // TARGET CONCURRENCY & CAMPAIGN REACH
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
                   {[
-                    { id: 'sub-1k', label: '< 1,000 req/s', desc: 'Standard Enterprise' },
-                    { id: 'high', label: '10,000+ req/s', desc: 'High-Throughput Surge' },
-                    { id: 'extreme', label: '100,000+ req/s', desc: 'Distributed Multi-Node' }
+                    { id: 'sub-1k', label: '< 1,000 req/s', desc: 'Standard / Regional Audience' },
+                    { id: 'high', label: '10,000+ req/s', desc: 'High-Throughput / National Growth' },
+                    { id: 'extreme', label: '100,000+ req/s', desc: 'Planetary Scale / Mass GTM' }
                   ].map((scale) => (
                     <button
                       key={scale.id}
@@ -2120,19 +2322,22 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                 </div>
               </div>
 
-              {/* Step 3: Required Architectural Features */}
+              {/* Step 3: Required Architectural & Marketing Features */}
               <div className="p-7 rounded-3xl bg-[#141311]/80 border border-[#a39d96]/15">
                 <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96] block mb-4">
-                  03 // ESSENTIAL SUBSYSTEMS & CAPABILITIES
+                  03 // ESSENTIAL SUBSYSTEMS & CAMPAIGN DELIVERABLES
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs">
                   {[
+                    { id: 'marketing_flyers', label: 'Tactical Flyer Design' },
+                    { id: 'social_ads', label: 'Meta/Google Ad Funnels' },
+                    { id: 'content_cal', label: 'Social Media Calendar' },
                     { id: 'websockets', label: 'Pusher WebSockets' },
                     { id: 'redis', label: 'Redis Redlock Mutex' },
                     { id: 'acid', label: 'ACID Strict Ledger' },
-                    { id: 'invoicing', label: 'Automated DomPDF' },
+                    { id: 'ai_rag', label: 'LLM / RAG Pipeline' },
                     { id: 'docker', label: 'Docker Microservices' },
-                    { id: 'scanner', label: 'Hardware Scanner Sync' }
+                    { id: 'sla_support', label: '24/7 SLA Monitoring' }
                   ].map((feat) => {
                     const isSelected = estimatorFeatures.includes(feat.id);
                     return (
@@ -2167,7 +2372,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                 <div className="space-y-6 font-mono text-xs">
                   <div>
                     <span className="text-[10px] text-[#7a756f] uppercase block mb-1">
-                      Architecture Tier
+                      Engagement Tier
                     </span>
                     <span className="text-sm font-bold text-[#f5f4f0] block leading-snug">
                       {estimatedBrief.tier}
@@ -2176,7 +2381,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
                   <div>
                     <span className="text-[10px] text-[#7a756f] uppercase block mb-1">
-                      Recommended Tech Foundation
+                      Recommended Foundation
                     </span>
                     <span className="text-xs text-[#d6d2cd] block leading-relaxed">
                       {estimatedBrief.baseStack}
@@ -2194,7 +2399,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
                   <div className="p-4 rounded-2xl bg-[#0a0908] border border-[#a39d96]/15">
                     <span className="text-[10px] text-[#7a756f] uppercase block mb-1">
-                      Active Subsystems
+                      Active Subsystems & Deliverables
                     </span>
                     <span className="text-[11px] text-[#a39d96]">
                       {estimatorFeatures.length > 0 ? estimatorFeatures.join(' • ') : 'Standard Runtime'}
@@ -2425,7 +2630,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           </h2>
 
           <p className="text-base sm:text-xl text-[#a39d96] font-light max-w-2xl mx-auto mb-10 leading-relaxed">
-            Step beyond fragile, unverified software. Anchor your systems into the immutable bedrock
+            Step beyond fragile, unverified software. Anchor your systems and brand into the immutable bedrock
             of The Monolith.
           </p>
 
@@ -2467,21 +2672,21 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-6 sm:gap-7 text-xs font-mono text-[#a39d96]">
+          <div className="flex flex-wrap items-center gap-5 sm:gap-6 text-xs font-mono text-[#a39d96]">
             <a href="#architect" className="hover:text-[#f5f4f0] transition-colors">
               ARCHITECT
             </a>
-            <a href="#stack" className="hover:text-[#f5f4f0] transition-colors">
-              STACK
+            <a href="#services" className="hover:text-[#f5f4f0] transition-colors">
+              SERVICES
             </a>
             <a href="#cases" className="hover:text-[#f5f4f0] transition-colors">
               PROJECTS
             </a>
+            <a href="#stack" className="hover:text-[#f5f4f0] transition-colors">
+              STACK
+            </a>
             <a href="#solutions" className="hover:text-[#f5f4f0] transition-colors">
               SOLUTIONS
-            </a>
-            <a href="#services" className="hover:text-[#f5f4f0] transition-colors">
-              SERVICES
             </a>
             <a href="#estimator" className="hover:text-[#f5f4f0] transition-colors">
               ESTIMATOR
@@ -2533,7 +2738,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
             <div className="flex items-center gap-2 px-6 py-2.5 bg-[#0e0d0c] border-b border-[#a39d96]/10 overflow-x-auto text-[11px] font-mono">
               <span className="text-[#7a756f]">RUN:</span>
-              {['architect', 'projects', 'stack', 'services', 'estimate', 'status', 'benchmark', 'help'].map((cmd) => (
+              {['architect', 'services', 'marketing', 'projects', 'stack', 'estimate', 'status', 'benchmark', 'help'].map((cmd) => (
                 <button
                   key={cmd}
                   onClick={() => setTerminalInput(cmd)}
@@ -2573,7 +2778,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                 type="text"
                 value={terminalInput}
                 onChange={(e) => setTerminalInput(e.target.value)}
-                placeholder="Type 'help' or 'architect'..."
+                placeholder="Type 'help', 'services', or 'marketing'..."
                 autoFocus
                 className="flex-1 bg-transparent font-mono text-xs text-[#f5f4f0] focus:outline-none placeholder:text-[#7a756f]"
               />
