@@ -61,7 +61,9 @@ import {
   AlertCircle,
   FileCheck,
   Landmark,
-  Save
+  Save,
+  Moon,
+  Sun
 } from 'lucide-react';
 
 /* =========================================================================
@@ -1602,6 +1604,9 @@ function DocumentPrintModal({
 }) {
   if (!isOpen || !data) return null;
 
+  const [printTheme, setPrintTheme] = useState('dark');
+  const isDark = printTheme === 'dark';
+
   const isInvoice = type === 'invoice';
   const totals = calculateDocTotals(data.items || [], data.discountPercent || 0, data.taxPercent || 0);
   const docCurrency = data.currency || 'LKR';
@@ -1614,14 +1619,14 @@ function DocumentPrintModal({
   return (
     <div
       id="monolith-print-modal-wrapper"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200"
     >
       <div
         id="monolith-print-modal-inner"
-        className="w-full max-w-4xl rounded-3xl bg-[#141311] border border-[#a39d96]/30 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]"
+        className="w-full max-w-4xl rounded-3xl bg-[#141311] border border-[#a39d96]/30 shadow-2xl overflow-hidden flex flex-col max-h-[96vh]"
       >
         {/* Top Control Bar (Hidden when printing via CSS) */}
-        <div className="no-print flex items-center justify-between px-6 py-4 border-b border-[#a39d96]/15 bg-[#181614]">
+        <div className="no-print flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 border-b border-[#a39d96]/15 bg-[#181614]">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-[#252320] border border-[#a39d96]/20 flex items-center justify-center">
               <Printer className="w-4 h-4 text-[#f5f4f0]" />
@@ -1636,24 +1641,55 @@ function DocumentPrintModal({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Theme Switcher & Actions */}
+          <div className="flex items-center gap-2.5">
+            {/* Theme Toggle: Obsidian Dark (PDF) vs Studio White (Paper Print) */}
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0a0908] border border-[#a39d96]/20">
+              <button
+                type="button"
+                onClick={() => setPrintTheme('dark')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center gap-1.5 ${
+                  isDark
+                    ? 'bg-[#252320] text-[#f5f4f0] font-semibold border border-[#a39d96]/30 shadow-sm'
+                    : 'text-[#7a756f] hover:text-[#f5f4f0]'
+                }`}
+                title="Sleek Dark Mode for Digital PDF export"
+              >
+                <Moon className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                <span className="hidden sm:inline">Obsidian (PDF)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPrintTheme('light')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center gap-1.5 ${
+                  !isDark
+                    ? 'bg-[#f5f4f0] text-[#0a0908] font-bold shadow-sm'
+                    : 'text-[#7a756f] hover:text-[#f5f4f0]'
+                }`}
+                title="Ink-friendly Pure White for physical paper printing"
+              >
+                <Sun className="w-3.5 h-3.5 text-amber-500" />
+                <span className="hidden sm:inline">Studio White (Print)</span>
+              </button>
+            </div>
+
             <button
               onClick={() => onEdit(type, data)}
-              className="px-4 py-2 rounded-xl bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 font-mono text-xs hover:bg-[#252320] transition-colors flex items-center gap-1.5"
+              className="px-3.5 py-1.5 rounded-xl bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 font-mono text-xs hover:bg-[#252320] transition-colors flex items-center gap-1.5"
             >
               <Edit3 className="w-3.5 h-3.5" />
-              Edit Document
+              <span className="hidden sm:inline">Edit</span>
             </button>
             <button
               onClick={handlePrint}
-              className="px-5 py-2 rounded-xl bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-wider uppercase hover:bg-[#f5f4f0] transition-colors flex items-center gap-1.5 shadow-taupe-glow"
+              className="px-4 py-1.5 rounded-xl bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-wider uppercase hover:bg-[#f5f4f0] transition-colors flex items-center gap-1.5 shadow-taupe-glow"
             >
               <Printer className="w-3.5 h-3.5 text-[#0a0908]" />
-              Print / Save PDF
+              Print / PDF
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-[#7a756f] hover:text-[#f5f4f0] transition-colors"
+              className="p-1.5 rounded-xl text-[#7a756f] hover:text-[#f5f4f0] transition-colors"
               aria-label="Close preview"
             >
               <X className="w-5 h-5" />
@@ -1662,179 +1698,319 @@ function DocumentPrintModal({
         </div>
 
         {/* Printable Document Container */}
-        <div className="p-4 sm:p-8 overflow-y-auto flex-1 bg-[#0a0908] text-xs">
+        <div
+          id="monolith-print-modal-scroll"
+          className="p-3 sm:p-6 overflow-y-auto flex-1 bg-[#050504] text-xs"
+        >
           <div
             id="monolith-printable-doc"
-            className="max-w-3xl mx-auto space-y-4 bg-[#141311] p-5 sm:p-7 rounded-2xl border border-[#a39d96]/20 text-[#f5f4f0]"
+            className={`max-w-3xl mx-auto flex flex-col justify-between min-h-[275mm] p-6 sm:p-9 transition-colors duration-200 ${
+              isDark
+                ? 'bg-[#0a0908] text-[#f5f4f0] border border-[#a39d96]/25'
+                : 'bg-[#ffffff] text-[#0a0908] border border-[#d6d2cd] shadow-md'
+            } rounded-2xl print:rounded-none print:border-none print:p-0 space-y-5`}
           >
-            {/* Document Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-3.5 border-b border-[#a39d96]/20">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-4 h-5 rounded-sm bg-[#e3dfd8] flex items-center justify-center">
-                    <div className="w-1.5 h-2.5 bg-[#0a0908] rounded-[0.5px]" />
+            {/* Top Block: Header & Coordinates */}
+            <div className="space-y-4">
+              {/* Document Header */}
+              <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b ${
+                isDark ? 'border-[#a39d96]/20' : 'border-[#d6d2cd]'
+              }`}>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-4 h-5 rounded-sm flex items-center justify-center ${
+                      isDark ? 'bg-[#e3dfd8]' : 'bg-[#0a0908]'
+                    }`}>
+                      <div className={`w-1.5 h-2.5 rounded-[0.5px] ${
+                        isDark ? 'bg-[#0a0908]' : 'bg-[#ffffff]'
+                      }`} />
+                    </div>
+                    <span className={`font-display font-bold tracking-widest text-sm uppercase ${
+                      isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
+                    }`}>
+                      The Monolith
+                    </span>
                   </div>
-                  <span className="font-display font-bold tracking-widest text-sm uppercase text-[#f5f4f0]">
-                    The Monolith
+                  <p className={`text-[11px] font-mono ${isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}`}>
+                    Systems Architecture Labs & Creative Venture Studio
+                  </p>
+                  <p className={`text-[10px] font-mono ${isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}`}>
+                    Kurunegala / Colombo, Sri Lanka · Global Edge Lattice
+                  </p>
+                </div>
+
+                <div className="text-left sm:text-right space-y-1 font-mono">
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                    isDark ? 'bg-[#f5f4f0] text-[#0a0908]' : 'bg-[#0a0908] text-[#ffffff]'
+                  }`}>
+                    {isInvoice ? 'TAX INVOICE' : 'SALES QUOTATION'}
                   </span>
-                </div>
-                <p className="text-[11px] font-mono text-[#a39d96]">
-                  Systems Architecture Labs & Creative Venture Studio
-                </p>
-                <p className="text-[10px] font-mono text-[#7a756f]">
-                  Kurunegala / Colombo, Sri Lanka · Global Edge Lattice
-                </p>
-              </div>
-
-              <div className="text-left sm:text-right space-y-1 font-mono">
-                <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#f5f4f0] text-[#0a0908]">
-                  {isInvoice ? 'TAX INVOICE' : 'SALES QUOTATION'}
-                </span>
-                <p className="text-sm font-bold text-[#f5f4f0]">
-                  {isInvoice ? data.invoiceNumber : data.quotationNumber}
-                </p>
-                <p className="text-[11px] text-[#a39d96]">
-                  Status: <strong className="text-[#f5f4f0]">{data.status}</strong>
-                </p>
-              </div>
-            </div>
-
-            {/* From & Bill To Coordinates */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
-              <div className="space-y-1 p-3.5 rounded-xl bg-[#0a0908] border border-[#a39d96]/15">
-                <span className="text-[10px] text-[#7a756f] uppercase tracking-wider block mb-1">
-                  // ISSUING AUTHORITY (FOUNDING ARCHITECTS)
-                </span>
-                <p className="font-bold text-[#f5f4f0]">The Monolith Architecture Labs (Pvt) Ltd</p>
-                <p className="text-[#d6d2cd]">Dulanja Abeysinghe (Principal Systems Architect)</p>
-                <p className="text-[#d6d2cd]">Remashi Diyana (Head of Creative Strategy)</p>
-                <p className="text-[#a39d96]">dulanja150abeysinghe@gmail.com · +94 76 591 7189</p>
-                <p className="text-[#a39d96]">diyanamashi@gmail.com · +94 713765861</p>
-              </div>
-
-              <div className="space-y-1 p-3.5 rounded-xl bg-[#0a0908] border border-[#a39d96]/15">
-                <span className="text-[10px] text-[#7a756f] uppercase tracking-wider block mb-1">
-                  // BILLED / QUOTED TO CLIENT
-                </span>
-                <p className="font-bold text-[#f5f4f0]">{data.clientCompany || 'Client Enterprise'}</p>
-                <p className="text-[#d6d2cd]">Attn: {data.clientName}</p>
-                <p className="text-[#a39d96]">{data.clientEmail}</p>
-                <p className="text-[#7a756f]">{data.clientAddress || 'Global Deployment'}</p>
-                <div className="pt-1.5 text-[10px] text-[#a39d96] flex justify-between">
-                  <span>Issued: {data.issueDate}</span>
-                  <span>{isInvoice ? `Due: ${data.dueDate}` : `Valid Until: ${data.validUntil}`}</span>
+                  <p className={`text-sm font-bold ${isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'}`}>
+                    {isInvoice ? data.invoiceNumber : data.quotationNumber}
+                  </p>
+                  <p className={`text-[11px] ${isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}`}>
+                    Status: <strong className={isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'}>{data.status}</strong>
+                  </p>
                 </div>
               </div>
-            </div>
 
-            {/* Itemized Table */}
-            <div>
-              <table className="w-full text-left font-mono text-xs">
-                <thead>
-                  <tr className="border-b border-[#a39d96]/20 text-[#a39d96] uppercase text-[10px]">
-                    <th className="py-2 px-3">#</th>
-                    <th className="py-2 px-3">Scope Description</th>
-                    <th className="py-2 px-3 text-right">Qty</th>
-                    <th className="py-2 px-3 text-right">Rate ({docCurrency})</th>
-                    <th className="py-2 px-3 text-right">Amount ({docCurrency})</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#a39d96]/10">
-                  {data.items?.map((item, idx) => (
-                    <tr key={idx}>
-                      <td className="py-2 px-3 text-[#7a756f]">0{idx + 1}</td>
-                      <td className="py-2 px-3 text-[#f5f4f0] font-sans font-medium text-[11px]">
-                        {item.description}
-                      </td>
-                      <td className="py-2 px-3 text-right text-[#d6d2cd] text-[11px]">{item.quantity}</td>
-                      <td className="py-2 px-3 text-right text-[#d6d2cd] text-[11px]">
-                        {formatDocCurrency(item.unitPrice, docCurrency)}
-                      </td>
-                      <td className="py-2 px-3 text-right text-[#f5f4f0] font-semibold text-[11px]">
-                        {formatDocCurrency((item.quantity || 1) * (item.unitPrice || 0), docCurrency)}
-                      </td>
+              {/* From & Bill To Coordinates */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+                <div className={`space-y-1 p-3.5 rounded-xl border ${
+                  isDark
+                    ? 'bg-[#141311] border-[#a39d96]/15'
+                    : 'bg-[#f7f6f2] border-[#e2ded8]'
+                }`}>
+                  <span className={`text-[10px] uppercase tracking-wider block mb-1 font-bold ${
+                    isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'
+                  }`}>
+                    // ISSUING AUTHORITY (FOUNDING ARCHITECTS)
+                  </span>
+                  <p className={`font-bold ${isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'}`}>
+                    The Monolith Architecture Labs (Pvt) Ltd
+                  </p>
+                  <p className={isDark ? 'text-[#d6d2cd]' : 'text-[#2a2723]'}>
+                    Dulanja Abeysinghe (Principal Systems Architect)
+                  </p>
+                  <p className={isDark ? 'text-[#d6d2cd]' : 'text-[#2a2723]'}>
+                    Remashi Diyana (Head of Creative Strategy)
+                  </p>
+                  <p className={isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}>
+                    dulanja150abeysinghe@gmail.com · +94 76 591 7189
+                  </p>
+                  <p className={isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}>
+                    diyanamashi@gmail.com · +94 713765861
+                  </p>
+                </div>
+
+                <div className={`space-y-1 p-3.5 rounded-xl border ${
+                  isDark
+                    ? 'bg-[#141311] border-[#a39d96]/15'
+                    : 'bg-[#f7f6f2] border-[#e2ded8]'
+                }`}>
+                  <span className={`text-[10px] uppercase tracking-wider block mb-1 font-bold ${
+                    isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'
+                  }`}>
+                    // BILLED / QUOTED TO CLIENT
+                  </span>
+                  <p className={`font-bold ${isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'}`}>
+                    {data.clientCompany || 'Client Enterprise'}
+                  </p>
+                  <p className={isDark ? 'text-[#d6d2cd]' : 'text-[#2a2723]'}>
+                    Attn: {data.clientName}
+                  </p>
+                  <p className={isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}>
+                    {data.clientEmail}
+                  </p>
+                  <p className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>
+                    {data.clientAddress || 'Global Deployment'}
+                  </p>
+                  <div className={`pt-1.5 text-[10px] flex justify-between font-semibold ${
+                    isDark ? 'text-[#a39d96]' : 'text-[#524d46]'
+                  }`}>
+                    <span>Issued: {data.issueDate}</span>
+                    <span>{isInvoice ? `Due: ${data.dueDate}` : `Valid Until: ${data.validUntil}`}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Itemized Table */}
+              <div>
+                <table className="w-full text-left font-mono text-xs">
+                  <thead>
+                    <tr className={`border-b ${
+                      isDark ? 'border-[#a39d96]/20 text-[#a39d96]' : 'border-[#0a0908] text-[#0a0908] font-bold'
+                    } uppercase text-[10px]`}>
+                      <th className="py-2.5 px-3 w-8">#</th>
+                      <th className="py-2.5 px-3">Scope Description</th>
+                      <th className="py-2.5 px-3 text-right w-14">Qty</th>
+                      <th className="py-2.5 px-3 text-right w-32 whitespace-nowrap">Rate ({docCurrency})</th>
+                      <th className="py-2.5 px-3 text-right w-36 whitespace-nowrap">Amount ({docCurrency})</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Totals & Wire Box */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3.5 border-t border-[#a39d96]/20">
-              <div className="p-3.5 rounded-xl bg-[#0a0908] border border-[#a39d96]/15 font-mono text-[10.5px] space-y-1">
-                <span className="text-[10px] text-[#7a756f] uppercase tracking-wider block mb-1">
-                  OFFICIAL WIRE REMITTANCE DETAILS ({docCurrency})
-                </span>
-                <p className="text-[#f5f4f0] font-semibold">Bank: {bank.bankName}</p>
-                <p className="text-[#d6d2cd]">Account Name: {bank.accountName}</p>
-                <p className="text-[#d6d2cd]">
-                  Account No: {docCurrency === 'USD' && bank.accountNumberUsd ? bank.accountNumberUsd : bank.accountNumber} ({docCurrency === 'USD' ? 'FCBU USD Wire' : 'LKR Operating'})
-                </p>
-                <p className="text-[#a39d96]">Branch: {bank.branch}</p>
-                <p className="text-[#a39d96]">SWIFT / BIC: {bank.swift}</p>
-              </div>
-
-              <div className="font-mono text-xs space-y-1 self-end">
-                <div className="flex justify-between text-[#a39d96]">
-                  <span>SUBTOTAL:</span>
-                  <span>{formatDocCurrency(totals.subtotal, docCurrency)}</span>
-                </div>
-                {totals.discountAmount > 0 && (
-                  <div className="flex justify-between text-[#7a756f]">
-                    <span>DISCOUNT ({data.discountPercent}%):</span>
-                    <span>-{formatDocCurrency(totals.discountAmount, docCurrency)}</span>
-                  </div>
-                )}
-                {totals.taxAmount > 0 && (
-                  <div className="flex justify-between text-[#a39d96]">
-                    <span>TAX / VAT ({data.taxPercent}%):</span>
-                    <span>+{formatDocCurrency(totals.taxAmount, docCurrency)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-base font-bold text-[#f5f4f0] pt-1.5 border-t border-[#a39d96]/30">
-                  <span>TOTAL DUE:</span>
-                  <span>{formatDocCurrency(totals.total, docCurrency)}</span>
-                </div>
-                <div className="text-[10px] text-[#7a756f] text-right pt-0.5">
-                  {docCurrency === 'LKR'
-                    ? `≈ $${Math.round(totals.total / 300).toLocaleString()} USD (@ 300 LKR/USD)`
-                    : `≈ LKR ${(totals.total * 300).toLocaleString()} (@ 300 LKR/USD)`}
-                </div>
+                  </thead>
+                  <tbody className={`divide-y ${isDark ? 'divide-[#a39d96]/10' : 'divide-[#e8e5e0]'}`}>
+                    {data.items?.map((item, idx) => (
+                      <tr key={idx} className={idx % 2 === 1 ? (isDark ? 'bg-[#141311]/50' : 'bg-[#f7f6f2]') : ''}>
+                        <td className={`py-2.5 px-3 font-mono ${isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}`}>
+                          0{idx + 1}
+                        </td>
+                        <td className={`py-2.5 px-3 font-sans font-medium text-xs ${
+                          isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
+                        }`}>
+                          {item.description}
+                        </td>
+                        <td className={`py-2.5 px-3 text-right font-mono text-xs ${
+                          isDark ? 'text-[#d6d2cd]' : 'text-[#2a2723]'
+                        }`}>
+                          {item.quantity}
+                        </td>
+                        <td className={`py-2.5 px-3 text-right font-mono text-xs whitespace-nowrap ${
+                          isDark ? 'text-[#d6d2cd]' : 'text-[#2a2723]'
+                        }`}>
+                          {formatDocCurrency(item.unitPrice, docCurrency)}
+                        </td>
+                        <td className={`py-2.5 px-3 text-right font-mono text-xs font-semibold whitespace-nowrap ${
+                          isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
+                        }`}>
+                          {formatDocCurrency((item.quantity || 1) * (item.unitPrice || 0), docCurrency)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            {/* Notes & Terms */}
-            {(data.notes || data.paymentTerms) && (
-              <div className="p-3 rounded-xl bg-[#0a0908] border border-[#a39d96]/10 font-mono text-[10.5px] space-y-1 text-[#a39d96]">
-                {data.notes && (
-                  <p>
-                    <strong className="text-[#d6d2cd]">Scope & Notes:</strong> {data.notes}
+            {/* Middle Block: Wire Box & Totals */}
+            <div className="space-y-4">
+              <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3.5 border-t ${
+                isDark ? 'border-[#a39d96]/20' : 'border-[#d6d2cd]'
+              }`}>
+                {/* Wire Remittance Box */}
+                <div className={`p-3.5 rounded-xl font-mono text-[11px] space-y-1 border ${
+                  isDark ? 'bg-[#141311] border-[#a39d96]/15' : 'bg-[#f7f6f2] border-[#e2ded8]'
+                }`}>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Landmark className={`w-3.5 h-3.5 ${isDark ? 'text-[#d6d2cd]' : 'text-[#0a0908]'}`} />
+                    <span className={`text-[10px] uppercase tracking-wider font-bold ${
+                      isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'
+                    }`}>
+                      OFFICIAL WIRE REMITTANCE DETAILS ({docCurrency})
+                    </span>
+                  </div>
+                  <p className={isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'}>
+                    <span className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>Bank: </span>
+                    <strong>{bank.bankName}</strong>
                   </p>
-                )}
-                {data.paymentTerms && (
-                  <p>
-                    <strong className="text-[#d6d2cd]">Payment Terms:</strong> {data.paymentTerms}
+                  <p className={isDark ? 'text-[#d6d2cd]' : 'text-[#2a2723]'}>
+                    <span className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>Account Name: </span>
+                    {bank.accountName}
                   </p>
-                )}
-              </div>
-            )}
-
-            {/* Signatures */}
-            <div className="pt-4 border-t border-[#a39d96]/20 flex flex-col sm:flex-row justify-between items-center gap-4 font-mono text-[10.5px]">
-              <div className="text-center sm:text-left space-y-0.5">
-                <div className="w-40 border-b border-[#a39d96]/40 pb-0.5 mb-1 font-serif italic text-sm text-[#f5f4f0]">
-                  Dulanja Abeysinghe
+                  <p className={isDark ? 'text-[#d6d2cd]' : 'text-[#2a2723]'}>
+                    <span className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>Account No: </span>
+                    <strong className="underline underline-offset-2">
+                      {docCurrency === 'USD' && bank.accountNumberUsd ? bank.accountNumberUsd : bank.accountNumber}
+                    </strong>
+                    <span className={`ml-1 text-[10px] ${isDark ? 'text-[#a39d96]' : 'text-[#7a756f]'}`}>
+                      ({docCurrency === 'USD' ? 'FCBU USD Wire' : 'LKR Operating'})
+                    </span>
+                  </p>
+                  <p className={isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}>
+                    <span className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>Branch: </span>
+                    {bank.branch}
+                  </p>
+                  <p className={isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}>
+                    <span className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>SWIFT / BIC: </span>
+                    <strong>{bank.swift}</strong>
+                  </p>
                 </div>
-                <p className="font-bold text-[#f5f4f0]">Dulanja Abeysinghe</p>
-                <p className="text-[#7a756f]">Co-Founder & Principal Systems Architect</p>
+
+                {/* Financial Summary */}
+                <div className="font-mono text-xs space-y-1.5 self-end">
+                  <div className={`flex justify-between ${isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}`}>
+                    <span>SUBTOTAL:</span>
+                    <span className="font-semibold">{formatDocCurrency(totals.subtotal, docCurrency)}</span>
+                  </div>
+                  {totals.discountAmount > 0 && (
+                    <div className={`flex justify-between ${isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}`}>
+                      <span>DISCOUNT ({data.discountPercent}%):</span>
+                      <span>-{formatDocCurrency(totals.discountAmount, docCurrency)}</span>
+                    </div>
+                  )}
+                  {totals.taxAmount > 0 && (
+                    <div className={`flex justify-between ${isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}`}>
+                      <span>TAX / VAT ({data.taxPercent}%):</span>
+                      <span>+{formatDocCurrency(totals.taxAmount, docCurrency)}</span>
+                    </div>
+                  )}
+                  <div className={`flex justify-between text-base font-bold pt-1.5 border-t ${
+                    isDark ? 'border-[#a39d96]/30 text-[#f5f4f0]' : 'border-[#0a0908] text-[#0a0908]'
+                  }`}>
+                    <span>TOTAL DUE:</span>
+                    <span>{formatDocCurrency(totals.total, docCurrency)}</span>
+                  </div>
+                  <div className={`text-[10px] text-right pt-0.5 ${isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}`}>
+                    {docCurrency === 'LKR'
+                      ? `≈ $${Math.round(totals.total / 300).toLocaleString()} USD (@ 300 LKR/USD)`
+                      : `≈ LKR ${(totals.total * 300).toLocaleString()} (@ 300 LKR/USD)`}
+                  </div>
+                </div>
               </div>
 
-              <div className="text-center sm:text-right space-y-0.5">
-                <div className="w-40 border-b border-[#a39d96]/40 pb-0.5 mb-1 font-serif italic text-sm text-[#f5f4f0] sm:ml-auto">
-                  Remashi Diyana
+              {/* Notes & Terms */}
+              {(data.notes || data.paymentTerms) && (
+                <div className={`p-3 rounded-xl border font-mono text-[10.5px] space-y-1 ${
+                  isDark
+                    ? 'bg-[#141311] border-[#a39d96]/10 text-[#a39d96]'
+                    : 'bg-[#f7f6f2] border-[#e2ded8] text-[#524d46]'
+                }`}>
+                  {data.notes && (
+                    <p>
+                      <strong className={isDark ? 'text-[#d6d2cd]' : 'text-[#0a0908]'}>Scope & Notes:</strong> {data.notes}
+                    </p>
+                  )}
+                  {data.paymentTerms && (
+                    <p>
+                      <strong className={isDark ? 'text-[#d6d2cd]' : 'text-[#0a0908]'}>Payment Terms:</strong> {data.paymentTerms}
+                    </p>
+                  )}
                 </div>
-                <p className="font-bold text-[#f5f4f0]">Remashi Diyana</p>
-                <p className="text-[#7a756f]">Co-Founder & Head of Creative Strategy</p>
+              )}
+            </div>
+
+            {/* Bottom Block: Signatures & Compliance Tagline */}
+            <div className="space-y-3 pt-3">
+              <div className={`pt-3 border-t ${
+                isDark ? 'border-[#a39d96]/20' : 'border-[#d6d2cd]'
+              } flex flex-col sm:flex-row justify-between items-end gap-6 font-mono text-[10.5px]`}>
+                {/* Dulanja Abeysinghe Signature */}
+                <div className="space-y-1 text-left">
+                  <div className="h-7 flex items-end">
+                    <span className={`font-serif italic text-base select-none font-bold ${
+                      isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
+                    }`}>
+                      Dulanja Abeysinghe
+                    </span>
+                  </div>
+                  <div className={`w-48 border-b ${isDark ? 'border-[#a39d96]/40' : 'border-[#0a0908]/40'}`} />
+                  <p className={`font-bold uppercase tracking-wider text-xs pt-1 ${
+                    isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
+                  }`}>
+                    Dulanja Abeysinghe
+                  </p>
+                  <p className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>
+                    Co-Founder & Principal Systems Architect
+                  </p>
+                </div>
+
+                {/* Remashi Diyana Signature */}
+                <div className="space-y-1 text-left sm:text-right">
+                  <div className="h-7 flex items-end sm:justify-end">
+                    <span className={`font-serif italic text-base select-none font-bold ${
+                      isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
+                    }`}>
+                      Remashi Diyana
+                    </span>
+                  </div>
+                  <div className={`w-48 border-b ${
+                    isDark ? 'border-[#a39d96]/40' : 'border-[#0a0908]/40'
+                  } sm:ml-auto`} />
+                  <p className={`font-bold uppercase tracking-wider text-xs pt-1 ${
+                    isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
+                  }`}>
+                    Remashi Diyana
+                  </p>
+                  <p className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>
+                    Co-Founder & Head of Creative Strategy
+                  </p>
+                </div>
+              </div>
+
+              {/* Confidentiality Footer Tagline */}
+              <div className={`pt-2 text-center font-mono text-[9px] uppercase tracking-widest ${
+                isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'
+              }`}>
+                // THE MONOLITH ARCHITECTURE LABS (PVT) LTD · OFFICIAL COMMERCIAL DOSSIER · CONFIDENTIAL
               </div>
             </div>
           </div>
