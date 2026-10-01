@@ -79,3 +79,32 @@
     background-size: 24px 24px;
   }
 }
+
+/* Document Print Styles */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  #monolith-printable-doc, #monolith-printable-doc * {
+    visibility: visible;
+  }
+  #monolith-printable-doc {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 28px;
+    background: #ffffff !important;
+    color: #111111 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
