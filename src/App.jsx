@@ -59,7 +59,9 @@ import {
   CreditCard,
   Clock,
   AlertCircle,
-  FileCheck
+  FileCheck,
+  Landmark,
+  Save
 } from 'lucide-react';
 
 /* =========================================================================
@@ -586,9 +588,11 @@ const defaultCompanyProfile = {
     bankName: 'Commercial Bank of Ceylon PLC',
     accountName: 'The Monolith Systems',
     accountNumber: '8014920481',
+    accountNumberUsd: '8014920481-FCBU',
     branch: 'Kurunegala Corporate Banking',
     swift: 'CCEYLKFX',
-    currency: 'LKR & USD Accounts'
+    currency: 'LKR & USD Accounts',
+    wireInstructions: 'Direct wire remittance to Commercial Bank of Ceylon PLC. Remitter is responsible for correspondent banking fees.'
   }
 };
 
@@ -909,6 +913,7 @@ function DocumentEditorModal({
   type,
   mode,
   data,
+  companyProfile,
   onClose,
   onSave
 }) {
@@ -919,8 +924,22 @@ function DocumentEditorModal({
   const [formData, setFormData] = useState(() => {
     const cloned = JSON.parse(JSON.stringify(data));
     if (!cloned.currency) cloned.currency = 'LKR';
+    if (!cloned.bankDetails) {
+      cloned.bankDetails = companyProfile?.bankDetails || defaultCompanyProfile.bankDetails;
+    }
     return cloned;
   });
+
+  useEffect(() => {
+    if (data) {
+      const cloned = JSON.parse(JSON.stringify(data));
+      if (!cloned.currency) cloned.currency = 'LKR';
+      if (!cloned.bankDetails) {
+        cloned.bankDetails = companyProfile?.bankDetails || defaultCompanyProfile.bankDetails;
+      }
+      setFormData(cloned);
+    }
+  }, [data, companyProfile]);
 
   const totals = useMemo(() => {
     return calculateDocTotals(formData.items || [], formData.discountPercent || 0, formData.taxPercent || 0);
@@ -1381,6 +1400,147 @@ function DocumentEditorModal({
             </div>
           </div>
 
+          {/* Wire Remittance & Banking Coordinates for this Document */}
+          <div className="p-4 rounded-2xl bg-[#141311] border border-[#a39d96]/15 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-1 border-b border-[#a39d96]/10">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[#a39d96] flex items-center gap-1.5 font-bold">
+                <Landmark className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                Official Wire Remittance & Bank Coordinates (Printed on Document)
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const fallback = companyProfile?.bankDetails || defaultCompanyProfile.bankDetails;
+                  setFormData((prev) => ({
+                    ...prev,
+                    bankDetails: JSON.parse(JSON.stringify(fallback))
+                  }));
+                }}
+                className="text-[10px] font-mono text-[#a39d96] hover:text-[#f5f4f0] underline transition-colors self-start sm:self-auto"
+              >
+                Reset to Company Profile Defaults
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              <div>
+                <label className="text-[9px] font-mono uppercase tracking-wider text-[#7a756f] block mb-1">
+                  Bank Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.bankDetails?.bankName || ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      bankDetails: { ...(prev.bankDetails || {}), bankName: e.target.value }
+                    }))
+                  }
+                  placeholder="Commercial Bank of Ceylon PLC"
+                  className="w-full px-3 py-1.5 rounded-lg bg-[#0a0908] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-xs focus:outline-none focus:border-[#d6d2cd]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[9px] font-mono uppercase tracking-wider text-[#7a756f] block mb-1">
+                  Account Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.bankDetails?.accountName || ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      bankDetails: { ...(prev.bankDetails || {}), accountName: e.target.value }
+                    }))
+                  }
+                  placeholder="The Monolith Systems"
+                  className="w-full px-3 py-1.5 rounded-lg bg-[#0a0908] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-xs focus:outline-none focus:border-[#d6d2cd]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[9px] font-mono uppercase tracking-wider text-[#7a756f] block mb-1">
+                  Account No ({currentCurrency})
+                </label>
+                <input
+                  type="text"
+                  value={
+                    currentCurrency === 'USD'
+                      ? (formData.bankDetails?.accountNumberUsd || formData.bankDetails?.accountNumber || '')
+                      : (formData.bankDetails?.accountNumber || '')
+                  }
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      bankDetails: {
+                        ...(prev.bankDetails || {}),
+                        [currentCurrency === 'USD' ? 'accountNumberUsd' : 'accountNumber']: e.target.value,
+                        accountNumber: currentCurrency === 'LKR' ? e.target.value : (prev.bankDetails?.accountNumber || e.target.value)
+                      }
+                    }))
+                  }
+                  placeholder="8014920481"
+                  className="w-full px-3 py-1.5 rounded-lg bg-[#0a0908] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-xs focus:outline-none focus:border-[#d6d2cd]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[9px] font-mono uppercase tracking-wider text-[#7a756f] block mb-1">
+                  Branch Name / Code
+                </label>
+                <input
+                  type="text"
+                  value={formData.bankDetails?.branch || ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      bankDetails: { ...(prev.bankDetails || {}), branch: e.target.value }
+                    }))
+                  }
+                  placeholder="Kurunegala Corporate Banking (034)"
+                  className="w-full px-3 py-1.5 rounded-lg bg-[#0a0908] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-xs focus:outline-none focus:border-[#d6d2cd]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[9px] font-mono uppercase tracking-wider text-[#7a756f] block mb-1">
+                  SWIFT / BIC Code
+                </label>
+                <input
+                  type="text"
+                  value={formData.bankDetails?.swift || ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      bankDetails: { ...(prev.bankDetails || {}), swift: e.target.value }
+                    }))
+                  }
+                  placeholder="CCEYLKFX"
+                  className="w-full px-3 py-1.5 rounded-lg bg-[#0a0908] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-xs focus:outline-none focus:border-[#d6d2cd]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[9px] font-mono uppercase tracking-wider text-[#7a756f] block mb-1">
+                  Account Currency Type
+                </label>
+                <input
+                  type="text"
+                  value={formData.bankDetails?.currency || ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      bankDetails: { ...(prev.bankDetails || {}), currency: e.target.value }
+                    }))
+                  }
+                  placeholder="LKR & USD Accounts"
+                  className="w-full px-3 py-1.5 rounded-lg bg-[#0a0908] border border-[#a39d96]/20 text-[#f5f4f0] font-mono text-xs focus:outline-none focus:border-[#d6d2cd]"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Notes & Terms */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -1445,6 +1605,7 @@ function DocumentPrintModal({
   const isInvoice = type === 'invoice';
   const totals = calculateDocTotals(data.items || [], data.discountPercent || 0, data.taxPercent || 0);
   const docCurrency = data.currency || 'LKR';
+  const bank = data.bankDetails || companyProfile?.bankDetails || defaultCompanyProfile.bankDetails;
 
   const handlePrint = () => {
     window.print();
@@ -1501,10 +1662,13 @@ function DocumentPrintModal({
         </div>
 
         {/* Printable Document Container */}
-        <div className="p-6 sm:p-12 overflow-y-auto flex-1 bg-[#0a0908] text-xs">
-          <div id="monolith-printable-doc" className="max-w-3xl mx-auto space-y-8 bg-[#141311] p-8 sm:p-10 rounded-2xl border border-[#a39d96]/20 text-[#f5f4f0]">
+        <div className="p-4 sm:p-8 overflow-y-auto flex-1 bg-[#0a0908] text-xs">
+          <div
+            id="monolith-printable-doc"
+            className="max-w-3xl mx-auto space-y-4 bg-[#141311] p-5 sm:p-7 rounded-2xl border border-[#a39d96]/20 text-[#f5f4f0]"
+          >
             {/* Document Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-[#a39d96]/20">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-3.5 border-b border-[#a39d96]/20">
               <div className="space-y-1">
                 <div className="flex items-center gap-2.5">
                   <div className="w-4 h-5 rounded-sm bg-[#e3dfd8] flex items-center justify-center">
@@ -1536,8 +1700,8 @@ function DocumentPrintModal({
             </div>
 
             {/* From & Bill To Coordinates */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-xs font-mono">
-              <div className="space-y-1 p-4 rounded-xl bg-[#0a0908] border border-[#a39d96]/15">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+              <div className="space-y-1 p-3.5 rounded-xl bg-[#0a0908] border border-[#a39d96]/15">
                 <span className="text-[10px] text-[#7a756f] uppercase tracking-wider block mb-1">
                   // ISSUING AUTHORITY (FOUNDING ARCHITECTS)
                 </span>
@@ -1548,7 +1712,7 @@ function DocumentPrintModal({
                 <p className="text-[#a39d96]">diyanamashi@gmail.com · +94 713765861</p>
               </div>
 
-              <div className="space-y-1 p-4 rounded-xl bg-[#0a0908] border border-[#a39d96]/15">
+              <div className="space-y-1 p-3.5 rounded-xl bg-[#0a0908] border border-[#a39d96]/15">
                 <span className="text-[10px] text-[#7a756f] uppercase tracking-wider block mb-1">
                   // BILLED / QUOTED TO CLIENT
                 </span>
@@ -1556,7 +1720,7 @@ function DocumentPrintModal({
                 <p className="text-[#d6d2cd]">Attn: {data.clientName}</p>
                 <p className="text-[#a39d96]">{data.clientEmail}</p>
                 <p className="text-[#7a756f]">{data.clientAddress || 'Global Deployment'}</p>
-                <div className="pt-2 text-[10px] text-[#a39d96] flex justify-between">
+                <div className="pt-1.5 text-[10px] text-[#a39d96] flex justify-between">
                   <span>Issued: {data.issueDate}</span>
                   <span>{isInvoice ? `Due: ${data.dueDate}` : `Valid Until: ${data.validUntil}`}</span>
                 </div>
@@ -1568,25 +1732,25 @@ function DocumentPrintModal({
               <table className="w-full text-left font-mono text-xs">
                 <thead>
                   <tr className="border-b border-[#a39d96]/20 text-[#a39d96] uppercase text-[10px]">
-                    <th className="py-2.5 px-3">#</th>
-                    <th className="py-2.5 px-3">Scope Description</th>
-                    <th className="py-2.5 px-3 text-right">Qty</th>
-                    <th className="py-2.5 px-3 text-right">Rate ({docCurrency})</th>
-                    <th className="py-2.5 px-3 text-right">Amount ({docCurrency})</th>
+                    <th className="py-2 px-3">#</th>
+                    <th className="py-2 px-3">Scope Description</th>
+                    <th className="py-2 px-3 text-right">Qty</th>
+                    <th className="py-2 px-3 text-right">Rate ({docCurrency})</th>
+                    <th className="py-2 px-3 text-right">Amount ({docCurrency})</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#a39d96]/10">
                   {data.items?.map((item, idx) => (
                     <tr key={idx}>
-                      <td className="py-3 px-3 text-[#7a756f]">0{idx + 1}</td>
-                      <td className="py-3 px-3 text-[#f5f4f0] font-sans font-medium">
+                      <td className="py-2 px-3 text-[#7a756f]">0{idx + 1}</td>
+                      <td className="py-2 px-3 text-[#f5f4f0] font-sans font-medium text-[11px]">
                         {item.description}
                       </td>
-                      <td className="py-3 px-3 text-right text-[#d6d2cd]">{item.quantity}</td>
-                      <td className="py-3 px-3 text-right text-[#d6d2cd]">
+                      <td className="py-2 px-3 text-right text-[#d6d2cd] text-[11px]">{item.quantity}</td>
+                      <td className="py-2 px-3 text-right text-[#d6d2cd] text-[11px]">
                         {formatDocCurrency(item.unitPrice, docCurrency)}
                       </td>
-                      <td className="py-3 px-3 text-right text-[#f5f4f0] font-semibold">
+                      <td className="py-2 px-3 text-right text-[#f5f4f0] font-semibold text-[11px]">
                         {formatDocCurrency((item.quantity || 1) * (item.unitPrice || 0), docCurrency)}
                       </td>
                     </tr>
@@ -1596,19 +1760,21 @@ function DocumentPrintModal({
             </div>
 
             {/* Totals & Wire Box */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-[#a39d96]/20">
-              <div className="p-4 rounded-xl bg-[#0a0908] border border-[#a39d96]/15 font-mono text-[11px] space-y-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3.5 border-t border-[#a39d96]/20">
+              <div className="p-3.5 rounded-xl bg-[#0a0908] border border-[#a39d96]/15 font-mono text-[10.5px] space-y-1">
                 <span className="text-[10px] text-[#7a756f] uppercase tracking-wider block mb-1">
                   OFFICIAL WIRE REMITTANCE DETAILS ({docCurrency})
                 </span>
-                <p className="text-[#f5f4f0] font-semibold">Bank: Commercial Bank of Ceylon PLC</p>
-                <p className="text-[#d6d2cd]">Account Name: The Monolith Systems</p>
-                <p className="text-[#d6d2cd]">Account No: 8014920481 ({docCurrency === 'USD' ? 'FCBU USD Wire' : 'LKR Operating'})</p>
-                <p className="text-[#a39d96]">Branch: Kurunegala Corporate Banking (034)</p>
-                <p className="text-[#a39d96]">SWIFT / BIC: CCEYLKFX</p>
+                <p className="text-[#f5f4f0] font-semibold">Bank: {bank.bankName}</p>
+                <p className="text-[#d6d2cd]">Account Name: {bank.accountName}</p>
+                <p className="text-[#d6d2cd]">
+                  Account No: {docCurrency === 'USD' && bank.accountNumberUsd ? bank.accountNumberUsd : bank.accountNumber} ({docCurrency === 'USD' ? 'FCBU USD Wire' : 'LKR Operating'})
+                </p>
+                <p className="text-[#a39d96]">Branch: {bank.branch}</p>
+                <p className="text-[#a39d96]">SWIFT / BIC: {bank.swift}</p>
               </div>
 
-              <div className="font-mono text-xs space-y-1.5 self-end">
+              <div className="font-mono text-xs space-y-1 self-end">
                 <div className="flex justify-between text-[#a39d96]">
                   <span>SUBTOTAL:</span>
                   <span>{formatDocCurrency(totals.subtotal, docCurrency)}</span>
@@ -1625,7 +1791,7 @@ function DocumentPrintModal({
                     <span>+{formatDocCurrency(totals.taxAmount, docCurrency)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-base font-bold text-[#f5f4f0] pt-2 border-t border-[#a39d96]/30">
+                <div className="flex justify-between text-base font-bold text-[#f5f4f0] pt-1.5 border-t border-[#a39d96]/30">
                   <span>TOTAL DUE:</span>
                   <span>{formatDocCurrency(totals.total, docCurrency)}</span>
                 </div>
@@ -1639,7 +1805,7 @@ function DocumentPrintModal({
 
             {/* Notes & Terms */}
             {(data.notes || data.paymentTerms) && (
-              <div className="p-4 rounded-xl bg-[#0a0908] border border-[#a39d96]/10 font-mono text-[11px] space-y-2 text-[#a39d96]">
+              <div className="p-3 rounded-xl bg-[#0a0908] border border-[#a39d96]/10 font-mono text-[10.5px] space-y-1 text-[#a39d96]">
                 {data.notes && (
                   <p>
                     <strong className="text-[#d6d2cd]">Scope & Notes:</strong> {data.notes}
@@ -1654,17 +1820,17 @@ function DocumentPrintModal({
             )}
 
             {/* Signatures */}
-            <div className="pt-8 border-t border-[#a39d96]/20 flex flex-col sm:flex-row justify-between items-center gap-6 font-mono text-[11px]">
-              <div className="text-center sm:text-left space-y-1">
-                <div className="w-44 border-b border-[#a39d96]/40 pb-1 mb-1 font-serif italic text-sm text-[#f5f4f0]">
+            <div className="pt-4 border-t border-[#a39d96]/20 flex flex-col sm:flex-row justify-between items-center gap-4 font-mono text-[10.5px]">
+              <div className="text-center sm:text-left space-y-0.5">
+                <div className="w-40 border-b border-[#a39d96]/40 pb-0.5 mb-1 font-serif italic text-sm text-[#f5f4f0]">
                   Dulanja Abeysinghe
                 </div>
                 <p className="font-bold text-[#f5f4f0]">Dulanja Abeysinghe</p>
                 <p className="text-[#7a756f]">Co-Founder & Principal Systems Architect</p>
               </div>
 
-              <div className="text-center sm:text-right space-y-1">
-                <div className="w-44 border-b border-[#a39d96]/40 pb-1 mb-1 font-serif italic text-sm text-[#f5f4f0] sm:ml-auto">
+              <div className="text-center sm:text-right space-y-0.5">
+                <div className="w-40 border-b border-[#a39d96]/40 pb-0.5 mb-1 font-serif italic text-sm text-[#f5f4f0] sm:ml-auto">
                   Remashi Diyana
                 </div>
                 <p className="font-bold text-[#f5f4f0]">Remashi Diyana</p>
@@ -1687,6 +1853,7 @@ function AdminPortalModal({
   invoices,
   quotations,
   companyProfile,
+  onUpdateCompanyProfile,
   kpiStats,
   search,
   setSearch,
@@ -1704,6 +1871,43 @@ function AdminPortalModal({
   if (!isOpen) return null;
 
   const [currencyFilter, setCurrencyFilter] = useState('ALL');
+  const [isEditingBank, setIsEditingBank] = useState(false);
+  const [bankFormData, setBankFormData] = useState(() => ({
+    bankName: companyProfile?.bankDetails?.bankName || 'Commercial Bank of Ceylon PLC',
+    accountName: companyProfile?.bankDetails?.accountName || 'The Monolith Systems',
+    accountNumber: companyProfile?.bankDetails?.accountNumber || '8014920481',
+    accountNumberUsd: companyProfile?.bankDetails?.accountNumberUsd || '8014920481-FCBU',
+    branch: companyProfile?.bankDetails?.branch || 'Kurunegala Corporate Banking',
+    swift: companyProfile?.bankDetails?.swift || 'CCEYLKFX',
+    currency: companyProfile?.bankDetails?.currency || 'LKR & USD Accounts',
+    wireInstructions: companyProfile?.bankDetails?.wireInstructions || ''
+  }));
+
+  useEffect(() => {
+    if (companyProfile?.bankDetails) {
+      setBankFormData({
+        bankName: companyProfile.bankDetails.bankName || 'Commercial Bank of Ceylon PLC',
+        accountName: companyProfile.bankDetails.accountName || 'The Monolith Systems',
+        accountNumber: companyProfile.bankDetails.accountNumber || '8014920481',
+        accountNumberUsd: companyProfile.bankDetails.accountNumberUsd || '8014920481-FCBU',
+        branch: companyProfile.bankDetails.branch || 'Kurunegala Corporate Banking',
+        swift: companyProfile.bankDetails.swift || 'CCEYLKFX',
+        currency: companyProfile.bankDetails.currency || 'LKR & USD Accounts',
+        wireInstructions: companyProfile.bankDetails.wireInstructions || ''
+      });
+    }
+  }, [companyProfile]);
+
+  const handleSaveBankDetails = (e) => {
+    e.preventDefault();
+    if (onUpdateCompanyProfile) {
+      onUpdateCompanyProfile({
+        ...companyProfile,
+        bankDetails: { ...bankFormData }
+      });
+    }
+    setIsEditingBank(false);
+  };
 
   const filteredInvoices = invoices.filter((inv) => {
     const matchesSearch =
@@ -2463,27 +2667,188 @@ function AdminPortalModal({
                 </div>
               </div>
 
-              <div className="p-6 rounded-2xl bg-[#141311] border border-[#a39d96]/15 space-y-4">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#a39d96]">
-                  // OFFICIAL BANKING & WIRE REMITTANCE PROFILE
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
-                  <div className="p-4 rounded-xl bg-[#0a0908] border border-[#a39d96]/10 space-y-1">
-                    <span className="text-[10px] text-[#7a756f] uppercase">Banking Institution</span>
-                    <p className="text-[#f5f4f0] font-bold">{companyProfile.bankDetails.bankName}</p>
-                    <p className="text-[#a39d96]">{companyProfile.bankDetails.branch}</p>
+              <div className="p-6 rounded-2xl bg-[#141311] border border-[#a39d96]/15 space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Landmark className="w-4 h-4 text-[#d6d2cd]" />
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#a39d96]">
+                      // OFFICIAL BANKING & WIRE REMITTANCE PROFILE
+                    </span>
                   </div>
-                  <div className="p-4 rounded-xl bg-[#0a0908] border border-[#a39d96]/10 space-y-1">
-                    <span className="text-[10px] text-[#7a756f] uppercase">Account Coordinates</span>
-                    <p className="text-[#f5f4f0] font-bold">{companyProfile.bankDetails.accountNumber}</p>
-                    <p className="text-[#a39d96]">{companyProfile.bankDetails.accountName}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-[#0a0908] border border-[#a39d96]/10 space-y-1">
-                    <span className="text-[10px] text-[#7a756f] uppercase">Wire Codes & Currency</span>
-                    <p className="text-[#f5f4f0] font-bold">SWIFT: {companyProfile.bankDetails.swift}</p>
-                    <p className="text-[#a39d96]">Currency: {companyProfile.bankDetails.currency}</p>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingBank(!isEditingBank)}
+                    className="px-3 py-1.5 rounded-lg bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 font-mono text-xs hover:bg-[#252320] transition-colors flex items-center gap-1.5"
+                  >
+                    {isEditingBank ? (
+                      'Cancel Editing'
+                    ) : (
+                      <>
+                        <Edit3 className="w-3.5 h-3.5" />
+                        Edit Banking Coordinates
+                      </>
+                    )}
+                  </button>
                 </div>
+
+                {isEditingBank ? (
+                  <form onSubmit={handleSaveBankDetails} className="space-y-4 font-mono text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] uppercase text-[#7a756f] block mb-1">
+                          Banking Institution Name
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={bankFormData.bankName}
+                          onChange={(e) => setBankFormData({ ...bankFormData, bankName: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-[#0a0908] border border-[#a39d96]/25 text-[#f5f4f0] text-xs focus:outline-none focus:border-[#d6d2cd]"
+                          placeholder="Commercial Bank of Ceylon PLC"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] uppercase text-[#7a756f] block mb-1">
+                          Branch Name / Code
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={bankFormData.branch}
+                          onChange={(e) => setBankFormData({ ...bankFormData, branch: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-[#0a0908] border border-[#a39d96]/25 text-[#f5f4f0] text-xs focus:outline-none focus:border-[#d6d2cd]"
+                          placeholder="Kurunegala Corporate Banking"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-[10px] uppercase text-[#7a756f] block mb-1">
+                          Beneficiary Account Name
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={bankFormData.accountName}
+                          onChange={(e) => setBankFormData({ ...bankFormData, accountName: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-[#0a0908] border border-[#a39d96]/25 text-[#f5f4f0] text-xs focus:outline-none focus:border-[#d6d2cd]"
+                          placeholder="The Monolith Systems"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] uppercase text-[#7a756f] block mb-1">
+                          LKR Operating Account No
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={bankFormData.accountNumber}
+                          onChange={(e) => setBankFormData({ ...bankFormData, accountNumber: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-[#0a0908] border border-[#a39d96]/25 text-[#f5f4f0] text-xs focus:outline-none focus:border-[#d6d2cd]"
+                          placeholder="8014920481"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] uppercase text-[#7a756f] block mb-1">
+                          USD / FCBU Wire Account No
+                        </label>
+                        <input
+                          type="text"
+                          value={bankFormData.accountNumberUsd}
+                          onChange={(e) => setBankFormData({ ...bankFormData, accountNumberUsd: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-[#0a0908] border border-[#a39d96]/25 text-[#f5f4f0] text-xs focus:outline-none focus:border-[#d6d2cd]"
+                          placeholder="8014920481-FCBU"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] uppercase text-[#7a756f] block mb-1">
+                          SWIFT / BIC Code
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={bankFormData.swift}
+                          onChange={(e) => setBankFormData({ ...bankFormData, swift: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-[#0a0908] border border-[#a39d96]/25 text-[#f5f4f0] text-xs focus:outline-none focus:border-[#d6d2cd]"
+                          placeholder="CCEYLKFX"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] uppercase text-[#7a756f] block mb-1">
+                          Account Currency Type
+                        </label>
+                        <input
+                          type="text"
+                          value={bankFormData.currency}
+                          onChange={(e) => setBankFormData({ ...bankFormData, currency: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-[#0a0908] border border-[#a39d96]/25 text-[#f5f4f0] text-xs focus:outline-none focus:border-[#d6d2cd]"
+                          placeholder="LKR & USD Accounts"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] uppercase text-[#7a756f] block mb-1">
+                        International Wire Remittance Instructions (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={bankFormData.wireInstructions}
+                        onChange={(e) => setBankFormData({ ...bankFormData, wireInstructions: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl bg-[#0a0908] border border-[#a39d96]/25 text-[#f5f4f0] text-xs focus:outline-none focus:border-[#d6d2cd]"
+                        placeholder="Intermediary bank: Citibank N.A. New York (SWIFT: CITIUS33)"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-end gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingBank(false)}
+                        className="px-4 py-2 rounded-xl bg-[#0a0908] text-[#a39d96] border border-[#a39d96]/20 hover:text-[#f5f4f0]"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 rounded-xl bg-[#e3dfd8] text-[#0a0908] font-bold text-xs uppercase tracking-wider hover:bg-[#f5f4f0] transition-colors flex items-center gap-2 shadow-taupe-glow"
+                      >
+                        <Save className="w-3.5 h-3.5 text-[#0a0908]" />
+                        Save Banking Profile
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
+                      <div className="p-4 rounded-xl bg-[#0a0908] border border-[#a39d96]/10 space-y-1">
+                        <span className="text-[10px] text-[#7a756f] uppercase">Banking Institution</span>
+                        <p className="text-[#f5f4f0] font-bold">{companyProfile.bankDetails?.bankName}</p>
+                        <p className="text-[#a39d96]">{companyProfile.bankDetails?.branch}</p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-[#0a0908] border border-[#a39d96]/10 space-y-1">
+                        <span className="text-[10px] text-[#7a756f] uppercase">Operating Accounts</span>
+                        <p className="text-[#f5f4f0] font-bold">LKR: {companyProfile.bankDetails?.accountNumber}</p>
+                        <p className="text-[#d6d2cd] text-[11px]">USD: {companyProfile.bankDetails?.accountNumberUsd || 'Same'}</p>
+                        <p className="text-[#a39d96] text-[11px]">{companyProfile.bankDetails?.accountName}</p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-[#0a0908] border border-[#a39d96]/10 space-y-1">
+                        <span className="text-[10px] text-[#7a756f] uppercase">Wire Codes & Currency</span>
+                        <p className="text-[#f5f4f0] font-bold">SWIFT: {companyProfile.bankDetails?.swift}</p>
+                        <p className="text-[#a39d96]">Currency: {companyProfile.bankDetails?.currency}</p>
+                      </div>
+                    </div>
+                    {companyProfile.bankDetails?.wireInstructions && (
+                      <div className="p-3 rounded-xl bg-[#0a0908] border border-[#a39d96]/10 font-mono text-[11px] text-[#a39d96]">
+                        <span className="text-[10px] text-[#7a756f] uppercase block mb-0.5">Wire Instructions:</span>
+                        {companyProfile.bankDetails.wireInstructions}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -2608,6 +2973,12 @@ export default function TheMonolith() {
   const showAdminToast = (message, type = 'success') => {
     setAdminToast({ message, type });
     setTimeout(() => setAdminToast(null), 3500);
+  };
+
+  const handleUpdateCompanyProfile = (updatedProfile) => {
+    setCompanyProfile(updatedProfile);
+    safeStorage.set('monolith_company_profile_v1', updatedProfile);
+    showAdminToast('OFFICIAL BANKING PROFILE UPDATED', 'success');
   };
 
   const handleAdminLogin = (e) => {
@@ -5693,6 +6064,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         invoices={invoices}
         quotations={quotations}
         companyProfile={companyProfile}
+        onUpdateCompanyProfile={handleUpdateCompanyProfile}
         kpiStats={kpiStats}
         search={adminSearch}
         setSearch={setAdminSearch}
@@ -5714,6 +6086,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
         type={editorModal.type}
         mode={editorModal.mode}
         data={editorModal.data}
+        companyProfile={companyProfile}
         onClose={() => setEditorModal({ open: false, type: 'invoice', mode: 'create', data: null })}
         onSave={handleSaveDocument}
       />
