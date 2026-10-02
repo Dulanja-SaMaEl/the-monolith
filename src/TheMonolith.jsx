@@ -63,7 +63,8 @@ import {
   Landmark,
   Save,
   Moon,
-  Sun
+  Sun,
+  Users
 } from 'lucide-react';
 
 /* =========================================================================
@@ -611,6 +612,7 @@ const defaultInvoices = [
     dueDate: '2026-10-15',
     domain: 'healthcare',
     currency: 'LKR',
+    authorityParty: 'dulanja',
     status: 'Paid',
     items: [
       {
@@ -646,6 +648,7 @@ const defaultInvoices = [
     dueDate: '2026-10-28',
     domain: 'fintech',
     currency: 'USD',
+    authorityParty: 'dulanja',
     status: 'Pending',
     items: [
       {
@@ -676,6 +679,7 @@ const defaultInvoices = [
     dueDate: '2026-10-15',
     domain: 'creative_marketing',
     currency: 'LKR',
+    authorityParty: 'remashi',
     status: 'Pending',
     items: [
       {
@@ -713,6 +717,7 @@ const defaultQuotations = [
     validUntil: '2026-10-20',
     domain: 'creative_marketing',
     currency: 'LKR',
+    authorityParty: 'remashi',
     status: 'Approved',
     items: [
       {
@@ -747,6 +752,7 @@ const defaultQuotations = [
     validUntil: '2026-10-25',
     domain: 'software',
     currency: 'USD',
+    authorityParty: 'dulanja',
     status: 'Sent',
     items: [
       {
@@ -781,6 +787,7 @@ const defaultQuotations = [
     validUntil: '2026-10-30',
     domain: 'software',
     currency: 'LKR',
+    authorityParty: 'both',
     status: 'Draft',
     items: [
       {
@@ -926,6 +933,7 @@ function DocumentEditorModal({
   const [formData, setFormData] = useState(() => {
     const cloned = JSON.parse(JSON.stringify(data));
     if (!cloned.currency) cloned.currency = 'LKR';
+    if (!cloned.authorityParty) cloned.authorityParty = 'both';
     if (!cloned.bankDetails) {
       cloned.bankDetails = companyProfile?.bankDetails || defaultCompanyProfile.bankDetails;
     }
@@ -936,6 +944,7 @@ function DocumentEditorModal({
     if (data) {
       const cloned = JSON.parse(JSON.stringify(data));
       if (!cloned.currency) cloned.currency = 'LKR';
+      if (!cloned.authorityParty) cloned.authorityParty = 'both';
       if (!cloned.bankDetails) {
         cloned.bankDetails = companyProfile?.bankDetails || defaultCompanyProfile.bankDetails;
       }
@@ -1105,6 +1114,62 @@ function DocumentEditorModal({
             >
               🔄 Auto-Convert Rates ({currentCurrency === 'LKR' ? 'LKR → USD' : 'USD → LKR'})
             </button>
+          </div>
+
+          {/* Issuing Authority & Signatory Party Toggle */}
+          <div className="p-4 rounded-2xl bg-[#141311] border border-[#a39d96]/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#a39d96] flex items-center gap-1.5 font-bold">
+                <Users className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                Issuing Authority & Signatory:
+              </span>
+              <p className="text-[10px] font-mono text-[#7a756f]">
+                {(formData.authorityParty || 'both') === 'dulanja'
+                  ? 'Issued & signed solely by Dulanja Abeysinghe (Principal Systems Architect)'
+                  : formData.authorityParty === 'remashi'
+                  ? 'Issued & signed solely by Remashi Diyana (Head of Creative Strategy)'
+                  : 'Issued & signed jointly by Both Founding Architects (Dulanja & Remashi)'}
+              </p>
+            </div>
+
+            <div className="inline-flex rounded-xl p-1 bg-[#0a0908] border border-[#a39d96]/20 font-mono text-xs self-stretch sm:self-auto justify-between sm:justify-start">
+              <button
+                type="button"
+                onClick={() => handleFieldChange('authorityParty', 'both')}
+                className={`px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center justify-center gap-1.5 ${
+                  (formData.authorityParty || 'both') === 'both'
+                    ? 'bg-[#f5f4f0] text-[#0a0908] shadow-sm'
+                    : 'text-[#a39d96] hover:text-[#f5f4f0]'
+                }`}
+              >
+                <Users className="w-3.5 h-3.5" />
+                Both Architects
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFieldChange('authorityParty', 'dulanja')}
+                className={`px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center justify-center gap-1.5 ${
+                  formData.authorityParty === 'dulanja'
+                    ? 'bg-[#f5f4f0] text-[#0a0908] shadow-sm'
+                    : 'text-[#a39d96] hover:text-[#f5f4f0]'
+                }`}
+              >
+                <User className="w-3.5 h-3.5" />
+                Dulanja Only (Me)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFieldChange('authorityParty', 'remashi')}
+                className={`px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center justify-center gap-1.5 ${
+                  formData.authorityParty === 'remashi'
+                    ? 'bg-[#f5f4f0] text-[#0a0908] shadow-sm'
+                    : 'text-[#a39d96] hover:text-[#f5f4f0]'
+                }`}
+              >
+                <User className="w-3.5 h-3.5" />
+                Remashi Only
+              </button>
+            </div>
           </div>
 
           {/* Metadata Row */}
@@ -1622,6 +1687,7 @@ function DocumentPrintModal({
   const isInvoice = type === 'invoice';
   const totals = calculateDocTotals(data.items || [], data.discountPercent || 0, data.taxPercent || 0);
   const docCurrency = data.currency || 'LKR';
+  const authorityParty = data.authorityParty || 'both';
   const bank = data.bankDetails || companyProfile?.bankDetails || defaultCompanyProfile.bankDetails;
 
   const handlePrint = () => {
@@ -1776,22 +1842,40 @@ function DocumentPrintModal({
                   <span className={`text-[10px] uppercase tracking-wider block mb-1 font-bold ${
                     isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'
                   }`}>
-                    // ISSUING AUTHORITY (FOUNDING ARCHITECTS)
+                    {authorityParty === 'dulanja'
+                      ? '// ISSUING AUTHORITY (PRINCIPAL ARCHITECT)'
+                      : authorityParty === 'remashi'
+                      ? '// ISSUING AUTHORITY (CREATIVE DIRECTION)'
+                      : '// ISSUING AUTHORITY (FOUNDING ARCHITECTS)'}
                   </span>
                   <p className={`font-bold ${isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'}`}>
                     The Monolith Architecture Labs (Pvt) Ltd
                   </p>
-                  <p className={isDark ? 'text-[#d6d2cd]' : 'text-[#2a2723]'}>
-                    Dulanja Abeysinghe (Principal Systems Architect)
-                  </p>
-                  <p className={isDark ? 'text-[#d6d2cd]' : 'text-[#2a2723]'}>
-                    Remashi Diyana (Head of Creative Strategy)
-                  </p>
-                  <p className={isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}>
-                    dulanja150abeysinghe@gmail.com · +94 76 591 7189
-                  </p>
-                  <p className={isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}>
-                    diyanamashi@gmail.com · +94 713765861
+
+                  {authorityParty !== 'remashi' && (
+                    <>
+                      <p className={isDark ? 'text-[#d6d2cd]' : 'text-[#2a2723]'}>
+                        Dulanja Abeysinghe (Principal Systems Architect)
+                      </p>
+                      <p className={isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}>
+                        dulanja150abeysinghe@gmail.com · +94 76 591 7189
+                      </p>
+                    </>
+                  )}
+
+                  {authorityParty !== 'dulanja' && (
+                    <>
+                      <p className={isDark ? 'text-[#d6d2cd]' : 'text-[#2a2723]'}>
+                        Remashi Diyana (Head of Creative Strategy)
+                      </p>
+                      <p className={isDark ? 'text-[#a39d96]' : 'text-[#524d46]'}>
+                        diyanamashi@gmail.com · +94 713765861
+                      </p>
+                    </>
+                  )}
+
+                  <p className={`text-[10px] pt-0.5 ${isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}`}>
+                    Kurunegala / Colombo, Sri Lanka · Enterprise Lattice
                   </p>
                 </div>
 
@@ -1976,46 +2060,80 @@ function DocumentPrintModal({
                 isDark ? 'border-[#a39d96]/20' : 'border-[#d6d2cd]'
               } flex flex-col sm:flex-row justify-between items-end gap-6 font-mono text-[10.5px]`}>
                 {/* Dulanja Abeysinghe Signature */}
-                <div className="space-y-1 text-left">
-                  <div className="h-7 flex items-end">
-                    <span className={`font-serif italic text-base select-none font-bold ${
+                {authorityParty !== 'remashi' && (
+                  <div className="space-y-1 text-left">
+                    <div className="h-7 flex items-end">
+                      <span className={`font-serif italic text-base select-none font-bold ${
+                        isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
+                      }`}>
+                        Dulanja Abeysinghe
+                      </span>
+                    </div>
+                    <div className={`w-48 border-b ${isDark ? 'border-[#a39d96]/40' : 'border-[#0a0908]/40'}`} />
+                    <p className={`font-bold uppercase tracking-wider text-xs pt-1 ${
                       isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
                     }`}>
                       Dulanja Abeysinghe
-                    </span>
+                    </p>
+                    <p className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>
+                      Co-Founder & Principal Systems Architect
+                    </p>
                   </div>
-                  <div className={`w-48 border-b ${isDark ? 'border-[#a39d96]/40' : 'border-[#0a0908]/40'}`} />
-                  <p className={`font-bold uppercase tracking-wider text-xs pt-1 ${
-                    isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
-                  }`}>
-                    Dulanja Abeysinghe
-                  </p>
-                  <p className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>
-                    Co-Founder & Principal Systems Architect
-                  </p>
-                </div>
+                )}
+
+                {/* If Dulanja only: Digital Verification Seal on Right */}
+                {authorityParty === 'dulanja' && (
+                  <div className="space-y-1 text-left sm:text-right border-l-2 sm:border-l-0 sm:border-r-2 border-[#a39d96]/30 pl-3 sm:pr-3 py-0.5">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#a39d96] block font-bold">
+                      // SOLE EXECUTIVE AUTHORITY
+                    </span>
+                    <p className={`font-bold uppercase text-[11px] ${isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'}`}>
+                      Autonomous Verification Enclave
+                    </p>
+                    <p className={`text-[10px] ${isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}`}>
+                      Digitally Approved & Signed by Principal Architect
+                    </p>
+                  </div>
+                )}
+
+                {/* If Remashi only: Creative Directive Seal on Left */}
+                {authorityParty === 'remashi' && (
+                  <div className="space-y-1 text-left border-l-2 border-[#a39d96]/30 pl-3 py-0.5">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#a39d96] block font-bold">
+                      // CREATIVE STUDIO DIRECTIVE
+                    </span>
+                    <p className={`font-bold uppercase text-[11px] ${isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'}`}>
+                      Creative Strategy & Brand Enclave
+                    </p>
+                    <p className={`text-[10px] ${isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}`}>
+                      Digitally Approved & Signed by Creative Director
+                    </p>
+                  </div>
+                )}
 
                 {/* Remashi Diyana Signature */}
-                <div className="space-y-1 text-left sm:text-right">
-                  <div className="h-7 flex items-end sm:justify-end">
-                    <span className={`font-serif italic text-base select-none font-bold ${
+                {authorityParty !== 'dulanja' && (
+                  <div className="space-y-1 text-left sm:text-right">
+                    <div className="h-7 flex items-end sm:justify-end">
+                      <span className={`font-serif italic text-base select-none font-bold ${
+                        isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
+                      }`}>
+                        Remashi Diyana
+                      </span>
+                    </div>
+                    <div className={`w-48 border-b ${
+                      isDark ? 'border-[#a39d96]/40' : 'border-[#0a0908]/40'
+                    } sm:ml-auto`} />
+                    <p className={`font-bold uppercase tracking-wider text-xs pt-1 ${
                       isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
                     }`}>
                       Remashi Diyana
-                    </span>
+                    </p>
+                    <p className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>
+                      Co-Founder & Head of Creative Strategy
+                    </p>
                   </div>
-                  <div className={`w-48 border-b ${
-                    isDark ? 'border-[#a39d96]/40' : 'border-[#0a0908]/40'
-                  } sm:ml-auto`} />
-                  <p className={`font-bold uppercase tracking-wider text-xs pt-1 ${
-                    isDark ? 'text-[#f5f4f0]' : 'text-[#0a0908]'
-                  }`}>
-                    Remashi Diyana
-                  </p>
-                  <p className={isDark ? 'text-[#7a756f]' : 'text-[#8a847d]'}>
-                    Co-Founder & Head of Creative Strategy
-                  </p>
-                </div>
+                )}
               </div>
 
               {/* Confidentiality Footer Tagline */}
@@ -2561,9 +2679,26 @@ function AdminPortalModal({
                           <tr key={inv.id} className="hover:bg-[#1a1816] transition-colors">
                             <td className="py-3.5 px-4 font-bold text-[#f5f4f0]">
                               <div>{inv.invoiceNumber}</div>
-                              {inv.quotationRef && (
-                                <span className="text-[10px] text-[#7a756f]">Ref: {inv.quotationRef}</span>
-                              )}
+                              <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                                {inv.authorityParty === 'dulanja' && (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-amber-950/40 text-amber-300 border border-amber-800/30">
+                                    Dulanja (Sole)
+                                  </span>
+                                )}
+                                {inv.authorityParty === 'remashi' && (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-purple-950/40 text-purple-300 border border-purple-800/30">
+                                    Remashi (Sole)
+                                  </span>
+                                )}
+                                {(!inv.authorityParty || inv.authorityParty === 'both') && (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                                    Both Architects
+                                  </span>
+                                )}
+                                {inv.quotationRef && (
+                                  <span className="text-[10px] text-[#7a756f]">Ref: {inv.quotationRef}</span>
+                                )}
+                              </div>
                             </td>
                             <td className="py-3.5 px-4">
                               <div className="font-sans font-medium text-[#f5f4f0]">{inv.clientCompany}</div>
@@ -2733,7 +2868,24 @@ function AdminPortalModal({
                         return (
                           <tr key={quo.id} className="hover:bg-[#1a1816] transition-colors">
                             <td className="py-3.5 px-4 font-bold text-[#f5f4f0]">
-                              {quo.quotationNumber}
+                              <div>{quo.quotationNumber}</div>
+                              <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                                {quo.authorityParty === 'dulanja' && (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-amber-950/40 text-amber-300 border border-amber-800/30">
+                                    Dulanja (Sole)
+                                  </span>
+                                )}
+                                {quo.authorityParty === 'remashi' && (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-purple-950/40 text-purple-300 border border-purple-800/30">
+                                    Remashi (Sole)
+                                  </span>
+                                )}
+                                {(!quo.authorityParty || quo.authorityParty === 'both') && (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                                    Both Architects
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="py-3.5 px-4">
                               <div className="font-sans font-medium text-[#f5f4f0]">{quo.clientCompany}</div>
@@ -3263,6 +3415,7 @@ export default function TheMonolith() {
       id: `inv-${Date.now()}`,
       invoiceNumber: newInvoiceNumber,
       quotationRef: quotation.quotationNumber,
+      authorityParty: quotation.authorityParty || 'both',
       clientName: quotation.clientName,
       clientCompany: quotation.clientCompany,
       clientEmail: quotation.clientEmail,
@@ -3311,6 +3464,7 @@ export default function TheMonolith() {
         id: `inv-${Date.now()}`,
         invoiceNumber: nextNum,
         quotationRef: '',
+        authorityParty: 'dulanja',
         clientName: '',
         clientCompany: '',
         clientEmail: '',
@@ -3344,6 +3498,7 @@ export default function TheMonolith() {
       data: {
         id: `quo-${Date.now()}`,
         quotationNumber: nextNum,
+        authorityParty: 'both',
         clientName: '',
         clientCompany: '',
         clientEmail: '',
