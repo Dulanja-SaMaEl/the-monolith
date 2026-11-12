@@ -8,18 +8,22 @@ export default {
     extend: {
       colors: {
         monolith: {
-          void: '#0a0908',
-          surface: '#141311',
-          elevated: '#1c1a17',
-          card: '#161513',
-          text: '#f5f4f0',
-          silver: '#e3dfd8',
-          muted: '#a39d96',
-          fog: '#7a756f',
-          taupe: '#8c857b',
-          dust: '#d6d2cd',
-          border: 'rgba(163, 157, 150, 0.16)',
-          borderHover: 'rgba(214, 210, 205, 0.35)',
+          void: '#080807',
+          surface: '#141310',
+          elevated: '#1c1a16',
+          card: '#181714',
+          text: '#fbfbf9',
+          amber: '#ff9500',
+          amberLight: '#ffa726',
+          amberDark: '#e68500',
+          champagne: '#e8dcc4',
+          silver: '#e5e0d8',
+          muted: '#a8a29a',
+          fog: '#7e786f',
+          taupe: '#8e867b',
+          dust: '#dcd7cf',
+          border: 'rgba(168, 162, 154, 0.15)',
+          borderHover: 'rgba(255, 149, 0, 0.4)',
         }
       },
       fontFamily: {
@@ -28,8 +32,10 @@ export default {
         display: ['Space Grotesk', 'Manrope', 'sans-serif']
       },
       boxShadow: {
-        'taupe-glow': '0 0 50px -10px rgba(163, 157, 150, 0.12)',
-        'taupe-glow-lg': '0 0 80px -15px rgba(214, 210, 205, 0.15)',
+        'amber-glow': '0 0 35px -5px rgba(255, 149, 0, 0.35)',
+        'amber-glow-lg': '0 0 70px -10px rgba(255, 149, 0, 0.28)',
+        'taupe-glow': '0 0 50px -10px rgba(255, 149, 0, 0.15)',
+        'taupe-glow-lg': '0 0 80px -15px rgba(255, 149, 0, 0.22)',
         'glass-inset': 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.08)',
       },
       animation: {

@@ -104,40 +104,40 @@ function MonolithCanvas() {
     renderer.toneMappingExposure = 1.25;
     container.appendChild(renderer.domElement);
 
-    // --- LIGHTING (Warm-white, bone & taupe ambient) ---
-    const ambientLight = new THREE.AmbientLight(0x2e2b27, 1.2);
+    // --- LIGHTING (Warm obsidian, champagne & solar amber) ---
+    const ambientLight = new THREE.AmbientLight(0x28231c, 1.3);
     scene.add(ambientLight);
 
-    // Blinding Core AI Point Light
-    const coreLight = new THREE.PointLight(0xfff8ee, 6.0, 40, 1.4);
+    // Radiant Solar Amber Core Point Light
+    const coreLight = new THREE.PointLight(0xff9d26, 6.8, 45, 1.35);
     coreLight.position.set(0, 0, 0);
     scene.add(coreLight);
 
-    // Warm Rim Directional Light
-    const dirLight = new THREE.DirectionalLight(0xe8e4dc, 2.2);
+    // Warm Champagne Directional Light
+    const dirLight = new THREE.DirectionalLight(0xffeed6, 2.3);
     dirLight.position.set(12, 18, 10);
     scene.add(dirLight);
 
-    // Lower Taupe Bounce Light
-    const bounceLight = new THREE.DirectionalLight(0x7a756f, 1.0);
+    // Lower Obsidian Bounce Light
+    const bounceLight = new THREE.DirectionalLight(0x6e5842, 1.1);
     bounceLight.position.set(-10, -15, -8);
     scene.add(bounceLight);
 
-    // --- CORE GLOWING SPHERE (Core AI) ---
+    // --- CORE GLOWING SPHERE (Solar Core) ---
     const coreGeo = new THREE.DodecahedronGeometry(0.85, 1);
     const coreMat = new THREE.MeshBasicMaterial({
-      color: 0xfffcf7
+      color: 0xfffaed
     });
     const coreMesh = new THREE.Mesh(coreGeo, coreMat);
     scene.add(coreMesh);
 
     // Core Halo Ring
-    const haloGeo = new THREE.RingGeometry(1.2, 1.45, 32);
+    const haloGeo = new THREE.RingGeometry(1.2, 1.48, 32);
     const haloMat = new THREE.MeshBasicMaterial({
-      color: 0xe3dfd8,
+      color: 0xff9500,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.5,
       blending: THREE.AdditiveBlending
     });
     const haloMesh = new THREE.Mesh(haloGeo, haloMat);
@@ -148,9 +148,9 @@ function MonolithCanvas() {
     const rayCount = 8;
     const rayGeo = new THREE.CylinderGeometry(0.15, 3.8, 22, 16, 1, true);
     const rayMat = new THREE.MeshBasicMaterial({
-      color: 0xe3dfd8,
+      color: 0xffa726,
       transparent: true,
-      opacity: 0.045,
+      opacity: 0.055,
       side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending,
       depthWrite: false
@@ -262,10 +262,10 @@ function MonolithCanvas() {
 
     dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
     const dustMat = new THREE.PointsMaterial({
-      color: 0xd6d2cd,
-      size: 0.06,
+      color: 0xffb74d,
+      size: 0.065,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.45,
       blending: THREE.AdditiveBlending,
       depthWrite: false
     });
@@ -4367,63 +4367,63 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
       {/* FLOATING TOP NAVIGATION */}
       <header className="fixed top-5 left-0 right-0 z-50 flex justify-center px-4 sm:px-6">
-        <nav className="flex items-center justify-between w-full max-w-6xl px-4 sm:px-6 py-2.5 rounded-full bg-[#12110f]/85 backdrop-blur-xl border border-[#a39d96]/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] transition-all duration-300">
+        <nav className="flex items-center justify-between w-full max-w-6xl px-4 sm:px-6 py-2.5 rounded-full bg-[#12110f]/90 backdrop-blur-xl border border-[#ff9500]/25 shadow-[0_8px_32px_rgba(0,0,0,0.6)] transition-all duration-300">
           {/* Monolith Architectural Brand */}
           <a
             href="#hero"
-            className="flex items-center gap-2.5 text-[#f5f4f0] font-semibold tracking-wider text-sm transition-opacity hover:opacity-85 group"
+            className="flex items-center gap-2.5 text-[#fbfbf9] font-semibold tracking-wider text-sm transition-opacity hover:opacity-90 group"
           >
-            <div className="w-5 h-6 rounded-sm bg-gradient-to-b from-[#f5f4f0] via-[#d6d2cd] to-[#7a756f] flex items-center justify-center p-[1px] shadow-sm">
-              <div className="w-full h-full bg-[#0a0908] rounded-[1px] flex items-center justify-center">
-                <div className="w-1.5 h-3 bg-[#e3dfd8] rounded-[0.5px] group-hover:bg-[#f5f4f0] transition-colors" />
+            <div className="w-5 h-6 rounded-sm bg-gradient-to-b from-[#ff9500] via-[#ffa726] to-[#e68500] flex items-center justify-center p-[1px] shadow-[0_0_12px_rgba(255,149,0,0.35)]">
+              <div className="w-full h-full bg-[#080807] rounded-[1px] flex items-center justify-center">
+                <div className="w-1.5 h-3 bg-[#ff9500] rounded-[0.5px] group-hover:bg-[#ffa726] transition-colors" />
               </div>
             </div>
-            <span className="font-display font-bold tracking-widest text-xs uppercase text-[#f5f4f0]">
+            <span className="font-display font-bold tracking-widest text-xs uppercase text-[#fbfbf9]">
               The Monolith
             </span>
           </a>
 
           {/* Curated Desktop Nav Links (5 Primary + 1 Dropdown) */}
-          <div className="hidden lg:flex items-center gap-5 xl:gap-6 text-xs font-medium tracking-wider uppercase text-[#a39d96]">
+          <div className="hidden lg:flex items-center gap-5 xl:gap-6 text-xs font-medium tracking-wider uppercase text-[#a8a29a]">
             <a
               href="#services"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'services' ? 'text-[#f5f4f0] font-semibold' : ''
+              className={`transition-colors duration-200 hover:text-[#ff9500] ${
+                activeSection === 'services' ? 'text-[#ff9500] font-semibold' : ''
               }`}
             >
               Services
             </a>
             <a
               href="#process"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'process' ? 'text-[#f5f4f0] font-semibold' : ''
+              className={`transition-colors duration-200 hover:text-[#ff9500] ${
+                activeSection === 'process' ? 'text-[#ff9500] font-semibold' : ''
               }`}
             >
               How It Works
             </a>
             <a
               href="#cases"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'cases' ? 'text-[#f5f4f0] font-semibold' : ''
+              className={`transition-colors duration-200 hover:text-[#ff9500] ${
+                activeSection === 'cases' ? 'text-[#ff9500] font-semibold' : ''
               }`}
             >
               Projects
             </a>
             <a
               href="#estimator"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'estimator' ? 'text-[#f5f4f0] font-semibold' : ''
+              className={`transition-colors duration-200 hover:text-[#ff9500] ${
+                activeSection === 'estimator' ? 'text-[#ff9500] font-semibold' : ''
               }`}
             >
               Estimator
             </a>
             <a
               href="#architects"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] flex items-center gap-1.5 ${
-                activeSection === 'architects' || activeSection === 'architect' ? 'text-[#f5f4f0] font-semibold' : ''
+              className={`transition-colors duration-200 hover:text-[#ff9500] flex items-center gap-1.5 ${
+                activeSection === 'architects' || activeSection === 'architect' ? 'text-[#ff9500] font-semibold' : ''
               }`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ff9500] shadow-[0_0_6px_#ff9500]" />
               Architects
             </a>
 
@@ -4431,45 +4431,45 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             <div className="relative">
               <button
                 onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
-                className={`flex items-center gap-1 transition-colors duration-200 hover:text-[#f5f4f0] ${
-                  ['stack', 'solutions', 'api', 'infra'].includes(activeSection) ? 'text-[#f5f4f0] font-semibold' : ''
+                className={`flex items-center gap-1 transition-colors duration-200 hover:text-[#ff9500] ${
+                  ['stack', 'solutions', 'api', 'infra'].includes(activeSection) ? 'text-[#ff9500] font-semibold' : ''
                 }`}
                 aria-label="More Technical Sections"
               >
                 <span>Arsenal</span>
-                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${moreDropdownOpen ? 'rotate-180 text-[#f5f4f0]' : ''}`} />
+                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${moreDropdownOpen ? 'rotate-180 text-[#ff9500]' : ''}`} />
               </button>
 
               {moreDropdownOpen && (
                 <div
-                  className="absolute top-full right-0 mt-3 w-48 p-2 rounded-2xl bg-[#141311]/95 backdrop-blur-2xl border border-[#a39d96]/20 shadow-2xl space-y-1 z-50"
+                  className="absolute top-full right-0 mt-3 w-48 p-2 rounded-2xl bg-[#141310]/95 backdrop-blur-2xl border border-[#ff9500]/25 shadow-2xl space-y-1 z-50 animate-in fade-in duration-150"
                   onMouseLeave={() => setMoreDropdownOpen(false)}
                 >
                   <a
                     href="#stack"
                     onClick={() => setMoreDropdownOpen(false)}
-                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a39d96] hover:text-[#f5f4f0] hover:bg-[#1f1d1a] transition-colors"
+                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a8a29a] hover:text-[#ff9500] hover:bg-[#ff9500]/10 transition-colors"
                   >
                     // TECH STACK
                   </a>
                   <a
                     href="#solutions"
                     onClick={() => setMoreDropdownOpen(false)}
-                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a39d96] hover:text-[#f5f4f0] hover:bg-[#1f1d1a] transition-colors"
+                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a8a29a] hover:text-[#ff9500] hover:bg-[#ff9500]/10 transition-colors"
                   >
                     // ARCHITECTURES
                   </a>
                   <a
                     href="#api"
                     onClick={() => setMoreDropdownOpen(false)}
-                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a39d96] hover:text-[#f5f4f0] hover:bg-[#1f1d1a] transition-colors"
+                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a8a29a] hover:text-[#ff9500] hover:bg-[#ff9500]/10 transition-colors"
                   >
                     // DEVELOPER API
                   </a>
                   <a
                     href="#infra"
                     onClick={() => setMoreDropdownOpen(false)}
-                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a39d96] hover:text-[#f5f4f0] hover:bg-[#1f1d1a] transition-colors"
+                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a8a29a] hover:text-[#ff9500] hover:bg-[#ff9500]/10 transition-colors"
                   >
                     // EDGE TOPOLOGY
                   </a>
@@ -4507,10 +4507,10 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             {/* Primary Action Button */}
             <a
               href="#estimator"
-              className="hidden md:flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold tracking-wider uppercase rounded-full bg-[#e3dfd8] text-[#0a0908] hover:bg-[#f5f4f0] shadow-taupe-glow transition-all hover:scale-[1.02]"
+              className="hidden md:flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold tracking-wider uppercase rounded-full bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] hover:shadow-[0_0_20px_rgba(255,149,0,0.45)] transition-all hover:scale-[1.03]"
             >
               <span>SCOPE</span>
-              <ArrowRight className="w-3 h-3 text-[#0a0908]" />
+              <ArrowRight className="w-3 h-3 text-[#080807]" />
             </a>
 
             {/* Mobile Hamburger Toggle Button */}
@@ -4527,43 +4527,56 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
       {/* MOBILE NAVIGATION DRAWER */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden flex flex-col justify-between pt-24 pb-8 px-6 bg-[#0a0908]/95 backdrop-blur-2xl animate-in fade-in duration-200">
-          <div className="space-y-4">
-            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#7a756f] block mb-2">
-              // NAVIGATION DIRECTORY
+        <div className="fixed inset-0 z-40 lg:hidden flex flex-col justify-between pt-24 pb-8 px-6 bg-[#080807]/98 backdrop-blur-3xl animate-in fade-in duration-200">
+          <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-250px)] pr-1">
+            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#ff9500] block mb-2">
+              // DIRECTORY // THE MONOLITH
             </span>
             {[
-              { href: '#services', label: '01 // Services Directory' },
-              { href: '#process', label: '02 // How We Work (3 Sprints)' },
-              { href: '#cases', label: '03 // Production Systems' },
-              { href: '#estimator', label: '04 // Project Cost Estimator' },
-              { href: '#architects', label: '05 // Founding Architects' },
-              { href: '#stack', label: '06 // Technology Stack' },
-              { href: '#solutions', label: '07 // Deep Architectures' },
-              { href: '#infra', label: '08 // Edge Topology' }
+              { href: '#services', label: 'Services Directory', num: '01' },
+              { href: '#process', label: 'How We Work (3 Sprints)', num: '02' },
+              { href: '#cases', label: 'Production Systems', num: '03' },
+              { href: '#estimator', label: 'Project Cost Estimator', num: '04' },
+              { href: '#architects', label: 'Founding Architects', num: '05' },
+              { href: '#stack', label: 'Technology Stack', num: '06' },
+              { href: '#solutions', label: 'Deep Architectures', num: '07' },
+              { href: '#infra', label: 'Edge Topology', num: '08' }
             ].map((item) => (
               <a
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 text-lg font-bold font-sans text-[#f5f4f0] hover:text-[#d6d2cd] border-b border-[#a39d96]/10 transition-colors"
+                className="group flex items-center justify-between py-2.5 text-base sm:text-lg font-bold font-sans text-[#fbfbf9] hover:text-[#ff9500] border-b border-[#a8a29a]/10 transition-colors"
               >
-                {item.label}
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-xs text-[#ff9500]">{item.num} //</span>
+                  <span>{item.label}</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-[#7e786f] group-hover:text-[#ff9500] group-hover:translate-x-1 transition-all" />
               </a>
             ))}
           </div>
 
           {/* Mobile Drawer Bottom Actions */}
-          <div className="pt-6 border-t border-[#a39d96]/15 space-y-3 font-mono text-xs">
+          <div className="pt-5 border-t border-[#a8a29a]/15 space-y-2.5 font-mono text-xs">
+            <a
+              href="#estimator"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full py-3 rounded-full bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] flex items-center justify-center gap-2 font-bold tracking-wider uppercase shadow-[0_0_20px_rgba(255,149,0,0.35)]"
+            >
+              <span>SCOPE YOUR PROJECT</span>
+              <ArrowRight className="w-4 h-4 text-[#080807]" />
+            </a>
+
             <a
               href="https://wa.me/94765917189?text=Hello%20Dulanja%20%26%20Remashi%2C%20I'd%20like%20to%20discuss%20a%20project%20with%20The%20Monolith."
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full py-3 rounded-full bg-[#1c1a17] text-[#25D366] border border-[#25D366]/40 flex items-center justify-center gap-2 font-bold tracking-wider uppercase"
+              className="w-full py-2.5 rounded-full bg-[#181714] text-[#25D366] border border-[#25D366]/40 flex items-center justify-center gap-2 font-bold tracking-wider uppercase hover:bg-[#25D366]/10 transition-colors"
             >
               <MessageSquare className="w-4 h-4 text-[#25D366]" />
-              <span>WHATSAPP CONSULTATION</span>
+              <span>WHATSAPP ARCHITECTS</span>
             </a>
 
             <div className="grid grid-cols-2 gap-2">
@@ -4572,9 +4585,9 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                   setMobileMenuOpen(false);
                   setTerminalOpen(true);
                 }}
-                className="py-2.5 rounded-full bg-[#141311] text-[#a39d96] border border-[#a39d96]/20 flex items-center justify-center gap-1.5"
+                className="py-2.5 rounded-full bg-[#141310] text-[#a8a29a] hover:text-[#fbfbf9] hover:border-[#ff9500]/40 border border-[#a8a29a]/20 flex items-center justify-center gap-1.5 transition-colors"
               >
-                <TerminalIcon className="w-3 h-3" />
+                <TerminalIcon className="w-3.5 h-3.5 text-[#ff9500]" />
                 <span>TERMINAL</span>
               </button>
 
@@ -4583,9 +4596,9 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                   setMobileMenuOpen(false);
                   isAdminLoggedIn ? setAdminPortalOpen(true) : setAdminLoginModalOpen(true);
                 }}
-                className="py-2.5 rounded-full bg-[#141311] text-[#a39d96] border border-[#a39d96]/20 flex items-center justify-center gap-1.5"
+                className="py-2.5 rounded-full bg-[#141310] text-[#a8a29a] hover:text-[#fbfbf9] hover:border-[#ff9500]/40 border border-[#a8a29a]/20 flex items-center justify-center gap-1.5 transition-colors"
               >
-                <Lock className="w-3 h-3" />
+                <Lock className="w-3.5 h-3.5" />
                 <span>{isAdminLoggedIn ? 'PORTAL' : 'LOGIN'}</span>
               </button>
             </div>
@@ -4603,23 +4616,23 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       >
         <div className="max-w-3xl">
           {/* Status Badge */}
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#141311]/70 border border-[#a39d96]/20 backdrop-blur-md mb-6 animate-pulse-subtle">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
-            <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96]">
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#151411]/80 border border-[#ff9500]/25 backdrop-blur-md mb-6 shadow-[0_0_20px_rgba(255,149,0,0.1)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ff9500] shadow-[0_0_8px_#ff9500] animate-pulse" />
+            <span className="text-[11px] font-mono tracking-widest uppercase text-[#e8dcc4]">
               STUDIO DIRECTORY // FOUNDING ARCHITECTS: DULANJA ABEYSINGHE & REMASHI DIYANA
             </span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold font-sans tracking-tight text-[#f5f4f0] leading-[1.08] mb-6">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold font-sans tracking-tight text-[#fbfbf9] leading-[1.08] mb-6">
             High-Performance Software &{' '}
-            <span className="bg-gradient-to-r from-[#f5f4f0] via-[#d6d2cd] to-[#a39d96] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#fbfbf9] via-[#ffa726] to-[#ff9500] bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(255,149,0,0.25)]">
               High-Impact Brands.
             </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-lg sm:text-xl text-[#a39d96] font-light leading-relaxed max-w-2xl mb-10">
+          <p className="text-lg sm:text-xl text-[#dcd7cf] font-light leading-relaxed max-w-2xl mb-10">
             We design and engineer bespoke web platforms, mobile apps, enterprise APIs, and high-converting marketing campaigns built to scale your business.
           </p>
 
@@ -4627,15 +4640,15 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           <div className="flex flex-wrap items-center gap-4 sm:gap-5">
             <a
               href="#estimator"
-              className="px-8 py-3.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-widest uppercase transition-all duration-300 hover:bg-[#f5f4f0] shadow-taupe-glow hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
+              className="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] font-bold text-xs tracking-widest uppercase transition-all duration-300 hover:shadow-[0_0_35px_rgba(255,149,0,0.5)] shadow-[0_0_25px_rgba(255,149,0,0.35)] hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
             >
               SCOPE YOUR PROJECT
-              <ArrowRight className="w-3.5 h-3.5 text-[#0a0908]" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#080807]" />
             </a>
 
             <a
               href="#services"
-              className="px-7 py-3.5 rounded-full bg-[#141311]/60 text-[#f5f4f0] border border-[#a39d96]/30 font-medium text-xs tracking-widest uppercase backdrop-blur-md transition-all duration-300 hover:border-[#d6d2cd] hover:bg-[#7a756f]/20 hover:text-[#f5f4f0]"
+              className="px-7 py-3.5 rounded-full bg-[#151411]/80 text-[#fbfbf9] border border-[#a8a29a]/25 font-medium text-xs tracking-widest uppercase backdrop-blur-md transition-all duration-300 hover:border-[#ff9500]/60 hover:bg-[#ff9500]/10 hover:text-[#fbfbf9]"
             >
               EXPLORE 7 SERVICES
             </a>
@@ -4644,7 +4657,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               href="https://wa.me/94765917189?text=Hello%20Dulanja%20%26%20Remashi%2C%20I'd%20like%20to%20discuss%20a%20project%20with%20The%20Monolith."
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3.5 rounded-full bg-[#1c1a17]/90 text-[#25D366] border border-[#25D366]/40 font-medium text-xs tracking-widest uppercase backdrop-blur-md transition-all duration-300 hover:border-[#25D366] hover:bg-[#25D366]/10 flex items-center gap-2"
+              className="px-6 py-3.5 rounded-full bg-[#151411]/90 text-[#25D366] border border-[#25D366]/40 font-medium text-xs tracking-widest uppercase backdrop-blur-md transition-all duration-300 hover:border-[#25D366] hover:bg-[#25D366]/10 flex items-center gap-2 shadow-sm"
             >
               <MessageSquare className="w-3.5 h-3.5 text-[#25D366]" />
               <span>WHATSAPP CONSULTATION</span>
@@ -4652,17 +4665,17 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           </div>
 
           {/* Telemetry Stats Strip */}
-          <div className="mt-16 pt-8 border-t border-[#a39d96]/15 flex flex-wrap items-center gap-8 sm:gap-14 text-xs font-mono text-[#7a756f]">
+          <div className="mt-16 pt-8 border-t border-[#a8a29a]/15 flex flex-wrap items-center gap-8 sm:gap-14 text-xs font-mono text-[#a8a29a]">
             <div>
-              <span className="text-[#f5f4f0] block text-sm font-semibold">12+ Production Systems</span>
+              <span className="text-[#ff9500] block text-sm font-semibold tracking-wide">12+ Production Systems</span>
               <span>Enterprise, Clinical, Fintech & Dining</span>
             </div>
             <div>
-              <span className="text-[#f5f4f0] block text-sm font-semibold">7 Core Disciplines</span>
+              <span className="text-[#ff9500] block text-sm font-semibold tracking-wide">7 Core Disciplines</span>
               <span>Full-Lifecycle Software & Marketing</span>
             </div>
             <div>
-              <span className="text-[#f5f4f0] block text-sm font-semibold">99.99% Guaranteed Uptime</span>
+              <span className="text-[#ff9500] block text-sm font-semibold tracking-wide">99.99% Guaranteed Uptime</span>
               <span>Zero-Downtime High-Load Architectures</span>
             </div>
           </div>
@@ -4751,38 +4764,38 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           {/* Section Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
             <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#141311] border border-[#a39d96]/20 text-[10px] font-mono tracking-widest uppercase text-[#d6d2cd] mb-4">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#f5f4f0] animate-pulse" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#151411] border border-[#ff9500]/25 text-[10px] font-mono tracking-widest uppercase text-[#ff9500] mb-4">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#ff9500] shadow-[0_0_6px_#ff9500] animate-pulse" />
                 EXECUTIVE LEADERSHIP & FOUNDING ARCHITECTS
               </div>
-              <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
+              <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#fbfbf9] tracking-tight mb-4">
                 The Architects of The Monolith
               </h2>
-              <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
+              <p className="text-base sm:text-lg text-[#a8a29a] font-light leading-relaxed">
                 A complementary executive council uniting high-throughput distributed systems, cloud infrastructure,
                 and mission-critical software with human-centered brand strategy, editorial flyer design, and conversion campaigns.
               </p>
             </div>
 
             {/* Photo System Badge / Status Indicator */}
-            <div className="flex flex-col sm:items-end gap-1.5 text-xs font-mono text-[#7a756f]">
-              <div className="px-3.5 py-1.5 rounded-full bg-[#141311] border border-[#a39d96]/20 text-[#a39d96] flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
+            <div className="flex flex-col sm:items-end gap-1.5 text-xs font-mono text-[#7e786f]">
+              <div className="px-3.5 py-1.5 rounded-full bg-[#151411] border border-[#ff9500]/25 text-[#e8dcc4] flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#ff9500] shadow-[0_0_6px_#ff9500]" />
                 <span>PORTRAIT MATRIX: DUAL-MODE VISUALS READY</span>
               </div>
-              <span className="text-[10px] text-[#7a756f]">Cryptographic Glyphs Active &middot; High-Contrast Photography Supported</span>
+              <span className="text-[10px] text-[#7e786f]">Cryptographic Glyphs Active &middot; High-Contrast Photography Supported</span>
             </div>
           </div>
 
           {/* Dual Architects Bento Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             {/* ARCHITECT 1: DULANJA ABEYSINGHE */}
-            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/80 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/40 hover:shadow-taupe-glow flex flex-col justify-between">
+            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141310]/80 backdrop-blur-xl border border-[#a8a29a]/15 transition-all duration-500 hover:border-[#ff9500]/40 hover:shadow-[0_0_35px_rgba(255,149,0,0.12)] flex flex-col justify-between">
               <div>
                 {/* Header Row: Avatar + Core Bio */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-6 pb-6 border-b border-[#a39d96]/15">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-6 pb-6 border-b border-[#a8a29a]/15">
                   {/* Portrait / Cryptographic Monogram Container */}
-                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-inner">
+                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#1c1a16] border border-[#ff9500]/25 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-inner">
                     {/* Live Image (supports /team/dulanja.jpg) */}
                     <img
                       src="/team/dulanja.jpg"
@@ -4793,14 +4806,14 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                       }}
                     />
                     {/* Cryptographic Fallback Monogram */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center pointer-events-none bg-gradient-to-b from-[#1c1a17] to-[#121110]">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#f5f4f0] tracking-tighter leading-none mb-1">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center pointer-events-none bg-gradient-to-b from-[#1c1a16] to-[#12110f]">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#fbfbf9] tracking-tighter leading-none mb-1">
                         DA
                       </span>
-                      <span className="text-[9px] font-mono tracking-widest text-[#a39d96] uppercase">
+                      <span className="text-[9px] font-mono tracking-widest text-[#ff9500] uppercase">
                         SYS // 01
                       </span>
-                      <span className="text-[8px] font-mono text-[#7a756f] mt-0.5">
+                      <span className="text-[8px] font-mono text-[#7e786f] mt-0.5">
                         7.4863° N, 80.3623° E
                       </span>
                     </div>
@@ -4808,29 +4821,29 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#1c1a17] text-[#d6d2cd] border border-[#a39d96]/20 uppercase tracking-widest">
+                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#1c1a16] text-[#ff9500] border border-[#ff9500]/30 uppercase tracking-widest font-semibold">
                         ARCHITECT // 01
                       </span>
-                      <span className="text-[10px] font-mono text-[#a39d96] flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#f5f4f0] animate-pulse" />
+                      <span className="text-[10px] font-mono text-[#ff9500] flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#ff9500] shadow-[0_0_6px_#ff9500] animate-pulse" />
                         ACTIVE
                       </span>
                     </div>
-                    <h3 className="text-2xl sm:text-3xl font-bold font-sans text-[#f5f4f0] tracking-tight">
+                    <h3 className="text-2xl sm:text-3xl font-bold font-sans text-[#fbfbf9] tracking-tight">
                       Dulanja Abeysinghe
                     </h3>
-                    <p className="text-xs font-mono text-[#d6d2cd] mt-0.5">
+                    <p className="text-xs font-mono text-[#e8dcc4] mt-0.5">
                       Co-Founder & Principal Systems Architect
                     </p>
-                    <div className="flex items-center gap-2 mt-2 text-xs font-mono text-[#7a756f]">
-                      <MapPin className="w-3.5 h-3.5 text-[#a39d96]" />
+                    <div className="flex items-center gap-2 mt-2 text-xs font-mono text-[#7e786f]">
+                      <MapPin className="w-3.5 h-3.5 text-[#ff9500]" />
                       <span>Kurunegala, Sri Lanka &middot; UTC+5:30</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Narrative Bio */}
-                <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                <p className="text-sm text-[#a8a29a] font-light leading-relaxed mb-6">
                   Hands-on software engineer specializing in high-concurrency enterprise multi-tier applications,
                   high-throughput gaming fintech gateways, on-site hospital Laboratory Information Systems (LIS),
                   and asynchronous event-driven pipelines. Experienced in designing Redis-backed distributed locks (Redlock),
@@ -4838,58 +4851,58 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                 </p>
 
                 {/* Education & Credentials */}
-                <div className="p-4 rounded-2xl bg-[#0a0908]/70 border border-[#a39d96]/10 mb-6 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[#f5f4f0]">
-                    <GraduationCap className="w-4 h-4 text-[#d6d2cd]" />
+                <div className="p-4 rounded-2xl bg-[#080807]/80 border border-[#a8a29a]/15 mb-6 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-[#fbfbf9]">
+                    <GraduationCap className="w-4 h-4 text-[#ff9500]" />
                     <span>Education & Certifications</span>
                   </div>
-                  <p className="text-xs text-[#d6d2cd] font-mono leading-relaxed">
+                  <p className="text-xs text-[#dcd7cf] font-mono leading-relaxed">
                     BSc (Hons) in Software Engineering &mdash; Second Upper Division
-                    <span className="block text-[11px] text-[#7a756f]">Birmingham City University, UK (delivered via Java Institute)</span>
+                    <span className="block text-[11px] text-[#7e786f]">Birmingham City University, UK (delivered via Java Institute)</span>
                   </p>
-                  <p className="text-[11px] text-[#a39d96] font-mono">
+                  <p className="text-[11px] text-[#a8a29a] font-mono">
                     Professional Higher Diploma in Software Engineering (Skills & Educational Group Awards, UK, 2025)
                   </p>
-                  <div className="pt-1.5 border-t border-[#a39d96]/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-[#7a756f]">
-                    <span className="px-2 py-0.5 rounded bg-[#141311] border border-[#a39d96]/10 text-[#d6d2cd]">Deep Learning A-Z</span>
-                    <span className="px-2 py-0.5 rounded bg-[#141311] border border-[#a39d96]/10 text-[#d6d2cd]">Machine Learning</span>
-                    <span className="px-2 py-0.5 rounded bg-[#141311] border border-[#a39d96]/10 text-[#d6d2cd]">The AI Engineer</span>
-                    <span className="px-2 py-0.5 rounded bg-[#141311] border border-[#a39d96]/10 text-[#d6d2cd]">Ethical Hacking</span>
+                  <div className="pt-1.5 border-t border-[#a8a29a]/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-[#7e786f]">
+                    <span className="px-2 py-0.5 rounded bg-[#141310] border border-[#a8a29a]/15 text-[#dcd7cf]">Deep Learning A-Z</span>
+                    <span className="px-2 py-0.5 rounded bg-[#141310] border border-[#a8a29a]/15 text-[#dcd7cf]">Machine Learning</span>
+                    <span className="px-2 py-0.5 rounded bg-[#141310] border border-[#a8a29a]/15 text-[#dcd7cf]">The AI Engineer</span>
+                    <span className="px-2 py-0.5 rounded bg-[#141310] border border-[#a8a29a]/15 text-[#dcd7cf]">Ethical Hacking</span>
                   </div>
                 </div>
 
                 {/* Leadership & Industry Track Record */}
                 <div className="mb-6 space-y-2.5">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7a756f] block">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7e786f] block">
                     Key Leadership & Industry Roles
                   </span>
                   <div className="space-y-2 font-mono text-xs">
-                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
-                      <Briefcase className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                    <div className="p-2.5 rounded-xl bg-[#080807]/70 border border-[#a8a29a]/15 flex items-start gap-2.5">
+                      <Briefcase className="w-3.5 h-3.5 text-[#ff9500] mt-0.5 flex-shrink-0" />
                       <div>
-                        <span className="text-[#f5f4f0] font-medium block">Biotech Software Solutions &middot; Junior Software Engineer</span>
-                        <span className="text-[11px] text-[#7a756f]">Hospital LIS on-site engineering (Peradeniya, Ragama, Kurunegala); Pharmacy Management System OPD integration; ACL TOP/AU 480 analyzer drivers.</span>
+                        <span className="text-[#fbfbf9] font-medium block">Biotech Software Solutions &middot; Junior Software Engineer</span>
+                        <span className="text-[11px] text-[#7e786f]">Hospital LIS on-site engineering (Peradeniya, Ragama, Kurunegala); Pharmacy Management System OPD integration; ACL TOP/AU 480 analyzer drivers.</span>
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
-                      <Briefcase className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                    <div className="p-2.5 rounded-xl bg-[#080807]/70 border border-[#a8a29a]/15 flex items-start gap-2.5">
+                      <Briefcase className="w-3.5 h-3.5 text-[#ff9500] mt-0.5 flex-shrink-0" />
                       <div>
-                        <span className="text-[#f5f4f0] font-medium block">GrayNode DevOps / NerdTech Labs &middot; Co-Founder & Lead Developer</span>
-                        <span className="text-[11px] text-[#7a756f]">Product architecture strategy, LLM customer FAQ intelligence, high-reliability engineering culture.</span>
+                        <span className="text-[#fbfbf9] font-medium block">GrayNode DevOps / NerdTech Labs &middot; Co-Founder & Lead Developer</span>
+                        <span className="text-[11px] text-[#7e786f]">Product architecture strategy, LLM customer FAQ intelligence, high-reliability engineering culture.</span>
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
-                      <Briefcase className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                    <div className="p-2.5 rounded-xl bg-[#080807]/70 border border-[#a8a29a]/15 flex items-start gap-2.5">
+                      <Briefcase className="w-3.5 h-3.5 text-[#ff9500] mt-0.5 flex-shrink-0" />
                       <div>
-                        <span className="text-[#f5f4f0] font-medium block">r-pac Printcare Lanka &middot; Software Developer & Automation</span>
-                        <span className="text-[11px] text-[#7a756f]">Java/MySQL production scheduling optimization, C#/ASP.NET/PHP internal decision tools.</span>
+                        <span className="text-[#fbfbf9] font-medium block">r-pac Printcare Lanka &middot; Software Developer & Automation</span>
+                        <span className="text-[11px] text-[#7e786f]">Java/MySQL production scheduling optimization, C#/ASP.NET/PHP internal decision tools.</span>
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                    <div className="p-2.5 rounded-xl bg-[#080807]/70 border border-[#a8a29a]/15 flex items-start gap-2.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#ff9500] mt-0.5 flex-shrink-0" />
                       <div>
-                        <span className="text-[#f5f4f0] font-medium block">Dula AI &middot; AI Educational Content Creator</span>
-                        <span className="text-[11px] text-[#7a756f]">Authoring structured technical learning roadmaps across Data Science, ML, and LLMs.</span>
+                        <span className="text-[#fbfbf9] font-medium block">Dula AI &middot; AI Educational Content Creator</span>
+                        <span className="text-[11px] text-[#7e786f]">Authoring structured technical learning roadmaps across Data Science, ML, and LLMs.</span>
                       </div>
                     </div>
                   </div>
@@ -4897,12 +4910,12 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
                 {/* Core Arsenal Tags */}
                 <div className="mb-6">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7a756f] block mb-2">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7e786f] block mb-2">
                     Architectural Stack
                   </span>
                   <div className="flex flex-wrap gap-1.5 text-xs font-mono">
                     {['Java / Jakarta EE', 'Spring Boot', 'Laravel 11/12', 'Node.js / Fastify', 'Redis Redlock', 'BullMQ', 'PostgreSQL (ACID)', 'Docker', 'LangChain / RAG', 'Prometheus / Grafana'].map((t) => (
-                      <span key={t} className="px-2.5 py-1 rounded-lg bg-[#0a0908] border border-[#a39d96]/15 text-[#d6d2cd]">
+                      <span key={t} className="px-2.5 py-1 rounded-lg bg-[#080807] border border-[#a8a29a]/15 text-[#dcd7cf] hover:border-[#ff9500]/40 transition-colors">
                         {t}
                       </span>
                     ))}
@@ -4911,24 +4924,24 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               </div>
 
               {/* Contact & Dispatch Strip */}
-              <div className="pt-6 border-t border-[#a39d96]/15 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+              <div className="pt-6 border-t border-[#a8a29a]/15 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => handleCopy('dulanja150abeysinghe@gmail.com', 'dulanja-email')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a16] text-[#fbfbf9] border border-[#a8a29a]/20 hover:border-[#ff9500]/50 hover:text-[#ff9500] transition-colors"
                   >
-                    <Mail className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                    <Mail className="w-3.5 h-3.5 text-[#ff9500]" />
                     <span>Email</span>
-                    {copiedContact === 'dulanja-email' ? <Check className="w-3 h-3 text-[#f5f4f0]" /> : <Copy className="w-3 h-3 text-[#a39d96]" />}
+                    {copiedContact === 'dulanja-email' ? <Check className="w-3 h-3 text-[#ff9500]" /> : <Copy className="w-3 h-3 text-[#a8a29a]" />}
                   </button>
 
                   <button
                     onClick={() => handleCopy('+94 76 591 7189', 'dulanja-phone')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a16] text-[#fbfbf9] border border-[#a8a29a]/20 hover:border-[#ff9500]/50 hover:text-[#ff9500] transition-colors"
                   >
-                    <Phone className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                    <Phone className="w-3.5 h-3.5 text-[#ff9500]" />
                     <span>+94 76 591 7189</span>
-                    {copiedContact === 'dulanja-phone' ? <Check className="w-3 h-3 text-[#f5f4f0]" /> : <Copy className="w-3 h-3 text-[#a39d96]" />}
+                    {copiedContact === 'dulanja-phone' ? <Check className="w-3 h-3 text-[#ff9500]" /> : <Copy className="w-3 h-3 text-[#a8a29a]" />}
                   </button>
                 </div>
 
@@ -4937,7 +4950,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                     href="https://linkedin.com/in/dulanja-abeysinghe"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors uppercase"
+                    className="text-[#dcd7cf] hover:text-[#ff9500] flex items-center gap-1 transition-colors uppercase"
                   >
                     LinkedIn <ExternalLink className="w-3 h-3" />
                   </a>
@@ -4945,7 +4958,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                     href="https://github.com/Dulanja-SaMaEl"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors uppercase"
+                    className="text-[#dcd7cf] hover:text-[#ff9500] flex items-center gap-1 transition-colors uppercase"
                   >
                     GitHub <ExternalLink className="w-3 h-3" />
                   </a>
@@ -4954,12 +4967,12 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             </div>
 
             {/* ARCHITECT 2: REMASHI DIYANA */}
-            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/80 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/40 hover:shadow-taupe-glow flex flex-col justify-between">
+            <div className="group relative p-8 sm:p-10 rounded-3xl bg-[#141310]/80 backdrop-blur-xl border border-[#a8a29a]/15 transition-all duration-500 hover:border-[#ff9500]/40 hover:shadow-[0_0_35px_rgba(255,149,0,0.12)] flex flex-col justify-between">
               <div>
                 {/* Header Row: Avatar + Core Bio */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-6 pb-6 border-b border-[#a39d96]/15">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-6 pb-6 border-b border-[#a8a29a]/15">
                   {/* Portrait / Cryptographic Monogram Container */}
-                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-inner">
+                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#1c1a16] border border-[#ff9500]/25 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-inner">
                     {/* Live Image (supports /team/remashi.jpg) */}
                     <img
                       src="/team/remashi.jpg"
@@ -4970,14 +4983,14 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                       }}
                     />
                     {/* Cryptographic Fallback Monogram */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center pointer-events-none bg-gradient-to-b from-[#1c1a17] to-[#121110]">
-                      <span className="font-display font-black text-3xl sm:text-4xl text-[#f5f4f0] tracking-tighter leading-none mb-1">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center pointer-events-none bg-gradient-to-b from-[#1c1a16] to-[#12110f]">
+                      <span className="font-display font-black text-3xl sm:text-4xl text-[#fbfbf9] tracking-tighter leading-none mb-1">
                         RD
                       </span>
-                      <span className="text-[9px] font-mono tracking-widest text-[#a39d96] uppercase">
+                      <span className="text-[9px] font-mono tracking-widest text-[#ff9500] uppercase">
                         CRE // 02
                       </span>
-                      <span className="text-[8px] font-mono text-[#7a756f] mt-0.5">
+                      <span className="text-[8px] font-mono text-[#7e786f] mt-0.5">
                         7.3333° N, 80.1333° E
                       </span>
                     </div>
@@ -4985,84 +4998,84 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#1c1a17] text-[#d6d2cd] border border-[#a39d96]/20 uppercase tracking-widest">
+                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#1c1a16] text-[#ff9500] border border-[#ff9500]/30 uppercase tracking-widest font-semibold">
                         ARCHITECT // 02
                       </span>
-                      <span className="text-[10px] font-mono text-[#a39d96] flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#f5f4f0] animate-pulse" />
+                      <span className="text-[10px] font-mono text-[#ff9500] flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#ff9500] shadow-[0_0_6px_#ff9500] animate-pulse" />
                         ACTIVE
                       </span>
                     </div>
-                    <h3 className="text-2xl sm:text-3xl font-bold font-sans text-[#f5f4f0] tracking-tight">
+                    <h3 className="text-2xl sm:text-3xl font-bold font-sans text-[#fbfbf9] tracking-tight">
                       Remashi Diyana
                     </h3>
-                    <p className="text-xs font-mono text-[#d6d2cd] mt-0.5">
+                    <p className="text-xs font-mono text-[#e8dcc4] mt-0.5">
                       Co-Founder & Head of Creative Strategy & UI/UX
                     </p>
-                    <div className="flex items-center gap-2 mt-2 text-xs font-mono text-[#7a756f]">
-                      <MapPin className="w-3.5 h-3.5 text-[#a39d96]" />
+                    <div className="flex items-center gap-2 mt-2 text-xs font-mono text-[#7e786f]">
+                      <MapPin className="w-3.5 h-3.5 text-[#ff9500]" />
                       <span>Giriulla / Kurunegala, Sri Lanka &middot; UTC+5:30</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Narrative Bio */}
-                <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                <p className="text-sm text-[#a8a29a] font-light leading-relaxed mb-6">
                   Multidisciplinary creative strategist combining a technical background in Software Engineering with Social Work
                   and International Studies. Spearheading high-impact visual branding, tactical promotional flyers, community
                   outreach campaigns, and intuitive UI/UX design systems driven by human behavior and market psychology.
                 </p>
 
                 {/* Education & Credentials */}
-                <div className="p-4 rounded-2xl bg-[#0a0908]/70 border border-[#a39d96]/10 mb-6 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[#f5f4f0]">
-                    <GraduationCap className="w-4 h-4 text-[#d6d2cd]" />
+                <div className="p-4 rounded-2xl bg-[#080807]/80 border border-[#a8a29a]/15 mb-6 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-[#fbfbf9]">
+                    <GraduationCap className="w-4 h-4 text-[#ff9500]" />
                     <span>Education & Multidisciplinary Academics</span>
                   </div>
-                  <p className="text-xs text-[#d6d2cd] font-mono leading-relaxed">
+                  <p className="text-xs text-[#dcd7cf] font-mono leading-relaxed">
                     Bachelor of Social Work (Honours) &mdash; Second-Year Undergraduate
-                    <span className="block text-[11px] text-[#7a756f]">National Institute of Social Development (NISD), Sri Lanka (2024 &ndash; Present)</span>
+                    <span className="block text-[11px] text-[#7e786f]">National Institute of Social Development (NISD), Sri Lanka (2024 &ndash; Present)</span>
                   </p>
-                  <p className="text-[11px] text-[#a39d96] font-mono">
+                  <p className="text-[11px] text-[#a8a29a] font-mono">
                     Diploma in International Studies &mdash; University of Kelaniya, Sri Lanka (2026 &ndash; Present)
                   </p>
-                  <p className="text-[11px] text-[#7a756f] font-mono">
+                  <p className="text-[11px] text-[#7e786f] font-mono">
                     Higher National Diploma (HND) in Software Engineering & BEng (Hons) studies &mdash; ESOFT Metro Campus / London Metropolitan University, UK
                   </p>
                 </div>
 
                 {/* Leadership & Industry Track Record */}
                 <div className="mb-6 space-y-2.5">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7a756f] block">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7e786f] block">
                     Creative Leadership & Brand Campaigns
                   </span>
                   <div className="space-y-2 font-mono text-xs">
-                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
-                      <Palette className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                    <div className="p-2.5 rounded-xl bg-[#080807]/70 border border-[#a8a29a]/15 flex items-start gap-2.5">
+                      <Palette className="w-3.5 h-3.5 text-[#ff9500] mt-0.5 flex-shrink-0" />
                       <div>
-                        <span className="text-[#f5f4f0] font-medium block">The Volunteers Academy &middot; Primary Graphic Designer</span>
-                        <span className="text-[11px] text-[#7a756f]">High-engagement promotional flyers, event branding, and digital media assets driving national volunteer recruitment.</span>
+                        <span className="text-[#fbfbf9] font-medium block">The Volunteers Academy &middot; Primary Graphic Designer</span>
+                        <span className="text-[11px] text-[#7e786f]">High-engagement promotional flyers, event branding, and digital media assets driving national volunteer recruitment.</span>
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
-                      <Megaphone className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                    <div className="p-2.5 rounded-xl bg-[#080807]/70 border border-[#a8a29a]/15 flex items-start gap-2.5">
+                      <Megaphone className="w-3.5 h-3.5 text-[#ff9500] mt-0.5 flex-shrink-0" />
                       <div>
-                        <span className="text-[#f5f4f0] font-medium block">The Movement Projects &middot; Visual Campaign Strategist</span>
-                        <span className="text-[11px] text-[#7a756f]">Impactful visual campaigns and editorial social media layouts aligned with public advocacy and outreach.</span>
+                        <span className="text-[#fbfbf9] font-medium block">The Movement Projects &middot; Visual Campaign Strategist</span>
+                        <span className="text-[11px] text-[#7e786f]">Impactful visual campaigns and editorial social media layouts aligned with public advocacy and outreach.</span>
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
-                      <Award className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                    <div className="p-2.5 rounded-xl bg-[#080807]/70 border border-[#a8a29a]/15 flex items-start gap-2.5">
+                      <Award className="w-3.5 h-3.5 text-[#ff9500] mt-0.5 flex-shrink-0" />
                       <div>
-                        <span className="text-[#f5f4f0] font-medium block">DIA Academy &middot; Founder & Lead Educator</span>
-                        <span className="text-[11px] text-[#7a756f]">Spearheaded entire brand identity, educational flyer series, promotional graphics, curriculum, and operations.</span>
+                        <span className="text-[#fbfbf9] font-medium block">DIA Academy &middot; Founder & Lead Educator</span>
+                        <span className="text-[11px] text-[#7e786f]">Spearheaded entire brand identity, educational flyer series, promotional graphics, curriculum, and operations.</span>
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10 flex items-start gap-2.5">
-                      <Code className="w-3.5 h-3.5 text-[#d6d2cd] mt-0.5 flex-shrink-0" />
+                    <div className="p-2.5 rounded-xl bg-[#080807]/70 border border-[#a8a29a]/15 flex items-start gap-2.5">
+                      <Code className="w-3.5 h-3.5 text-[#ff9500] mt-0.5 flex-shrink-0" />
                       <div>
-                        <span className="text-[#f5f4f0] font-medium block">Silvermill Group &middot; Application Developer Intern</span>
-                        <span className="text-[11px] text-[#7a756f]">Assisted internal software optimization and corporate technical workflow alignment.</span>
+                        <span className="text-[#fbfbf9] font-medium block">Silvermill Group &middot; Application Developer Intern</span>
+                        <span className="text-[11px] text-[#7e786f]">Assisted internal software optimization and corporate technical workflow alignment.</span>
                       </div>
                     </div>
                   </div>
@@ -5070,12 +5083,12 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
                 {/* Core Creative Toolkit */}
                 <div className="mb-6">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7a756f] block mb-2">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#7e786f] block mb-2">
                     Creative & Strategic Toolkit
                   </span>
                   <div className="flex flex-wrap gap-1.5 text-xs font-mono">
                     {['Editorial Flyer Design', 'Visual Brand Identity', 'Social Media Campaigns', 'Canva (Fluent)', 'Adobe Illustrator', 'Adobe Photoshop', 'UI/UX Wireframing', 'Design Thinking', 'Front-End Coding'].map((t) => (
-                      <span key={t} className="px-2.5 py-1 rounded-lg bg-[#0a0908] border border-[#a39d96]/15 text-[#d6d2cd]">
+                      <span key={t} className="px-2.5 py-1 rounded-lg bg-[#080807] border border-[#a8a29a]/15 text-[#dcd7cf] hover:border-[#ff9500]/40 transition-colors">
                         {t}
                       </span>
                     ))}
@@ -5084,24 +5097,24 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               </div>
 
               {/* Contact & Dispatch Strip */}
-              <div className="pt-6 border-t border-[#a39d96]/15 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+              <div className="pt-6 border-t border-[#a8a29a]/15 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => handleCopy('diyanamashi@gmail.com', 'remashi-email')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a16] text-[#fbfbf9] border border-[#a8a29a]/20 hover:border-[#ff9500]/50 hover:text-[#ff9500] transition-colors"
                   >
-                    <Mail className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                    <Mail className="w-3.5 h-3.5 text-[#ff9500]" />
                     <span>Email</span>
-                    {copiedContact === 'remashi-email' ? <Check className="w-3 h-3 text-[#f5f4f0]" /> : <Copy className="w-3 h-3 text-[#a39d96]" />}
+                    {copiedContact === 'remashi-email' ? <Check className="w-3 h-3 text-[#ff9500]" /> : <Copy className="w-3 h-3 text-[#a8a29a]" />}
                   </button>
 
                   <button
                     onClick={() => handleCopy('+94 713765861', 'remashi-phone')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/20 hover:border-[#d6d2cd]/50 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1a16] text-[#fbfbf9] border border-[#a8a29a]/20 hover:border-[#ff9500]/50 hover:text-[#ff9500] transition-colors"
                   >
-                    <Phone className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                    <Phone className="w-3.5 h-3.5 text-[#ff9500]" />
                     <span>+94 713765861</span>
-                    {copiedContact === 'remashi-phone' ? <Check className="w-3 h-3 text-[#f5f4f0]" /> : <Copy className="w-3 h-3 text-[#a39d96]" />}
+                    {copiedContact === 'remashi-phone' ? <Check className="w-3 h-3 text-[#ff9500]" /> : <Copy className="w-3 h-3 text-[#a8a29a]" />}
                   </button>
                 </div>
 
@@ -5110,13 +5123,13 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                     href="https://www.linkedin.com/in/remashi-diyana-b332a3272"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors uppercase"
+                    className="text-[#dcd7cf] hover:text-[#ff9500] flex items-center gap-1 transition-colors uppercase"
                   >
                     LinkedIn <ExternalLink className="w-3 h-3" />
                   </a>
                   <a
                     href="mailto:diyanamashi@gmail.com?subject=[Creative%20Studio%20Inquiry]%20Branding%20%26%20Flyer%20Design"
-                    className="text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors uppercase font-semibold"
+                    className="text-[#ff9500] hover:text-[#ffa726] flex items-center gap-1 transition-colors uppercase font-semibold"
                   >
                     DISPATCH BRIEF <ArrowRight className="w-3.5 h-3.5" />
                   </a>
@@ -5126,16 +5139,16 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           </div>
 
           {/* Architectural Synergy: The Dual Engine Synthesis Banner */}
-          <div className="p-8 sm:p-10 rounded-3xl bg-[#141311]/60 border border-[#a39d96]/15 backdrop-blur-md">
+          <div className="p-8 sm:p-10 rounded-3xl bg-[#141310]/70 border border-[#ff9500]/25 backdrop-blur-md shadow-[0_0_35px_rgba(255,149,0,0.06)]">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
               <div className="max-w-2xl">
-                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#a39d96] block mb-2">
+                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#ff9500] block mb-2">
                   THE DUAL-ENGINE PARADIGM // ABSOLUTE PERMANENCE
                 </span>
-                <h3 className="text-xl sm:text-2xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-2">
+                <h3 className="text-xl sm:text-2xl font-bold font-sans text-[#fbfbf9] tracking-tight mb-2">
                   Where Bare-Metal Code Meets Editorial Visual Prestige
                 </h3>
-                <p className="text-sm text-[#a39d96] font-light leading-relaxed">
+                <p className="text-sm text-[#a8a29a] font-light leading-relaxed">
                   Most software agencies either produce robust code with unstyled aesthetics, or sleek designs
                   with fragile architecture. At The Monolith, our dual leadership converges mission-critical backend
                   engineering with high-converting brand campaigns and tactical flyer design &mdash; delivering whole venture ecosystems ready to scale.
@@ -5148,15 +5161,15 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                     setTerminalOpen(true);
                     setTerminalInput('architects');
                   }}
-                  className="px-5 py-3 rounded-full bg-[#1c1a17] text-xs font-mono text-[#d6d2cd] border border-[#a39d96]/20 hover:text-[#f5f4f0] hover:border-[#d6d2cd]/40 transition-colors flex items-center gap-2"
+                  className="px-5 py-3 rounded-full bg-[#1c1a16] text-xs font-mono text-[#dcd7cf] border border-[#a8a29a]/20 hover:text-[#ff9500] hover:border-[#ff9500]/40 transition-colors flex items-center gap-2"
                 >
-                  <TerminalIcon className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <TerminalIcon className="w-3.5 h-3.5 text-[#ff9500]" />
                   QUERY COUNCIL IN TERMINAL
                 </button>
 
                 <a
                   href="#estimator"
-                  className="px-6 py-3 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-widest uppercase transition-all duration-300 hover:bg-[#f5f4f0] shadow-taupe-glow flex items-center gap-1.5"
+                  className="px-6 py-3 rounded-full bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] font-bold text-xs tracking-widest uppercase transition-all duration-300 hover:shadow-[0_0_25px_rgba(255,149,0,0.45)] shadow-[0_0_15px_rgba(255,149,0,0.3)] flex items-center gap-1.5"
                 >
                   SCOPE VENTURE <ArrowRight className="w-3.5 h-3.5" />
                 </a>
@@ -5208,8 +5221,8 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                   onClick={() => setActiveServicePillar(pillar.id)}
                   className={`px-4 py-2.5 rounded-full transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${
                     isActive
-                      ? 'bg-[#e3dfd8] text-[#0a0908] font-bold shadow-taupe-glow'
-                      : 'bg-[#141311] text-[#a39d96] hover:text-[#f5f4f0] border border-[#a39d96]/15 hover:border-[#d6d2cd]/30'
+                      ? 'bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] font-bold shadow-[0_0_20px_rgba(255,149,0,0.35)]'
+                      : 'bg-[#151411] text-[#a8a29a] hover:text-[#fbfbf9] border border-[#a8a29a]/15 hover:border-[#ff9500]/40'
                   }`}
                 >
                   <IconComp className="w-3.5 h-3.5" />
@@ -5220,19 +5233,19 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           </div>
 
           {/* Active Pillar Showcase Banner */}
-          <div className="p-8 sm:p-10 rounded-3xl bg-[#141311]/90 border border-[#a39d96]/20 shadow-2xl mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="p-8 sm:p-10 rounded-3xl bg-[#141311]/90 border border-[#a8a29a]/20 shadow-2xl mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-start gap-4">
-              <div className="p-4 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#f5f4f0]">
-                <PillarIcon className="w-8 h-8 text-[#d6d2cd]" />
+              <div className="p-4 rounded-2xl bg-[#1c1a17] border border-[#ff9500]/30 text-[#fbfbf9] shadow-[0_0_20px_rgba(255,149,0,0.15)]">
+                <PillarIcon className="w-8 h-8 text-[#ff9500]" />
               </div>
               <div>
-                <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96] block mb-1">
+                <span className="text-[11px] font-mono tracking-widest uppercase text-[#ff9500] block mb-1">
                   {currentPillar.badge}
                 </span>
-                <h3 className="text-2xl sm:text-3xl font-bold text-[#f5f4f0] mb-1">
+                <h3 className="text-2xl sm:text-3xl font-bold text-[#fbfbf9] mb-1">
                   {currentPillar.title}
                 </h3>
-                <p className="text-sm text-[#a39d96] font-light max-w-2xl">
+                <p className="text-sm text-[#a8a29a] font-light max-w-2xl">
                   {currentPillar.tagline}
                 </p>
               </div>
@@ -5242,7 +5255,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               <a
                 href="#estimator"
                 onClick={() => setEstimatorDomain(currentPillar.id === 'creative_marketing' ? 'creative_marketing' : 'software')}
-                className="px-6 py-2.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-wider uppercase hover:bg-[#f5f4f0] transition-colors whitespace-nowrap"
+                className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] font-bold text-xs tracking-wider uppercase hover:shadow-[0_0_20px_rgba(255,149,0,0.4)] transition-all whitespace-nowrap"
               >
                 SCOPE THIS PILLAR
               </a>
@@ -5254,29 +5267,29 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             {currentPillar.subservices.map((sub, sIdx) => (
               <div
                 key={sIdx}
-                className="group p-8 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between"
+                className="group p-8 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a8a29a]/15 hover:border-[#ff9500]/40 hover:shadow-[0_0_30px_rgba(255,149,0,0.12)] transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-mono tracking-widest uppercase text-[#7a756f]">
+                    <span className="text-[10px] font-mono tracking-widest uppercase text-[#7e786f]">
                       CAPABILITY 0{sIdx + 1}
                     </span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#ff9500] shadow-[0_0_6px_#ff9500]" />
                   </div>
-                  <h4 className="text-xl font-bold text-[#f5f4f0] group-hover:text-[#e3dfd8] transition-colors mb-3">
+                  <h4 className="text-xl font-bold text-[#fbfbf9] group-hover:text-[#ffa726] transition-colors mb-3">
                     {sub.title}
                   </h4>
-                  <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  <p className="text-sm text-[#a8a29a] font-light leading-relaxed mb-6">
                     {sub.desc}
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-[#a39d96]/10 flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-mono text-[#7a756f] uppercase mr-1">Deliverables:</span>
+                <div className="pt-4 border-t border-[#a8a29a]/10 flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-mono text-[#7e786f] uppercase mr-1">Deliverables:</span>
                   {sub.deliverables.map((deliv, dIdx) => (
                     <span
                       key={dIdx}
-                      className="px-2.5 py-1 rounded-lg bg-[#1c1a17] text-[10px] font-mono text-[#d6d2cd] border border-[#a39d96]/15"
+                      className="px-2.5 py-1 rounded-lg bg-[#1c1a17] text-[10px] font-mono text-[#dcd7cf] border border-[#a8a29a]/15 hover:border-[#ff9500]/30 transition-colors"
                     >
                       {deliv}
                     </span>
@@ -5314,7 +5327,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             <div className="flex items-center gap-3">
               <a
                 href="#estimator"
-                className="px-6 py-2.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-wider uppercase hover:bg-[#f5f4f0] transition-colors whitespace-nowrap shadow-taupe-glow"
+                className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] font-bold text-xs tracking-wider uppercase hover:shadow-[0_0_20px_rgba(255,149,0,0.4)] transition-all whitespace-nowrap shadow-sm"
               >
                 ESTIMATE YOUR PROJECT
               </a>
@@ -5324,105 +5337,105 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           {/* 3-Step Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Step 1 */}
-            <div className="group relative p-8 sm:p-9 rounded-3xl bg-[#141311]/85 border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between">
+            <div className="group relative p-8 sm:p-9 rounded-3xl bg-[#141311]/85 border border-[#a8a29a]/15 hover:border-[#ff9500]/40 hover:shadow-[0_0_30px_rgba(255,149,0,0.12)] transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-3xl font-mono font-bold text-[#f5f4f0]">
+                  <span className="text-3xl font-mono font-bold text-[#ff9500]">
                     01
                   </span>
-                  <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                  <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1 rounded-full bg-[#1c1a17] text-[#e8dcc4] border border-[#ff9500]/25">
                     WEEK 1
                   </span>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-[#f5f4f0] mb-3">
+                <h3 className="text-xl sm:text-2xl font-bold text-[#fbfbf9] mb-3">
                   Architectural Blueprint & Scope Lock
                 </h3>
-                <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                <p className="text-sm text-[#a8a29a] font-light leading-relaxed mb-6">
                   We map every user flow, database entity, and design requirement. You receive an immutable architecture specification and fixed-scope quotation before any code is written.
                 </p>
               </div>
 
-              <div className="pt-5 border-t border-[#a39d96]/10 space-y-2 text-xs font-mono text-[#d6d2cd]">
+              <div className="pt-5 border-t border-[#a8a29a]/10 space-y-2 text-xs font-mono text-[#dcd7cf]">
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <Check className="w-3.5 h-3.5 text-[#ff9500]" />
                   <span>Interactive Wireframes & Figma UI</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <Check className="w-3.5 h-3.5 text-[#ff9500]" />
                   <span>Database Schemas & API Contracts</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <Check className="w-3.5 h-3.5 text-[#ff9500]" />
                   <span>Fixed Timeline & Milestone Agreement</span>
                 </div>
               </div>
             </div>
 
             {/* Step 2 */}
-            <div className="group relative p-8 sm:p-9 rounded-3xl bg-[#141311]/85 border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between">
+            <div className="group relative p-8 sm:p-9 rounded-3xl bg-[#141311]/85 border border-[#a8a29a]/15 hover:border-[#ff9500]/40 hover:shadow-[0_0_30px_rgba(255,149,0,0.12)] transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-3xl font-mono font-bold text-[#f5f4f0]">
+                  <span className="text-3xl font-mono font-bold text-[#ff9500]">
                     02
                   </span>
-                  <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                  <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1 rounded-full bg-[#1c1a17] text-[#e8dcc4] border border-[#ff9500]/25">
                     WEEKS 2–4
                   </span>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-[#f5f4f0] mb-3">
+                <h3 className="text-xl sm:text-2xl font-bold text-[#fbfbf9] mb-3">
                   Rapid Agile Build & Staging Previews
                 </h3>
-                <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                <p className="text-sm text-[#a8a29a] font-light leading-relaxed mb-6">
                   We build your system in rapid two-week sprints. Every Friday, you test live working software on private staging environments—giving you full control and real-time oversight of progress.
                 </p>
               </div>
 
-              <div className="pt-5 border-t border-[#a39d96]/10 space-y-2 text-xs font-mono text-[#d6d2cd]">
+              <div className="pt-5 border-t border-[#a8a29a]/10 space-y-2 text-xs font-mono text-[#dcd7cf]">
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <Check className="w-3.5 h-3.5 text-[#ff9500]" />
                   <span>Weekly Live Staging URL Demos</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <Check className="w-3.5 h-3.5 text-[#ff9500]" />
                   <span>Real-Time WhatsApp & Slack Sync</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <Check className="w-3.5 h-3.5 text-[#ff9500]" />
                   <span>Iterative QA & Cross-Device Testing</span>
                 </div>
               </div>
             </div>
 
             {/* Step 3 */}
-            <div className="group relative p-8 sm:p-9 rounded-3xl bg-[#141311]/85 border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between">
+            <div className="group relative p-8 sm:p-9 rounded-3xl bg-[#141311]/85 border border-[#a8a29a]/15 hover:border-[#ff9500]/40 hover:shadow-[0_0_30px_rgba(255,149,0,0.12)] transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-3xl font-mono font-bold text-[#f5f4f0]">
+                  <span className="text-3xl font-mono font-bold text-[#ff9500]">
                     03
                   </span>
-                  <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                  <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1 rounded-full bg-[#1c1a17] text-[#e8dcc4] border border-[#ff9500]/25">
                     WEEK 5+
                   </span>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-[#f5f4f0] mb-3">
+                <h3 className="text-xl sm:text-2xl font-bold text-[#fbfbf9] mb-3">
                   Production Cutover & Growth Launch
                 </h3>
-                <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                <p className="text-sm text-[#a8a29a] font-light leading-relaxed mb-6">
                   Zero-downtime production deployment to your high-availability cloud servers, integrated with Remashi's promotional marketing campaigns and backed by our ongoing 24/7 SLA maintenance.
                 </p>
               </div>
 
-              <div className="pt-5 border-t border-[#a39d96]/10 space-y-2 text-xs font-mono text-[#d6d2cd]">
+              <div className="pt-5 border-t border-[#a8a29a]/10 space-y-2 text-xs font-mono text-[#dcd7cf]">
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <Check className="w-3.5 h-3.5 text-[#ff9500]" />
                   <span>Cloud Deployment & SSL Hardening</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <Check className="w-3.5 h-3.5 text-[#ff9500]" />
                   <span>Social Ads & Launch Flyer Rollout</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <Check className="w-3.5 h-3.5 text-[#ff9500]" />
                   <span>Guaranteed SLA & Emergency Support</span>
                 </div>
               </div>
@@ -5468,8 +5481,8 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                 onClick={() => setProjectFilter(cat)}
                 className={`px-4 py-2 rounded-full transition-all duration-200 whitespace-nowrap ${
                   projectFilter === cat
-                    ? 'bg-[#e3dfd8] text-[#0a0908] font-bold shadow-taupe-glow'
-                    : 'bg-[#141311] text-[#a39d96] hover:text-[#f5f4f0] border border-[#a39d96]/15 hover:border-[#d6d2cd]/30'
+                    ? 'bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] font-bold shadow-[0_0_20px_rgba(255,149,0,0.35)]'
+                    : 'bg-[#151411] text-[#a8a29a] hover:text-[#fbfbf9] border border-[#a8a29a]/15 hover:border-[#ff9500]/40'
                 }`}
               >
                 {cat}
@@ -5483,23 +5496,23 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               <div
                 key={study.id}
                 onClick={() => setSelectedCaseStudy(study)}
-                className="group relative cursor-pointer rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 p-7 sm:p-8 transition-all duration-500 hover:border-[#d6d2cd]/40 hover:bg-[#1a1815]/90 hover:shadow-taupe-glow flex flex-col justify-between"
+                className="group relative cursor-pointer rounded-3xl bg-[#141310]/80 backdrop-blur-xl border border-[#a8a29a]/15 p-7 sm:p-8 transition-all duration-500 hover:border-[#ff9500]/40 hover:bg-[#181714]/95 hover:shadow-[0_0_30px_rgba(255,149,0,0.12)] flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-5">
-                    <span className="text-[11px] font-mono tracking-widest text-[#a39d96] uppercase">
+                    <span className="text-[11px] font-mono tracking-widest text-[#ff9500] uppercase font-semibold">
                       {study.category}
                     </span>
-                    <span className="text-[10px] font-mono tracking-wider px-2 py-0.5 rounded-full bg-[#1c1a17] text-[#d6d2cd] border border-[#a39d96]/20">
+                    <span className="text-[10px] font-mono tracking-wider px-2.5 py-0.5 rounded-full bg-[#1c1a16] text-[#e8dcc4] border border-[#ff9500]/25">
                       {study.client}
                     </span>
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl font-bold text-[#f5f4f0] group-hover:text-[#e3dfd8] transition-colors duration-300 mb-2">
+                  <h3 className="text-xl sm:text-2xl font-bold text-[#fbfbf9] group-hover:text-[#ffa726] transition-colors duration-300 mb-2">
                     {study.title}
                   </h3>
-                  <p className="text-xs font-medium text-[#d6d2cd] mb-3 leading-snug">{study.headline}</p>
-                  <p className="text-xs text-[#a39d96] font-light leading-relaxed mb-5 line-clamp-3">
+                  <p className="text-xs font-medium text-[#dcd7cf] mb-3 leading-snug">{study.headline}</p>
+                  <p className="text-xs text-[#a8a29a] font-light leading-relaxed mb-5 line-clamp-3">
                     {study.summary}
                   </p>
 
@@ -5508,13 +5521,13 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                     {study.stack.slice(0, 3).map((tech, tIdx) => (
                       <span
                         key={tIdx}
-                        className="px-2 py-0.5 rounded-md bg-[#1c1a17] text-[10px] font-mono text-[#a39d96] border border-[#a39d96]/10"
+                        className="px-2 py-0.5 rounded-md bg-[#1c1a16] text-[10px] font-mono text-[#dcd7cf] border border-[#a8a29a]/15 group-hover:border-[#ff9500]/30 transition-colors"
                       >
                         {tech}
                       </span>
                     ))}
                     {study.stack.length > 3 && (
-                      <span className="px-1.5 py-0.5 rounded-md bg-[#1c1a17] text-[10px] font-mono text-[#7a756f]">
+                      <span className="px-1.5 py-0.5 rounded-md bg-[#1c1a16] text-[10px] font-mono text-[#7e786f]">
                         +{study.stack.length - 3}
                       </span>
                     )}
@@ -5522,19 +5535,19 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                 </div>
 
                 <div>
-                  <div className="grid grid-cols-3 gap-2 pt-4 border-t border-[#a39d96]/10 mb-4 font-mono text-xs">
+                  <div className="grid grid-cols-3 gap-2 pt-4 border-t border-[#a8a29a]/15 mb-4 font-mono text-xs">
                     {study.metrics.map((m, i) => (
-                      <div key={i} className="p-2 rounded-xl bg-[#0a0908]/60 border border-[#a39d96]/10">
-                        <span className="text-[9px] text-[#7a756f] block uppercase truncate mb-0.5">{m.label}</span>
-                        <span className="text-[11px] font-semibold text-[#f5f4f0] truncate block">{m.val}</span>
+                      <div key={i} className="p-2 rounded-xl bg-[#080807]/70 border border-[#a8a29a]/15">
+                        <span className="text-[9px] text-[#7e786f] block uppercase truncate mb-0.5">{m.label}</span>
+                        <span className="text-[11px] font-semibold text-[#ff9500] truncate block">{m.val}</span>
                       </div>
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-between text-xs font-mono tracking-wider text-[#a39d96] group-hover:text-[#f5f4f0] transition-colors duration-300">
+                  <div className="flex items-center justify-between text-xs font-mono tracking-wider text-[#a8a29a] group-hover:text-[#ff9500] transition-colors duration-300">
                     <span className="uppercase text-[10px]">SPECIFICATION</span>
-                    <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-300 text-[11px]">
-                      INSPECT <ChevronRight className="w-3.5 h-3.5" />
+                    <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-300 text-[11px] font-semibold">
+                      INSPECT <ChevronRight className="w-3.5 h-3.5 text-[#ff9500]" />
                     </span>
                   </div>
                 </div>
@@ -5568,7 +5581,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             </div>
 
             {/* Category Selector Tabs */}
-            <div className="flex items-center gap-2 bg-[#141311] p-1.5 rounded-2xl border border-[#a39d96]/15 text-xs font-mono">
+            <div className="flex items-center gap-2 bg-[#141310] p-1.5 rounded-2xl border border-[#a8a29a]/15 text-xs font-mono">
               {[
                 { id: 'backend', label: 'Backend Core' },
                 { id: 'frontend', label: 'Frontend Layer' },
@@ -5580,8 +5593,8 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                   onClick={() => setActiveStackTab(tab.id)}
                   className={`px-3.5 py-1.5 rounded-xl transition-all ${
                     activeStackTab === tab.id
-                      ? 'bg-[#e3dfd8] text-[#0a0908] font-bold shadow-taupe-glow'
-                      : 'text-[#a39d96] hover:text-[#f5f4f0]'
+                      ? 'bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] font-bold shadow-[0_0_15px_rgba(255,149,0,0.35)]'
+                      : 'text-[#a8a29a] hover:text-[#ff9500]'
                   }`}
                 >
                   {tab.label}
@@ -5595,22 +5608,22 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             {stackArsenal[activeStackTab].map((item, idx) => (
               <div
                 key={idx}
-                className="group p-6 rounded-3xl bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between"
+                className="group p-6 rounded-3xl bg-[#141310]/80 backdrop-blur-xl border border-[#a8a29a]/15 hover:border-[#ff9500]/40 hover:shadow-[0_0_30px_rgba(255,149,0,0.12)] transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
-                  <span className="text-[10px] font-mono tracking-widest uppercase text-[#a39d96] block mb-2">
+                  <span className="text-[10px] font-mono tracking-widest uppercase text-[#ff9500] block mb-2 font-semibold">
                     {item.role}
                   </span>
-                  <h3 className="text-lg font-bold text-[#f5f4f0] group-hover:text-[#e3dfd8] transition-colors mb-3">
+                  <h3 className="text-lg font-bold text-[#fbfbf9] group-hover:text-[#ffa726] transition-colors mb-3">
                     {item.name}
                   </h3>
-                  <p className="text-xs text-[#a39d96] font-light leading-relaxed">
+                  <p className="text-xs text-[#a8a29a] font-light leading-relaxed">
                     {item.desc}
                   </p>
                 </div>
-                <div className="mt-6 pt-4 border-t border-[#a39d96]/10 flex items-center justify-between text-[10px] font-mono text-[#7a756f]">
+                <div className="mt-6 pt-4 border-t border-[#a8a29a]/10 flex items-center justify-between text-[10px] font-mono text-[#7e786f]">
                   <span>PRODUCTION READY</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#f5f4f0]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ff9500] shadow-[0_0_6px_#ff9500]" />
                 </div>
               </div>
             ))}
@@ -5644,162 +5657,162 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           {/* Premium Bento Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Bento Card 1: Distributed Compute */}
-            <div className="md:col-span-2 group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
+            <div className="md:col-span-2 group relative p-8 sm:p-10 rounded-3xl bg-[#141310]/80 backdrop-blur-xl border border-[#a8a29a]/15 transition-all duration-500 hover:border-[#ff9500]/40 hover:shadow-[0_0_30px_rgba(255,149,0,0.12)] overflow-hidden">
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <div className="p-3 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#f5f4f0]">
-                      <Cpu className="w-6 h-6 text-[#d6d2cd]" />
+                    <div className="p-3 rounded-2xl bg-[#1c1a16] border border-[#ff9500]/25 text-[#ff9500]">
+                      <Cpu className="w-6 h-6 text-[#ff9500]" />
                     </div>
-                    <span className="text-xs font-mono px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                    <span className="text-xs font-mono px-3 py-1 rounded-full bg-[#1c1a16] text-[#ff9500] border border-[#ff9500]/25 font-semibold">
                       Sub-Millisecond Fabric
                     </span>
                   </div>
 
-                  <h3 className="text-2xl sm:text-3xl font-bold text-[#f5f4f0] tracking-tight mb-3">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-[#fbfbf9] tracking-tight mb-3">
                     Distributed Compute & Microservices
                   </h3>
-                  <p className="text-sm sm:text-base text-[#a39d96] font-light leading-relaxed max-w-xl mb-8">
+                  <p className="text-sm sm:text-base text-[#a8a29a] font-light leading-relaxed max-w-xl mb-8">
                     Autonomous cluster scheduler dynamically allocates GPU and TPU workloads without
                     context fragmentation. Sub-light optical synchronization guarantees zero state drift.
                   </p>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs">
-                  <div className="flex items-center justify-between text-[#7a756f] border-b border-[#a39d96]/10 pb-3 mb-4">
+                <div className="p-5 rounded-2xl bg-[#080807]/80 border border-[#a8a29a]/15 font-mono text-xs">
+                  <div className="flex items-center justify-between text-[#7e786f] border-b border-[#a8a29a]/10 pb-3 mb-4">
                     <span className="flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-[#d6d2cd]" />
+                      <Activity className="w-4 h-4 text-[#ff9500]" />
                       CLUSTER SCHEDULER STATE
                     </span>
-                    <span className="text-[#f5f4f0]">64,000 ACCELERATORS NOMINAL</span>
+                    <span className="text-[#ff9500] font-semibold">64,000 ACCELERATORS NOMINAL</span>
                   </div>
                   <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-4">
                     {Array.from({ length: 16 }).map((_, i) => (
                       <div
                         key={i}
-                        className="h-10 rounded-lg bg-[#141311] border border-[#a39d96]/10 flex flex-col items-center justify-center transition-all duration-300 hover:border-[#d6d2cd]/40"
+                        className="h-10 rounded-lg bg-[#141310] border border-[#a8a29a]/10 flex flex-col items-center justify-center transition-all duration-300 hover:border-[#ff9500]/40"
                       >
                         <div
-                          className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd] mb-1"
-                          style={{ opacity: 0.35 + (i % 5) * 0.15 }}
+                          className="w-1.5 h-1.5 rounded-full bg-[#ff9500] mb-1"
+                          style={{ opacity: 0.4 + (i % 5) * 0.15 }}
                         />
-                        <span className="text-[9px] text-[#7a756f]">C{i + 1}</span>
+                        <span className="text-[9px] text-[#7e786f]">C{i + 1}</span>
                       </div>
                     ))}
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-[#7a756f] pt-1">
+                  <div className="flex items-center justify-between text-[11px] text-[#7e786f] pt-1">
                     <span>Optical Interconnect: 4.8 TB/s</span>
-                    <span className="text-[#f5f4f0] font-semibold">State Drift: &lt; 0.04 ns</span>
+                    <span className="text-[#ff9500] font-semibold">State Drift: &lt; 0.04 ns</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Bento Card 2: Zero-Trust Security */}
-            <div className="md:col-span-1 group relative p-8 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
+            <div className="md:col-span-1 group relative p-8 rounded-3xl bg-[#141310]/80 backdrop-blur-xl border border-[#a8a29a]/15 transition-all duration-500 hover:border-[#ff9500]/40 hover:shadow-[0_0_30px_rgba(255,149,0,0.12)] overflow-hidden">
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div>
-                  <div className="p-3 w-fit rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#d6d2cd] mb-6">
-                    <Shield className="w-6 h-6" />
+                  <div className="p-3 w-fit rounded-2xl bg-[#1c1a16] border border-[#ff9500]/25 text-[#ff9500] mb-6">
+                    <Shield className="w-6 h-6 text-[#ff9500]" />
                   </div>
-                  <h3 className="text-xl font-bold text-[#f5f4f0] tracking-tight mb-2">
+                  <h3 className="text-xl font-bold text-[#fbfbf9] tracking-tight mb-2">
                     Zero-Trust Security
                   </h3>
-                  <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  <p className="text-sm text-[#a8a29a] font-light leading-relaxed mb-6">
                     Hardware-enforced null-field sandboxes encapsulating weights and runtime states
                     behind post-quantum lattice cryptography.
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs space-y-2">
-                  <div className="flex justify-between text-[#7a756f]">
+                <div className="p-4 rounded-2xl bg-[#080807]/80 border border-[#a8a29a]/15 font-mono text-xs space-y-2">
+                  <div className="flex justify-between text-[#7e786f]">
                     <span>CIPHER</span>
-                    <span className="text-[#f5f4f0]">DILITHIUM-5 PQC</span>
+                    <span className="text-[#ff9500] font-semibold">DILITHIUM-5 PQC</span>
                   </div>
-                  <div className="flex justify-between text-[#7a756f]">
+                  <div className="flex justify-between text-[#7e786f]">
                     <span>SIDE-CHANNEL FLUX</span>
-                    <span className="text-[#d6d2cd]">0.00 dB (ABSORBED)</span>
+                    <span className="text-[#dcd7cf]">0.00 dB (ABSORBED)</span>
                   </div>
-                  <div className="flex justify-between text-[#7a756f]">
+                  <div className="flex justify-between text-[#7e786f]">
                     <span>PERIMETER</span>
-                    <span className="text-[#a39d96]">HARDWARE SEALED</span>
+                    <span className="text-[#e8dcc4]">HARDWARE SEALED</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Bento Card 3: Neural Data Pipelines */}
-            <div className="md:col-span-1 group relative p-8 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
+            <div className="md:col-span-1 group relative p-8 rounded-3xl bg-[#141310]/80 backdrop-blur-xl border border-[#a8a29a]/15 transition-all duration-500 hover:border-[#ff9500]/40 hover:shadow-[0_0_30px_rgba(255,149,0,0.12)] overflow-hidden">
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div>
-                  <div className="p-3 w-fit rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#d6d2cd] mb-6">
-                    <Zap className="w-6 h-6" />
+                  <div className="p-3 w-fit rounded-2xl bg-[#1c1a16] border border-[#ff9500]/25 text-[#ff9500] mb-6">
+                    <Zap className="w-6 h-6 text-[#ff9500]" />
                   </div>
-                  <h3 className="text-xl font-bold text-[#f5f4f0] tracking-tight mb-2">
+                  <h3 className="text-xl font-bold text-[#fbfbf9] tracking-tight mb-2">
                     Neural Data Pipelines
                   </h3>
-                  <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  <p className="text-sm text-[#a8a29a] font-light leading-relaxed mb-6">
                     Real-time high-throughput streaming with zero-copy deserialization. Ingests 10M+
                     events/sec with deterministic sub-millisecond execution.
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs space-y-2">
-                  <div className="flex justify-between text-[#7a756f]">
+                <div className="p-4 rounded-2xl bg-[#080807]/80 border border-[#a8a29a]/15 font-mono text-xs space-y-2">
+                  <div className="flex justify-between text-[#7e786f]">
                     <span>STREAM THROUGHPUT</span>
-                    <span className="text-[#f5f4f0]">10,485,760 ops/s</span>
+                    <span className="text-[#ff9500] font-semibold">10,485,760 ops/s</span>
                   </div>
-                  <div className="flex justify-between text-[#7a756f]">
+                  <div className="flex justify-between text-[#7e786f]">
                     <span>MEMORY OVERHEAD</span>
-                    <span className="text-[#a39d96]">0.00 MB ALLOC</span>
+                    <span className="text-[#dcd7cf]">0.00 MB ALLOC</span>
                   </div>
-                  <div className="flex justify-between text-[#7a756f]">
+                  <div className="flex justify-between text-[#7e786f]">
                     <span>DESERIALIZATION</span>
-                    <span className="text-[#d6d2cd]">ZERO-COPY RING</span>
+                    <span className="text-[#e8dcc4]">ZERO-COPY RING</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Bento Card 4: Immutable Consensus */}
-            <div className="md:col-span-2 group relative p-8 sm:p-10 rounded-3xl bg-[#141311]/70 backdrop-blur-xl border border-[#a39d96]/15 transition-all duration-500 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow overflow-hidden">
+            <div className="md:col-span-2 group relative p-8 sm:p-10 rounded-3xl bg-[#141310]/80 backdrop-blur-xl border border-[#a8a29a]/15 transition-all duration-500 hover:border-[#ff9500]/40 hover:shadow-[0_0_30px_rgba(255,149,0,0.12)] overflow-hidden">
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <div className="p-3 rounded-2xl bg-[#1c1a17] border border-[#a39d96]/20 text-[#f5f4f0]">
-                      <Database className="w-6 h-6 text-[#d6d2cd]" />
+                    <div className="p-3 rounded-2xl bg-[#1c1a16] border border-[#ff9500]/25 text-[#ff9500]">
+                      <Database className="w-6 h-6 text-[#ff9500]" />
                     </div>
-                    <span className="text-xs font-mono px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                    <span className="text-xs font-mono px-3 py-1 rounded-full bg-[#1c1a16] text-[#ff9500] border border-[#ff9500]/25 font-semibold">
                       Millennial Durability
                     </span>
                   </div>
 
-                  <h3 className="text-2xl sm:text-3xl font-bold text-[#f5f4f0] tracking-tight mb-3">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-[#fbfbf9] tracking-tight mb-3">
                     Immutable Consensus Architecture
                   </h3>
-                  <p className="text-sm sm:text-base text-[#a39d96] font-light leading-relaxed max-w-xl mb-8">
+                  <p className="text-sm sm:text-base text-[#a8a29a] font-light leading-relaxed max-w-xl mb-8">
                     Continuous background parity verification guarantees data permanence for a thousand
                     years. Quantum-sharded Byzantine consensus prevents degradation under any network
                     partition.
                   </p>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-[#0a0908]/80 border border-[#a39d96]/15 font-mono text-xs">
+                <div className="p-5 rounded-2xl bg-[#080807]/80 border border-[#a8a29a]/15 font-mono text-xs">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="p-3 rounded-xl bg-[#141311] border border-[#a39d96]/10">
-                      <div className="text-[10px] text-[#7a756f] uppercase">Durability Tier</div>
-                      <div className="text-lg font-bold text-[#f5f4f0] mt-1">99.999999999%</div>
-                      <span className="text-[9px] text-[#a39d96]">11 Nines Parity</span>
+                    <div className="p-3 rounded-xl bg-[#141310] border border-[#a8a29a]/10">
+                      <div className="text-[10px] text-[#7e786f] uppercase">Durability Tier</div>
+                      <div className="text-lg font-bold text-[#ff9500] mt-1">99.999999999%</div>
+                      <span className="text-[9px] text-[#a8a29a]">11 Nines Parity</span>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#141311] border border-[#a39d96]/10">
-                      <div className="text-[10px] text-[#7a756f] uppercase">Consensus Model</div>
-                      <div className="text-lg font-bold text-[#f5f4f0] mt-1">3f + 1 Byzantine</div>
-                      <span className="text-[9px] text-[#a39d96]">Zero-loss quorum</span>
+                    <div className="p-3 rounded-xl bg-[#141310] border border-[#a8a29a]/10">
+                      <div className="text-[10px] text-[#7e786f] uppercase">Consensus Model</div>
+                      <div className="text-lg font-bold text-[#ff9500] mt-1">3f + 1 Byzantine</div>
+                      <span className="text-[9px] text-[#a8a29a]">Zero-loss quorum</span>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#141311] border border-[#a39d96]/10">
-                      <div className="text-[10px] text-[#7a756f] uppercase">Self-Heal Cycle</div>
-                      <div className="text-lg font-bold text-[#f5f4f0] mt-1">REAL-TIME</div>
-                      <span className="text-[9px] text-[#d6d2cd]">Autonomous Bit-Repair</span>
+                    <div className="p-3 rounded-xl bg-[#141310] border border-[#a8a29a]/10">
+                      <div className="text-[10px] text-[#7e786f] uppercase">Self-Heal Cycle</div>
+                      <div className="text-lg font-bold text-[#ff9500] mt-1">REAL-TIME</div>
+                      <span className="text-[9px] text-[#dcd7cf]">Autonomous Bit-Repair</span>
                     </div>
                   </div>
                 </div>
@@ -5833,26 +5846,26 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           </div>
 
           {/* Polished Frosted-Glass Terminal Window */}
-          <div className="rounded-3xl bg-[#141311]/85 backdrop-blur-2xl border border-[#a39d96]/20 shadow-2xl overflow-hidden">
+          <div className="rounded-3xl bg-[#141310]/85 backdrop-blur-2xl border border-[#ff9500]/25 shadow-2xl overflow-hidden">
             {/* Header / Tabs */}
-            <div className="flex flex-wrap items-center justify-between px-6 py-4 border-b border-[#a39d96]/15 bg-[#181614]">
+            <div className="flex flex-wrap items-center justify-between px-6 py-4 border-b border-[#a8a29a]/15 bg-[#181714]">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#7a756f]/40" />
-                <span className="w-3 h-3 rounded-full bg-[#a39d96]/40" />
-                <span className="w-3 h-3 rounded-full bg-[#d6d2cd]/40" />
-                <span className="ml-3 text-xs font-mono text-[#a39d96] hidden sm:inline">
+                <span className="w-3 h-3 rounded-full bg-[#ff9500]/60" />
+                <span className="w-3 h-3 rounded-full bg-[#ffa726]/40" />
+                <span className="w-3 h-3 rounded-full bg-[#e8dcc4]/30" />
+                <span className="ml-3 text-xs font-mono text-[#ff9500] hidden sm:inline font-semibold">
                   monolith-core // client-sdk
                 </span>
               </div>
 
               {/* Language Switcher Tabs */}
-              <div className="flex items-center gap-1.5 bg-[#0a0908] p-1 rounded-xl border border-[#a39d96]/15">
+              <div className="flex items-center gap-1.5 bg-[#080807] p-1 rounded-xl border border-[#a8a29a]/15">
                 <button
                   onClick={() => setCodeLanguage('ts')}
                   className={`px-3 py-1 text-xs font-mono rounded-lg transition-all ${
                     codeLanguage === 'ts'
-                      ? 'bg-[#1c1a17] text-[#f5f4f0] shadow-sm'
-                      : 'text-[#7a756f] hover:text-[#a39d96]'
+                      ? 'bg-[#1c1a16] text-[#ff9500] border border-[#ff9500]/30 shadow-sm font-semibold'
+                      : 'text-[#7e786f] hover:text-[#a8a29a]'
                   }`}
                 >
                   TypeScript
@@ -5861,8 +5874,8 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                   onClick={() => setCodeLanguage('py')}
                   className={`px-3 py-1 text-xs font-mono rounded-lg transition-all ${
                     codeLanguage === 'py'
-                      ? 'bg-[#1c1a17] text-[#f5f4f0] shadow-sm'
-                      : 'text-[#7a756f] hover:text-[#a39d96]'
+                      ? 'bg-[#1c1a16] text-[#ff9500] border border-[#ff9500]/30 shadow-sm font-semibold'
+                      : 'text-[#7e786f] hover:text-[#a8a29a]'
                   }`}
                 >
                   Python
@@ -5872,17 +5885,17 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               {/* Copy Code */}
               <button
                 onClick={() => copyToClipboard(activeCodeString)}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#1c1a17] text-xs font-mono text-[#a39d96] hover:text-[#f5f4f0] border border-[#a39d96]/15 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#1c1a16] text-xs font-mono text-[#a8a29a] hover:text-[#ff9500] border border-[#a8a29a]/15 hover:border-[#ff9500]/30 transition-colors"
                 aria-label="Copy code"
               >
                 {copiedCode ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-[#f5f4f0]" />
-                    <span>COPIED</span>
+                    <Check className="w-3.5 h-3.5 text-[#ff9500]" />
+                    <span className="text-[#ff9500] font-semibold">COPIED</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5 text-[#a39d96]" />
+                    <Copy className="w-3.5 h-3.5 text-[#a8a29a]" />
                     <span>COPY SDK</span>
                   </>
                 )}
@@ -5890,30 +5903,30 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             </div>
 
             {/* Typewriter Code Display */}
-            <div className="p-6 sm:p-8 font-mono text-xs sm:text-sm text-[#e3dfd8] overflow-x-auto bg-[#0a0908]/90 min-h-[380px]">
+            <div className="p-6 sm:p-8 font-mono text-xs sm:text-sm text-[#e8dcc4] overflow-x-auto bg-[#080807]/95 min-h-[380px]">
               <pre className="leading-relaxed">
                 <code>
                   {typedCode}
-                  <span className="inline-block w-2 h-4 bg-[#f5f4f0] ml-0.5 animate-pulse align-middle" />
+                  <span className="inline-block w-2 h-4 bg-[#ff9500] ml-0.5 animate-pulse align-middle shadow-[0_0_8px_#ff9500]" />
                 </code>
               </pre>
             </div>
 
             {/* Footer Telemetry */}
-            <div className="px-6 py-4 bg-[#11100e] border-t border-[#a39d96]/15 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-[#7a756f]">
+            <div className="px-6 py-4 bg-[#11100e] border-t border-[#a8a29a]/15 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-[#7e786f]">
               <div className="flex items-center gap-6">
                 <span>
-                  INTEGRATION SPEED: <strong className="text-[#f5f4f0]">&lt; 5 MINUTES</strong>
+                  INTEGRATION SPEED: <strong className="text-[#ff9500]">&lt; 5 MINUTES</strong>
                 </span>
                 <span>
-                  TEST SUITE: <strong className="text-[#a39d96]">100% PASS</strong>
+                  TEST SUITE: <strong className="text-[#e8dcc4]">100% PASS</strong>
                 </span>
               </div>
               <button
                 onClick={() => setTerminalOpen(true)}
-                className="text-xs text-[#d6d2cd] hover:text-[#f5f4f0] flex items-center gap-1 transition-colors"
+                className="text-xs text-[#dcd7cf] hover:text-[#ff9500] flex items-center gap-1 transition-colors font-semibold"
               >
-                LAUNCH INTERACTIVE SHELL <ChevronRight className="w-3.5 h-3.5" />
+                LAUNCH INTERACTIVE SHELL <ChevronRight className="w-3.5 h-3.5 text-[#ff9500]" />
               </button>
             </div>
           </div>
@@ -5964,20 +5977,20 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                       onClick={() => setEstimatorDomain(dom.id)}
                       className={`p-3.5 rounded-2xl border text-left transition-all ${
                         estimatorDomain === dom.id
-                          ? 'bg-[#1c1a17] border-[#d6d2cd] text-[#f5f4f0] shadow-taupe-glow'
-                          : 'bg-[#0a0908] border-[#a39d96]/15 text-[#a39d96] hover:border-[#a39d96]/40'
+                          ? 'bg-[#1c1a16] border-[#ff9500] text-[#fbfbf9] shadow-[0_0_15px_rgba(255,149,0,0.2)]'
+                          : 'bg-[#0a0908] border-[#a8a29a]/15 text-[#a8a29a] hover:border-[#ff9500]/40'
                       }`}
                     >
                       <span className="block font-semibold mb-1">{dom.label}</span>
-                      <span className="text-[10px] text-[#7a756f]">Selected Domain</span>
+                      <span className="text-[10px] text-[#7e786f]">Selected Domain</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Step 2: Concurrency & Scale */}
-              <div className="p-7 rounded-3xl bg-[#141311]/80 border border-[#a39d96]/15">
-                <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96] block mb-4">
+              <div className="p-7 rounded-3xl bg-[#141311]/80 border border-[#a8a29a]/15">
+                <span className="text-[11px] font-mono tracking-widest uppercase text-[#a8a29a] block mb-4">
                   02 // TARGET CONCURRENCY & CAMPAIGN REACH
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
@@ -5991,20 +6004,20 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                       onClick={() => setEstimatorScale(scale.id)}
                       className={`p-3.5 rounded-2xl border text-left transition-all ${
                         estimatorScale === scale.id
-                          ? 'bg-[#1c1a17] border-[#d6d2cd] text-[#f5f4f0] shadow-taupe-glow'
-                          : 'bg-[#0a0908] border-[#a39d96]/15 text-[#a39d96] hover:border-[#a39d96]/40'
+                          ? 'bg-[#1c1a16] border-[#ff9500] text-[#fbfbf9] shadow-[0_0_15px_rgba(255,149,0,0.2)]'
+                          : 'bg-[#0a0908] border-[#a8a29a]/15 text-[#a8a29a] hover:border-[#ff9500]/40'
                       }`}
                     >
                       <span className="block font-semibold text-sm mb-1">{scale.label}</span>
-                      <span className="text-[10px] text-[#7a756f]">{scale.desc}</span>
+                      <span className="text-[10px] text-[#7e786f]">{scale.desc}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Step 3: Required Architectural & Marketing Features */}
-              <div className="p-7 rounded-3xl bg-[#141311]/80 border border-[#a39d96]/15">
-                <span className="text-[11px] font-mono tracking-widest uppercase text-[#a39d96] block mb-4">
+              <div className="p-7 rounded-3xl bg-[#141311]/80 border border-[#a8a29a]/15">
+                <span className="text-[11px] font-mono tracking-widest uppercase text-[#a8a29a] block mb-4">
                   03 // ESSENTIAL SUBSYSTEMS & CAMPAIGN DELIVERABLES
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs">
@@ -6026,12 +6039,12 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                         onClick={() => toggleFeature(feat.id)}
                         className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between ${
                           isSelected
-                            ? 'bg-[#1c1a17] border-[#d6d2cd] text-[#f5f4f0]'
-                            : 'bg-[#0a0908] border-[#a39d96]/15 text-[#7a756f] hover:border-[#a39d96]/40'
+                            ? 'bg-[#1c1a16] border-[#ff9500] text-[#fbfbf9] shadow-[0_0_12px_rgba(255,149,0,0.15)]'
+                            : 'bg-[#0a0908] border-[#a8a29a]/15 text-[#7e786f] hover:border-[#a8a29a]/40'
                         }`}
                       >
                         <span className="text-xs">{feat.label}</span>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-[#f5f4f0]" />}
+                        {isSelected && <Check className="w-3.5 h-3.5 text-[#ff9500]" />}
                       </button>
                     );
                   })}
@@ -6040,63 +6053,63 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             </div>
 
             {/* Right 1 Col: Dynamic Output Profile */}
-            <div className="lg:col-span-1 p-8 rounded-3xl bg-[#141311] border border-[#a39d96]/20 shadow-2xl flex flex-col justify-between">
+            <div className="lg:col-span-1 p-8 rounded-3xl bg-[#141311] border border-[#ff9500]/25 shadow-2xl flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between pb-4 border-b border-[#a39d96]/15 mb-6">
-                  <span className="text-xs font-mono uppercase tracking-widest text-[#a39d96]">
+                <div className="flex items-center justify-between pb-4 border-b border-[#a8a29a]/15 mb-6">
+                  <span className="text-xs font-mono uppercase tracking-widest text-[#ff9500]">
                     ESTIMATED BLUEPRINT
                   </span>
-                  <span className="w-2 h-2 rounded-full bg-[#f5f4f0] animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-[#ff9500] shadow-[0_0_8px_#ff9500] animate-pulse" />
                 </div>
 
                 <div className="space-y-6 font-mono text-xs">
                   <div>
-                    <span className="text-[10px] text-[#7a756f] uppercase block mb-1">
+                    <span className="text-[10px] text-[#7e786f] uppercase block mb-1">
                       Engagement Tier
                     </span>
-                    <span className="text-sm font-bold text-[#f5f4f0] block leading-snug">
+                    <span className="text-sm font-bold text-[#ff9500] block leading-snug">
                       {estimatedBrief.tier}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] text-[#7a756f] uppercase block mb-1">
+                    <span className="text-[10px] text-[#7e786f] uppercase block mb-1">
                       Recommended Foundation
                     </span>
-                    <span className="text-xs text-[#d6d2cd] block leading-relaxed">
+                    <span className="text-xs text-[#dcd7cf] block leading-relaxed">
                       {estimatedBrief.baseStack}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] text-[#7a756f] uppercase block mb-1">
+                    <span className="text-[10px] text-[#7e786f] uppercase block mb-1">
                       Estimated Production Horizon
                     </span>
-                    <span className="text-xs font-semibold text-[#f5f4f0] block">
+                    <span className="text-xs font-semibold text-[#fbfbf9] block">
                       {estimatedBrief.window}
                     </span>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-[#0a0908] border border-[#a39d96]/15">
-                    <span className="text-[10px] text-[#7a756f] uppercase block mb-1">
+                  <div className="p-4 rounded-2xl bg-[#0a0908] border border-[#a8a29a]/15">
+                    <span className="text-[10px] text-[#7e786f] uppercase block mb-1">
                       Active Subsystems & Deliverables
                     </span>
-                    <span className="text-[11px] text-[#a39d96]">
+                    <span className="text-[11px] text-[#e8dcc4]">
                       {estimatorFeatures.length > 0 ? estimatorFeatures.join(' • ') : 'Standard Runtime'}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-8 border-t border-[#a39d96]/15 space-y-3">
+              <div className="pt-8 border-t border-[#a8a29a]/15 space-y-3">
                 <a
                   href={`mailto:dulanja150abeysinghe@gmail.com?subject=${encodeURIComponent(
                     estimatedBrief.subject
                   )}&body=${encodeURIComponent(estimatedBrief.body)}`}
-                  className="w-full py-3.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-widest uppercase transition-all hover:bg-[#f5f4f0] shadow-taupe-glow flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] font-bold text-xs tracking-widest uppercase transition-all hover:shadow-[0_0_30px_rgba(255,149,0,0.45)] shadow-[0_0_20px_rgba(255,149,0,0.3)] flex items-center justify-center gap-2"
                 >
                   DISPATCH TO ARCHITECT
-                  <ArrowRight className="w-3.5 h-3.5 text-[#0a0908]" />
+                  <ArrowRight className="w-3.5 h-3.5 text-[#080807]" />
                 </a>
 
                 <a
@@ -6228,54 +6241,54 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
                   {/* Nodes */}
                   <g className="cursor-pointer" onClick={() => setSelectedNode('IAD-01')}>
-                    <circle cx="220" cy="170" r="14" fill="rgba(214, 210, 205, 0.15)" />
-                    <circle cx="220" cy="170" r="5" fill="#f5f4f0" />
-                    <text x="235" y="165" fill="#f5f4f0" fontSize="11" fontFamily="JetBrains Mono">
+                    <circle cx="220" cy="170" r="14" fill={selectedNode === 'IAD-01' ? "rgba(255, 149, 0, 0.45)" : "rgba(255, 149, 0, 0.18)"} />
+                    <circle cx="220" cy="170" r="5" fill="#ff9500" />
+                    <text x="235" y="165" fill="#fbfbf9" fontSize="11" fontFamily="JetBrains Mono">
                       IAD-01 (0.42ms)
                     </text>
                   </g>
 
                   <g className="cursor-pointer" onClick={() => setSelectedNode('FRA-01')}>
-                    <circle cx="430" cy="140" r="14" fill="rgba(214, 210, 205, 0.15)" />
-                    <circle cx="430" cy="140" r="5" fill="#f5f4f0" />
-                    <text x="445" y="135" fill="#f5f4f0" fontSize="11" fontFamily="JetBrains Mono">
+                    <circle cx="430" cy="140" r="14" fill={selectedNode === 'FRA-01' ? "rgba(255, 149, 0, 0.45)" : "rgba(255, 149, 0, 0.18)"} />
+                    <circle cx="430" cy="140" r="5" fill="#ff9500" />
+                    <text x="445" y="135" fill="#fbfbf9" fontSize="11" fontFamily="JetBrains Mono">
                       FRA-01 (0.81ms)
                     </text>
                   </g>
 
                   <g className="cursor-pointer" onClick={() => setSelectedNode('NRT-01')}>
-                    <circle cx="650" cy="160" r="14" fill="rgba(214, 210, 205, 0.15)" />
-                    <circle cx="650" cy="160" r="5" fill="#f5f4f0" />
-                    <text x="665" y="155" fill="#f5f4f0" fontSize="11" fontFamily="JetBrains Mono">
+                    <circle cx="650" cy="160" r="14" fill={selectedNode === 'NRT-01' ? "rgba(255, 149, 0, 0.45)" : "rgba(255, 149, 0, 0.18)"} />
+                    <circle cx="650" cy="160" r="5" fill="#ff9500" />
+                    <text x="665" y="155" fill="#fbfbf9" fontSize="11" fontFamily="JetBrains Mono">
                       NRT-01 (1.18ms)
                     </text>
                   </g>
 
                   <g className="cursor-pointer" onClick={() => setSelectedNode('SIN-01')}>
-                    <circle cx="590" cy="280" r="12" fill="rgba(163, 157, 150, 0.15)" />
-                    <circle cx="590" cy="280" r="4" fill="#d6d2cd" />
-                    <text x="605" y="275" fill="#a39d96" fontSize="11" fontFamily="JetBrains Mono">
+                    <circle cx="590" cy="280" r="12" fill={selectedNode === 'SIN-01' ? "rgba(255, 149, 0, 0.45)" : "rgba(255, 149, 0, 0.18)"} />
+                    <circle cx="590" cy="280" r="4" fill="#ffa726" />
+                    <text x="605" y="275" fill="#dcd7cf" fontSize="11" fontFamily="JetBrains Mono">
                       SIN-01 (1.62ms)
                     </text>
                   </g>
 
                   <g className="cursor-pointer" onClick={() => setSelectedNode('GRU-01')}>
-                    <circle cx="290" cy="340" r="12" fill="rgba(163, 157, 150, 0.15)" />
-                    <circle cx="290" cy="340" r="4" fill="#d6d2cd" />
-                    <text x="305" y="335" fill="#a39d96" fontSize="11" fontFamily="JetBrains Mono">
+                    <circle cx="290" cy="340" r="12" fill={selectedNode === 'GRU-01' ? "rgba(255, 149, 0, 0.45)" : "rgba(255, 149, 0, 0.18)"} />
+                    <circle cx="290" cy="340" r="4" fill="#ffa726" />
+                    <text x="305" y="335" fill="#dcd7cf" fontSize="11" fontFamily="JetBrains Mono">
                       GRU-01 (2.15ms)
                     </text>
                   </g>
                 </svg>
 
-                <div className="absolute bottom-4 left-4 text-[10px] font-mono text-[#7a756f]">
+                <div className="absolute bottom-4 left-4 text-[10px] font-mono text-[#ff9500]">
                   OPTICAL TRANSIT TOPOLOGY // LATTICE MESH
                 </div>
               </div>
 
               {/* Right: Edge Node Selector List */}
               <div className="space-y-3 font-mono text-xs">
-                <div className="text-[11px] text-[#7a756f] uppercase tracking-widest mb-2">
+                <div className="text-[11px] text-[#7e786f] uppercase tracking-widest mb-2">
                   Select Edge Point for Diagnostics
                 </div>
                 {edgeNodes.map((node) => (
@@ -6284,15 +6297,17 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                     onClick={() => setSelectedNode(node.id)}
                     className={`p-3.5 rounded-2xl border cursor-pointer transition-all duration-300 ${
                       selectedNode === node.id
-                        ? 'bg-[#1c1a17] border-[#d6d2cd]/50 shadow-taupe-glow'
-                        : 'bg-[#141311] border-[#a39d96]/15 hover:border-[#a39d96]/35'
+                        ? 'bg-[#1c1a16] border-[#ff9500] shadow-[0_0_15px_rgba(255,149,0,0.2)]'
+                        : 'bg-[#141310] border-[#a8a29a]/15 hover:border-[#ff9500]/40'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-[#f5f4f0]">{node.id}</span>
-                      <span className="text-[#d6d2cd] font-semibold">{node.ping}</span>
+                      <span className="font-bold text-[#fbfbf9]">{node.id}</span>
+                      <span className={selectedNode === node.id ? "text-[#ff9500] font-bold" : "text-[#dcd7cf] font-semibold"}>
+                        {node.ping}
+                      </span>
                     </div>
-                    <div className="flex items-center justify-between text-[11px] text-[#7a756f]">
+                    <div className="flex items-center justify-between text-[11px] text-[#7e786f]">
                       <span>{node.name}</span>
                       <span className="text-[10px] tracking-widest">{node.region}</span>
                     </div>
@@ -6329,14 +6344,14 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => setTerminalOpen(true)}
-              className="w-full sm:w-auto px-10 py-4 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-widest uppercase transition-all duration-300 hover:bg-[#f5f4f0] shadow-taupe-glow hover:scale-[1.03] active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-10 py-4 rounded-full bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] font-bold text-xs tracking-widest uppercase transition-all duration-300 hover:shadow-[0_0_35px_rgba(255,149,0,0.5)] shadow-[0_0_20px_rgba(255,149,0,0.35)] hover:scale-[1.03] active:scale-[0.98] flex items-center justify-center gap-2"
             >
               ACCESS TERMINAL
-              <TerminalIcon className="w-4 h-4 text-[#0a0908]" />
+              <TerminalIcon className="w-4 h-4 text-[#080807]" />
             </button>
             <button
               onClick={() => setArchitectureModalOpen(true)}
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#141311]/60 text-[#f5f4f0] border border-[#a39d96]/30 font-medium text-xs tracking-widest uppercase backdrop-blur-md transition-all duration-300 hover:border-[#d6d2cd] hover:bg-[#7a756f]/20 hover:text-[#f5f4f0]"
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#141310]/80 text-[#fbfbf9] border border-[#a8a29a]/25 font-medium text-xs tracking-widest uppercase backdrop-blur-md transition-all duration-300 hover:border-[#ff9500]/50 hover:bg-[#ff9500]/10 hover:text-[#fbfbf9]"
             >
               READ ARCHITECTURE SPEC
             </button>
@@ -6345,80 +6360,83 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       </section>
 
       {/* MINIMAL PRECISE FOOTER */}
-      <footer className="relative z-10 py-16 px-6 sm:px-12 border-t border-[#a39d96]/15 bg-[#0a0908]/90 backdrop-blur-xl">
+      <footer className="relative z-10 py-16 px-6 sm:px-12 border-t border-[#a8a29a]/15 bg-[#080807]/95 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
           <div>
             <div className="flex items-center gap-2.5 mb-2">
-              <div className="w-4 h-5 rounded-sm bg-[#e3dfd8] flex items-center justify-center">
-                <div className="w-1.5 h-2.5 bg-[#0a0908] rounded-[0.5px]" />
+              <div className="w-4 h-5 rounded-sm bg-gradient-to-b from-[#ff9500] to-[#e68500] flex items-center justify-center shadow-[0_0_10px_rgba(255,149,0,0.35)]">
+                <div className="w-1.5 h-2.5 bg-[#080807] rounded-[0.5px]" />
               </div>
-              <span className="font-display font-bold tracking-widest text-xs uppercase text-[#f5f4f0]">
+              <span className="font-display font-bold tracking-widest text-xs uppercase text-[#fbfbf9]">
                 The Monolith
               </span>
             </div>
-            <p className="text-xs text-[#7a756f] max-w-sm mb-2">
+            <p className="text-xs text-[#7e786f] max-w-sm mb-2">
               Bespoke enterprise software, immutable infrastructure, and high-concurrency systems.
             </p>
-            <p className="text-xs font-mono text-[#a39d96]">
-              Engineered by <span className="text-[#f5f4f0] font-semibold">Dulanja Abeysinghe</span> (Principal Systems Architect) & <span className="text-[#f5f4f0] font-semibold">Remashi Diyana</span> (Head of Creative Strategy)
+            <p className="text-xs font-mono text-[#a8a29a]">
+              Engineered by <span className="text-[#fbfbf9] font-semibold">Dulanja Abeysinghe</span> (Principal Systems Architect) & <span className="text-[#fbfbf9] font-semibold">Remashi Diyana</span> (Head of Creative Strategy)
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-5 sm:gap-6 text-xs font-mono text-[#a39d96]">
-            <a href="#architects" className="hover:text-[#f5f4f0] transition-colors">
+          <div className="flex flex-wrap items-center gap-5 sm:gap-6 text-xs font-mono text-[#a8a29a]">
+            <a href="#architects" className="hover:text-[#ff9500] transition-colors">
               ARCHITECTS
             </a>
-            <a href="#services" className="hover:text-[#f5f4f0] transition-colors">
+            <a href="#services" className="hover:text-[#ff9500] transition-colors">
               SERVICES
             </a>
-            <a href="#cases" className="hover:text-[#f5f4f0] transition-colors">
+            <a href="#process" className="hover:text-[#ff9500] transition-colors">
+              PROCESS
+            </a>
+            <a href="#cases" className="hover:text-[#ff9500] transition-colors">
               PROJECTS
             </a>
-            <a href="#stack" className="hover:text-[#f5f4f0] transition-colors">
+            <a href="#stack" className="hover:text-[#ff9500] transition-colors">
               STACK
             </a>
-            <a href="#solutions" className="hover:text-[#f5f4f0] transition-colors">
+            <a href="#solutions" className="hover:text-[#ff9500] transition-colors">
               SOLUTIONS
             </a>
-            <a href="#estimator" className="hover:text-[#f5f4f0] transition-colors">
+            <a href="#estimator" className="hover:text-[#ff9500] transition-colors">
               ESTIMATOR
             </a>
-            <a href="#api" className="hover:text-[#f5f4f0] transition-colors">
+            <a href="#api" className="hover:text-[#ff9500] transition-colors">
               API
             </a>
-            <a href="#infra" className="hover:text-[#f5f4f0] transition-colors">
+            <a href="#infra" className="hover:text-[#ff9500] transition-colors">
               INFRASTRUCTURE
             </a>
             <button
               onClick={() => (isAdminLoggedIn ? setAdminPortalOpen(true) : setAdminLoginModalOpen(true))}
-              className="text-[#f5f4f0] font-semibold flex items-center gap-1.5 hover:text-white transition-colors border-b border-[#a39d96]/30 pb-0.5"
+              className="text-[#fbfbf9] font-semibold flex items-center gap-1.5 hover:text-[#ff9500] transition-colors border-b border-[#a8a29a]/30 hover:border-[#ff9500] pb-0.5"
             >
-              <Lock className="w-3 h-3 text-[#d6d2cd]" />
+              <Lock className="w-3 h-3 text-[#ff9500]" />
               {isAdminLoggedIn ? 'EXECUTIVE PORTAL' : 'ADMIN LOGIN'}
             </button>
           </div>
 
-          <div className="flex flex-col md:items-end text-xs font-mono text-[#7a756f] gap-1.5">
+          <div className="flex flex-col md:items-end text-xs font-mono text-[#7e786f] gap-1.5">
             <div className="flex flex-wrap items-center gap-3">
               <a
                 href="mailto:dulanja150abeysinghe@gmail.com"
-                className="text-[#d6d2cd] hover:text-[#f5f4f0] transition-colors flex items-center gap-1.5"
+                className="text-[#dcd7cf] hover:text-[#ff9500] transition-colors flex items-center gap-1.5"
               >
-                <Mail className="w-3.5 h-3.5 text-[#a39d96]" />
+                <Mail className="w-3.5 h-3.5 text-[#ff9500]" />
                 dulanja150abeysinghe@gmail.com
               </a>
-              <span className="text-[#a39d96]/30">&middot;</span>
+              <span className="text-[#a8a29a]/30">&middot;</span>
               <a
                 href="mailto:diyanamashi@gmail.com"
-                className="text-[#d6d2cd] hover:text-[#f5f4f0] transition-colors flex items-center gap-1.5"
+                className="text-[#dcd7cf] hover:text-[#ff9500] transition-colors flex items-center gap-1.5"
               >
-                <Mail className="w-3.5 h-3.5 text-[#a39d96]" />
+                <Mail className="w-3.5 h-3.5 text-[#ff9500]" />
                 diyanamashi@gmail.com
               </a>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#f5f4f0]" />
-              <span className="text-[#a39d96]">CORE AI & CREATIVE FABRIC NOMINAL</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ff9500] shadow-[0_0_6px_#ff9500] animate-pulse" />
+              <span className="text-[#a8a29a]">CORE AI & CREATIVE FABRIC NOMINAL</span>
             </div>
             <span>&copy; 2026 THE MONOLITH &middot; DULANJA ABEYSINGHE & REMASHI DIYANA</span>
           </div>
@@ -6558,7 +6576,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                     setArchitectureModalOpen(false);
                     setTerminalOpen(true);
                   }}
-                  className="px-6 py-2.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-wider uppercase hover:bg-[#f5f4f0] transition-colors"
+                  className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] font-bold text-xs tracking-wider uppercase hover:shadow-[0_0_20px_rgba(255,149,0,0.4)] transition-all"
                 >
                   INITIALIZE ENCLAVE
                 </button>
@@ -6571,14 +6589,14 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       {/* CASE STUDY DETAILS MODAL */}
       {selectedCaseStudy && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl rounded-3xl bg-[#141311] border border-[#a39d96]/30 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="flex items-center justify-between px-8 py-5 border-b border-[#a39d96]/15 bg-[#181614]">
-              <span className="text-xs font-mono tracking-widest text-[#a39d96] uppercase">
+          <div className="w-full max-w-2xl rounded-3xl bg-[#141310] border border-[#ff9500]/25 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between px-8 py-5 border-b border-[#a8a29a]/15 bg-[#181714]">
+              <span className="text-xs font-mono tracking-widest text-[#ff9500] uppercase font-semibold">
                 {selectedCaseStudy.client} // {selectedCaseStudy.category}
               </span>
               <button
                 onClick={() => setSelectedCaseStudy(null)}
-                className="p-1 rounded-lg text-[#7a756f] hover:text-[#f5f4f0] transition-colors"
+                className="p-1 rounded-lg text-[#7e786f] hover:text-[#fbfbf9] transition-colors"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -6587,28 +6605,28 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
             <div className="p-8 sm:p-10 overflow-y-auto space-y-6">
               <div>
-                <span className="text-xs font-mono text-[#d6d2cd] uppercase tracking-wider block mb-1">
+                <span className="text-xs font-mono text-[#ff9500] uppercase tracking-wider block mb-1">
                   CASE AUDIT REPORT
                 </span>
-                <h3 className="text-2xl sm:text-3xl font-bold text-[#f5f4f0] font-sans mb-2">
+                <h3 className="text-2xl sm:text-3xl font-bold text-[#fbfbf9] font-sans mb-2">
                   {selectedCaseStudy.title}
                 </h3>
-                <p className="text-sm text-[#d6d2cd] font-medium">{selectedCaseStudy.headline}</p>
+                <p className="text-sm text-[#e8dcc4] font-medium">{selectedCaseStudy.headline}</p>
               </div>
 
-              <p className="text-sm text-[#a39d96] leading-relaxed font-light">
+              <p className="text-sm text-[#a8a29a] leading-relaxed font-light">
                 {selectedCaseStudy.summary}
               </p>
 
-              <div className="p-4 rounded-2xl bg-[#0a0908] border border-[#a39d96]/15">
-                <span className="text-[10px] font-mono text-[#7a756f] block uppercase mb-2">
+              <div className="p-4 rounded-2xl bg-[#080807] border border-[#a8a29a]/15">
+                <span className="text-[10px] font-mono text-[#7e786f] block uppercase mb-2">
                   Technical Architecture Stack
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {selectedCaseStudy.stack.map((item, idx) => (
                     <span
                       key={idx}
-                      className="px-2.5 py-1 rounded-lg bg-[#1c1a17] text-xs font-mono text-[#f5f4f0] border border-[#a39d96]/15"
+                      className="px-2.5 py-1 rounded-lg bg-[#1c1a16] text-xs font-mono text-[#fbfbf9] border border-[#ff9500]/20"
                     >
                       {item}
                     </span>
@@ -6616,36 +6634,39 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-[#0a0908] border border-[#a39d96]/15 font-mono text-xs">
+              <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-[#080807] border border-[#a8a29a]/15 font-mono text-xs">
                 {selectedCaseStudy.metrics.map((spec, i) => (
-                  <div key={i} className="p-3 rounded-xl bg-[#141311] border border-[#a39d96]/10">
-                    <span className="text-[10px] text-[#7a756f] block uppercase mb-1">
+                  <div key={i} className="p-3 rounded-xl bg-[#141310] border border-[#a8a29a]/10">
+                    <span className="text-[10px] text-[#7e786f] block uppercase mb-1">
                       {spec.label}
                     </span>
-                    <span className="text-sm font-semibold text-[#f5f4f0]">{spec.val}</span>
+                    <span className="text-sm font-semibold text-[#ff9500]">{spec.val}</span>
                   </div>
                 ))}
               </div>
 
               {selectedCaseStudy.architectNote && (
-                <div className="p-4 rounded-2xl bg-[#1c1a17]/80 border border-[#a39d96]/20 font-mono">
-                  <span className="text-[10px] text-[#d6d2cd] block uppercase tracking-wider mb-1.5 font-semibold">
+                <div className="p-4 rounded-2xl bg-[#1c1a16]/80 border border-[#ff9500]/25 font-mono">
+                  <span className="text-[10px] text-[#ff9500] block uppercase tracking-wider mb-1.5 font-semibold">
                     // ARCHITECTURAL IMPLEMENTATION NOTE
                   </span>
-                  <p className="text-xs text-[#f5f4f0] leading-relaxed">
+                  <p className="text-xs text-[#fbfbf9] leading-relaxed">
                     {selectedCaseStudy.architectNote}
                   </p>
                 </div>
               )}
 
               <div className="pt-2 flex items-center justify-between">
-                <span className="text-xs font-mono text-[#7a756f]">STATUS: 100% NOMINAL</span>
+                <span className="text-xs font-mono text-[#ff9500] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ff9500] animate-pulse" />
+                  STATUS: 100% NOMINAL
+                </span>
                 <button
                   onClick={() => {
                     setSelectedCaseStudy(null);
                     setTerminalOpen(true);
                   }}
-                  className="px-6 py-2.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-wider uppercase hover:bg-[#f5f4f0] transition-colors"
+                  className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#ff9500] to-[#e68500] text-[#080807] font-bold text-xs tracking-wider uppercase hover:shadow-[0_0_20px_rgba(255,149,0,0.4)] transition-all"
                 >
                   QUERY SPEC IN TERMINAL
                 </button>
