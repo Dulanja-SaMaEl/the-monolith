@@ -22,6 +22,8 @@ import {
   Lock,
   Radio,
   ChevronRight,
+  ChevronDown,
+  Menu,
   X,
   Play,
   RotateCcw,
@@ -3255,6 +3257,8 @@ export default function TheMonolith() {
 
   const [projectFilter, setProjectFilter] = useState('All');
   const [copiedContact, setCopiedContact] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
 
   // Admin & Financial Systems State
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
@@ -4362,16 +4366,16 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
       <div className="fixed inset-0 pointer-events-none bg-noise opacity-25 z-[1]" />
 
       {/* FLOATING TOP NAVIGATION */}
-      <header className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 sm:px-6">
-        <nav className="flex items-center justify-between w-full max-w-6xl px-6 py-3 rounded-full bg-[#141311]/75 backdrop-blur-xl border border-[#a39d96]/15 shadow-2xl transition-all duration-300 hover:border-[#a39d96]/30">
+      <header className="fixed top-5 left-0 right-0 z-50 flex justify-center px-4 sm:px-6">
+        <nav className="flex items-center justify-between w-full max-w-6xl px-4 sm:px-6 py-2.5 rounded-full bg-[#12110f]/85 backdrop-blur-xl border border-[#a39d96]/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] transition-all duration-300">
           {/* Monolith Architectural Brand */}
           <a
             href="#hero"
-            className="flex items-center gap-2.5 text-[#f5f4f0] font-semibold tracking-wider text-sm transition-opacity hover:opacity-80"
+            className="flex items-center gap-2.5 text-[#f5f4f0] font-semibold tracking-wider text-sm transition-opacity hover:opacity-85 group"
           >
-            <div className="w-5 h-6 rounded-sm bg-gradient-to-b from-[#f5f4f0] via-[#d6d2cd] to-[#7a756f] flex items-center justify-center p-[1px]">
+            <div className="w-5 h-6 rounded-sm bg-gradient-to-b from-[#f5f4f0] via-[#d6d2cd] to-[#7a756f] flex items-center justify-center p-[1px] shadow-sm">
               <div className="w-full h-full bg-[#0a0908] rounded-[1px] flex items-center justify-center">
-                <div className="w-1.5 h-3 bg-[#e3dfd8] rounded-[0.5px]" />
+                <div className="w-1.5 h-3 bg-[#e3dfd8] rounded-[0.5px] group-hover:bg-[#f5f4f0] transition-colors" />
               </div>
             </div>
             <span className="font-display font-bold tracking-widest text-xs uppercase text-[#f5f4f0]">
@@ -4379,21 +4383,12 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             </span>
           </a>
 
-          {/* Desktop Nav Links */}
+          {/* Curated Desktop Nav Links (5 Primary + 1 Dropdown) */}
           <div className="hidden lg:flex items-center gap-5 xl:gap-6 text-xs font-medium tracking-wider uppercase text-[#a39d96]">
-            <a
-              href="#architects"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] flex items-center gap-1.5 ${
-                activeSection === 'architects' || activeSection === 'architect' ? 'text-[#f5f4f0]' : ''
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
-              Architects
-            </a>
             <a
               href="#services"
               className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'services' ? 'text-[#f5f4f0]' : ''
+                activeSection === 'services' ? 'text-[#f5f4f0] font-semibold' : ''
               }`}
             >
               Services
@@ -4401,7 +4396,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             <a
               href="#process"
               className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'process' ? 'text-[#f5f4f0]' : ''
+                activeSection === 'process' ? 'text-[#f5f4f0] font-semibold' : ''
               }`}
             >
               How It Works
@@ -4409,7 +4404,7 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             <a
               href="#cases"
               className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'cases' ? 'text-[#f5f4f0]' : ''
+                activeSection === 'cases' ? 'text-[#f5f4f0] font-semibold' : ''
               }`}
             >
               Projects
@@ -4417,69 +4412,186 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
             <a
               href="#estimator"
               className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'estimator' ? 'text-[#f5f4f0]' : ''
+                activeSection === 'estimator' ? 'text-[#f5f4f0] font-semibold' : ''
               }`}
             >
               Estimator
             </a>
             <a
-              href="#stack"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'stack' ? 'text-[#f5f4f0]' : ''
+              href="#architects"
+              className={`transition-colors duration-200 hover:text-[#f5f4f0] flex items-center gap-1.5 ${
+                activeSection === 'architects' || activeSection === 'architect' ? 'text-[#f5f4f0] font-semibold' : ''
               }`}
             >
-              Stack
+              <span className="w-1.5 h-1.5 rounded-full bg-[#d6d2cd]" />
+              Architects
             </a>
-            <a
-              href="#solutions"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'solutions' ? 'text-[#f5f4f0]' : ''
-              }`}
-            >
-              Solutions
-            </a>
-            <a
-              href="#infra"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'infra' ? 'text-[#f5f4f0]' : ''
-              }`}
-            >
-              Infra
-            </a>
+
+            {/* Technical Arsenal Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
+                className={`flex items-center gap-1 transition-colors duration-200 hover:text-[#f5f4f0] ${
+                  ['stack', 'solutions', 'api', 'infra'].includes(activeSection) ? 'text-[#f5f4f0] font-semibold' : ''
+                }`}
+                aria-label="More Technical Sections"
+              >
+                <span>Arsenal</span>
+                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${moreDropdownOpen ? 'rotate-180 text-[#f5f4f0]' : ''}`} />
+              </button>
+
+              {moreDropdownOpen && (
+                <div
+                  className="absolute top-full right-0 mt-3 w-48 p-2 rounded-2xl bg-[#141311]/95 backdrop-blur-2xl border border-[#a39d96]/20 shadow-2xl space-y-1 z-50"
+                  onMouseLeave={() => setMoreDropdownOpen(false)}
+                >
+                  <a
+                    href="#stack"
+                    onClick={() => setMoreDropdownOpen(false)}
+                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a39d96] hover:text-[#f5f4f0] hover:bg-[#1f1d1a] transition-colors"
+                  >
+                    // TECH STACK
+                  </a>
+                  <a
+                    href="#solutions"
+                    onClick={() => setMoreDropdownOpen(false)}
+                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a39d96] hover:text-[#f5f4f0] hover:bg-[#1f1d1a] transition-colors"
+                  >
+                    // ARCHITECTURES
+                  </a>
+                  <a
+                    href="#api"
+                    onClick={() => setMoreDropdownOpen(false)}
+                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a39d96] hover:text-[#f5f4f0] hover:bg-[#1f1d1a] transition-colors"
+                  >
+                    // DEVELOPER API
+                  </a>
+                  <a
+                    href="#infra"
+                    onClick={() => setMoreDropdownOpen(false)}
+                    className="block px-3 py-2 rounded-xl text-[11px] font-mono tracking-wider text-[#a39d96] hover:text-[#f5f4f0] hover:bg-[#1f1d1a] transition-colors"
+                  >
+                    // EDGE TOPOLOGY
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Action Buttons: Terminal & Executive Admin */}
-          <div className="flex items-center gap-2.5">
+          {/* Action Cluster */}
+          <div className="flex items-center gap-2">
+            {/* Terminal CLI Button */}
             <button
               onClick={() => setTerminalOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono tracking-wide rounded-full bg-[#1c1a17]/80 text-[#e3dfd8] border border-[#a39d96]/20 transition-all duration-300 hover:bg-[#252320] hover:border-[#d6d2cd]/40 hover:text-[#f5f4f0] shadow-taupe-glow"
-              aria-label="Open Interactive Terminal"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono tracking-wide rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/20 hover:border-[#d6d2cd]/40 hover:text-[#f5f4f0] transition-all"
+              title="Interactive Terminal"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d6d2cd] opacity-50" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#f5f4f0]" />
-              </span>
-              <TerminalIcon className="w-3.5 h-3.5 text-[#d6d2cd]" />
-              <span className="hidden sm:inline">TERMINAL</span>
+              <TerminalIcon className="w-3 h-3 text-[#d6d2cd]" />
+              <span className="hidden md:inline">CLI</span>
             </button>
 
+            {/* Admin Portal Button */}
             <button
               onClick={() => (isAdminLoggedIn ? setAdminPortalOpen(true) : setAdminLoginModalOpen(true))}
-              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono tracking-wide rounded-full transition-all duration-300 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono tracking-wide rounded-full transition-all ${
                 isAdminLoggedIn
-                  ? 'bg-[#f5f4f0] text-[#0a0908] font-bold border border-[#f5f4f0] shadow-[0_0_15px_rgba(245,244,240,0.3)] hover:bg-white'
-                  : 'bg-[#141311] text-[#a39d96] border border-[#a39d96]/25 hover:border-[#f5f4f0]/50 hover:text-[#f5f4f0]'
+                  ? 'bg-[#1c1a17] text-[#f5f4f0] border border-[#d6d2cd]/40 hover:border-[#f5f4f0]'
+                  : 'bg-[#141311] text-[#7a756f] border border-[#a39d96]/15 hover:border-[#a39d96]/40 hover:text-[#a39d96]'
               }`}
-              aria-label="Executive Portal"
+              title={isAdminLoggedIn ? "Open Admin Portal" : "Admin Sign In"}
             >
-              <Lock className={`w-3.5 h-3.5 ${isAdminLoggedIn ? 'text-[#0a0908]' : 'text-[#a39d96]'}`} />
-              <span className="hidden sm:inline">
-                {isAdminLoggedIn ? 'ADMIN PORTAL' : 'ADMIN LOGIN'}
-              </span>
+              <Lock className="w-3 h-3" />
+              <span className="hidden sm:inline">{isAdminLoggedIn ? 'PORTAL' : 'LOGIN'}</span>
+            </button>
+
+            {/* Primary Action Button */}
+            <a
+              href="#estimator"
+              className="hidden md:flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold tracking-wider uppercase rounded-full bg-[#e3dfd8] text-[#0a0908] hover:bg-[#f5f4f0] shadow-taupe-glow transition-all hover:scale-[1.02]"
+            >
+              <span>SCOPE</span>
+              <ArrowRight className="w-3 h-3 text-[#0a0908]" />
+            </a>
+
+            {/* Mobile Hamburger Toggle Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden flex items-center justify-center w-8 h-8 rounded-full bg-[#1c1a17] text-[#f5f4f0] border border-[#a39d96]/25 hover:border-[#d6d2cd]/40 transition-colors ml-1"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
           </div>
         </nav>
       </header>
+
+      {/* MOBILE NAVIGATION DRAWER */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden flex flex-col justify-between pt-24 pb-8 px-6 bg-[#0a0908]/95 backdrop-blur-2xl animate-in fade-in duration-200">
+          <div className="space-y-4">
+            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#7a756f] block mb-2">
+              // NAVIGATION DIRECTORY
+            </span>
+            {[
+              { href: '#services', label: '01 // Services Directory' },
+              { href: '#process', label: '02 // How We Work (3 Sprints)' },
+              { href: '#cases', label: '03 // Production Systems' },
+              { href: '#estimator', label: '04 // Project Cost Estimator' },
+              { href: '#architects', label: '05 // Founding Architects' },
+              { href: '#stack', label: '06 // Technology Stack' },
+              { href: '#solutions', label: '07 // Deep Architectures' },
+              { href: '#infra', label: '08 // Edge Topology' }
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 text-lg font-bold font-sans text-[#f5f4f0] hover:text-[#d6d2cd] border-b border-[#a39d96]/10 transition-colors"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+
+          {/* Mobile Drawer Bottom Actions */}
+          <div className="pt-6 border-t border-[#a39d96]/15 space-y-3 font-mono text-xs">
+            <a
+              href="https://wa.me/94765917189?text=Hello%20Dulanja%20%26%20Remashi%2C%20I'd%20like%20to%20discuss%20a%20project%20with%20The%20Monolith."
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full py-3 rounded-full bg-[#1c1a17] text-[#25D366] border border-[#25D366]/40 flex items-center justify-center gap-2 font-bold tracking-wider uppercase"
+            >
+              <MessageSquare className="w-4 h-4 text-[#25D366]" />
+              <span>WHATSAPP CONSULTATION</span>
+            </a>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setTerminalOpen(true);
+                }}
+                className="py-2.5 rounded-full bg-[#141311] text-[#a39d96] border border-[#a39d96]/20 flex items-center justify-center gap-1.5"
+              >
+                <TerminalIcon className="w-3 h-3" />
+                <span>TERMINAL</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  isAdminLoggedIn ? setAdminPortalOpen(true) : setAdminLoginModalOpen(true);
+                }}
+                className="py-2.5 rounded-full bg-[#141311] text-[#a39d96] border border-[#a39d96]/20 flex items-center justify-center gap-1.5"
+              >
+                <Lock className="w-3 h-3" />
+                <span>{isAdminLoggedIn ? 'PORTAL' : 'LOGIN'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 1. HERO SECTION */}
       <section
