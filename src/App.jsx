@@ -64,7 +64,8 @@ import {
   Save,
   Moon,
   Sun,
-  Users
+  Users,
+  MessageSquare
 } from 'lucide-react';
 
 /* =========================================================================
@@ -3245,6 +3246,7 @@ export default function TheMonolith() {
   const [stackRef, stackVisible] = useScrollReveal(0.15);
   const [casesRef, casesVisible] = useScrollReveal(0.15);
   const [servicesRef, servicesVisible] = useScrollReveal(0.15);
+  const [processRef, processVisible] = useScrollReveal(0.15);
   const [solutionsRef, solutionsVisible] = useScrollReveal(0.15);
   const [apiRef, apiVisible] = useScrollReveal(0.15);
   const [estimatorRef, estimatorVisible] = useScrollReveal(0.15);
@@ -3598,7 +3600,7 @@ export default function TheMonolith() {
   // Active section scroll spy
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['hero', 'architects', 'architect', 'services', 'cases', 'stack', 'solutions', 'api', 'estimator', 'infra', 'cta'];
+      const sections = ['hero', 'architects', 'architect', 'services', 'process', 'cases', 'stack', 'solutions', 'estimator', 'api', 'infra', 'cta'];
       const scrollPos = window.scrollY + 250;
 
       for (const section of sections) {
@@ -4397,12 +4399,28 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               Services
             </a>
             <a
+              href="#process"
+              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
+                activeSection === 'process' ? 'text-[#f5f4f0]' : ''
+              }`}
+            >
+              How It Works
+            </a>
+            <a
               href="#cases"
               className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
                 activeSection === 'cases' ? 'text-[#f5f4f0]' : ''
               }`}
             >
               Projects
+            </a>
+            <a
+              href="#estimator"
+              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
+                activeSection === 'estimator' ? 'text-[#f5f4f0]' : ''
+              }`}
+            >
+              Estimator
             </a>
             <a
               href="#stack"
@@ -4419,22 +4437,6 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
               }`}
             >
               Solutions
-            </a>
-            <a
-              href="#estimator"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'estimator' ? 'text-[#f5f4f0]' : ''
-              }`}
-            >
-              Scoper
-            </a>
-            <a
-              href="#api"
-              className={`transition-colors duration-200 hover:text-[#f5f4f0] ${
-                activeSection === 'api' ? 'text-[#f5f4f0]' : ''
-              }`}
-            >
-              API
             </a>
             <a
               href="#infra"
@@ -4498,49 +4500,58 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
 
           {/* Headline */}
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold font-sans tracking-tight text-[#f5f4f0] leading-[1.08] mb-6">
-            Architecting the{' '}
+            High-Performance Software &{' '}
             <span className="bg-gradient-to-r from-[#f5f4f0] via-[#d6d2cd] to-[#a39d96] bg-clip-text text-transparent">
-              Impossible.
+              High-Impact Brands.
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-lg sm:text-xl text-[#a39d96] font-light leading-relaxed max-w-2xl mb-10">
-            Bespoke enterprise software, high-throughput distributed systems, real-time architectures,
-            and high-impact creative marketing campaigns built for absolute permanence.
+            We design and engineer bespoke web platforms, mobile apps, enterprise APIs, and high-converting marketing campaigns built to scale your business.
           </p>
 
           {/* Call-To-Action Pill Buttons */}
           <div className="flex flex-wrap items-center gap-4 sm:gap-5">
             <a
-              href="#services"
+              href="#estimator"
               className="px-8 py-3.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-widest uppercase transition-all duration-300 hover:bg-[#f5f4f0] shadow-taupe-glow hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
             >
-              EXPLORE 7 SERVICES
+              SCOPE YOUR PROJECT
               <ArrowRight className="w-3.5 h-3.5 text-[#0a0908]" />
             </a>
 
             <a
-              href="#estimator"
+              href="#services"
               className="px-7 py-3.5 rounded-full bg-[#141311]/60 text-[#f5f4f0] border border-[#a39d96]/30 font-medium text-xs tracking-widest uppercase backdrop-blur-md transition-all duration-300 hover:border-[#d6d2cd] hover:bg-[#7a756f]/20 hover:text-[#f5f4f0]"
             >
-              SCOPE AN ENGAGEMENT
+              EXPLORE 7 SERVICES
+            </a>
+
+            <a
+              href="https://wa.me/94765917189?text=Hello%20Dulanja%20%26%20Remashi%2C%20I'd%20like%20to%20discuss%20a%20project%20with%20The%20Monolith."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3.5 rounded-full bg-[#1c1a17]/90 text-[#25D366] border border-[#25D366]/40 font-medium text-xs tracking-widest uppercase backdrop-blur-md transition-all duration-300 hover:border-[#25D366] hover:bg-[#25D366]/10 flex items-center gap-2"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-[#25D366]" />
+              <span>WHATSAPP CONSULTATION</span>
             </a>
           </div>
 
           {/* Telemetry Stats Strip */}
           <div className="mt-16 pt-8 border-t border-[#a39d96]/15 flex flex-wrap items-center gap-8 sm:gap-14 text-xs font-mono text-[#7a756f]">
             <div>
-              <span className="text-[#f5f4f0] block text-sm font-semibold">7 Core Pillars</span>
-              <span>Full Lifecycle Engineering & Marketing</span>
+              <span className="text-[#f5f4f0] block text-sm font-semibold">12+ Production Systems</span>
+              <span>Enterprise, Clinical, Fintech & Dining</span>
             </div>
             <div>
-              <span className="text-[#f5f4f0] block text-sm font-semibold">12 Repositories</span>
-              <span>Production Systems Engineered</span>
+              <span className="text-[#f5f4f0] block text-sm font-semibold">7 Core Disciplines</span>
+              <span>Full-Lifecycle Software & Marketing</span>
             </div>
             <div>
-              <span className="text-[#f5f4f0] block text-sm font-semibold">100% Zero-Loss</span>
-              <span>ACID Medical & Payment Ledgers</span>
+              <span className="text-[#f5f4f0] block text-sm font-semibold">99.99% Guaranteed Uptime</span>
+              <span>Zero-Downtime High-Load Architectures</span>
             </div>
           </div>
         </div>
@@ -5161,6 +5172,149 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4.5 HOW WE WORK // THE 3-STEP CLIENT SPRINT */}
+      <section
+        id="process"
+        ref={processRef}
+        className={`relative z-10 py-28 px-6 sm:px-12 lg:px-24 border-t border-[#a39d96]/15 bg-[#0c0b0a]/80 backdrop-blur-md transition-all duration-700 ease-out ${
+          processVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+            <div className="max-w-3xl">
+              <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#a39d96] block mb-3">
+                // CLIENT ENGAGEMENT PROTOCOL
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-bold font-sans text-[#f5f4f0] tracking-tight mb-4">
+                How We Deliver Your System in 3 Sprints
+              </h2>
+              <p className="text-base sm:text-lg text-[#a39d96] font-light leading-relaxed">
+                No bureaucracy, endless meetings, or surprise invoices. A predictable, transparent roadmap from initial concept to high-performance production launch.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <a
+                href="#estimator"
+                className="px-6 py-2.5 rounded-full bg-[#e3dfd8] text-[#0a0908] font-bold text-xs tracking-wider uppercase hover:bg-[#f5f4f0] transition-colors whitespace-nowrap shadow-taupe-glow"
+              >
+                ESTIMATE YOUR PROJECT
+              </a>
+            </div>
+          </div>
+
+          {/* 3-Step Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Step 1 */}
+            <div className="group relative p-8 sm:p-9 rounded-3xl bg-[#141311]/85 border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-3xl font-mono font-bold text-[#f5f4f0]">
+                    01
+                  </span>
+                  <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                    WEEK 1
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-[#f5f4f0] mb-3">
+                  Architectural Blueprint & Scope Lock
+                </h3>
+                <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  We map every user flow, database entity, and design requirement. You receive an immutable architecture specification and fixed-scope quotation before any code is written.
+                </p>
+              </div>
+
+              <div className="pt-5 border-t border-[#a39d96]/10 space-y-2 text-xs font-mono text-[#d6d2cd]">
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <span>Interactive Wireframes & Figma UI</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <span>Database Schemas & API Contracts</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <span>Fixed Timeline & Milestone Agreement</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="group relative p-8 sm:p-9 rounded-3xl bg-[#141311]/85 border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-3xl font-mono font-bold text-[#f5f4f0]">
+                    02
+                  </span>
+                  <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                    WEEKS 2–4
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-[#f5f4f0] mb-3">
+                  Rapid Agile Build & Staging Previews
+                </h3>
+                <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  We build your system in rapid two-week sprints. Every Friday, you test live working software on private staging environments—giving you full control and real-time oversight of progress.
+                </p>
+              </div>
+
+              <div className="pt-5 border-t border-[#a39d96]/10 space-y-2 text-xs font-mono text-[#d6d2cd]">
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <span>Weekly Live Staging URL Demos</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <span>Real-Time WhatsApp & Slack Sync</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <span>Iterative QA & Cross-Device Testing</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="group relative p-8 sm:p-9 rounded-3xl bg-[#141311]/85 border border-[#a39d96]/15 hover:border-[#d6d2cd]/35 hover:shadow-taupe-glow transition-all duration-300 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-3xl font-mono font-bold text-[#f5f4f0]">
+                    03
+                  </span>
+                  <span className="text-[10px] font-mono tracking-widest uppercase px-3 py-1 rounded-full bg-[#1c1a17] text-[#a39d96] border border-[#a39d96]/15">
+                    WEEK 5+
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-[#f5f4f0] mb-3">
+                  Production Cutover & Growth Launch
+                </h3>
+                <p className="text-sm text-[#a39d96] font-light leading-relaxed mb-6">
+                  Zero-downtime production deployment to your high-availability cloud servers, integrated with Remashi's promotional marketing campaigns and backed by our ongoing 24/7 SLA maintenance.
+                </p>
+              </div>
+
+              <div className="pt-5 border-t border-[#a39d96]/10 space-y-2 text-xs font-mono text-[#d6d2cd]">
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <span>Cloud Deployment & SSL Hardening</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <span>Social Ads & Launch Flyer Rollout</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-[#d6d2cd]" />
+                  <span>Guaranteed SLA & Emergency Support</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -5833,6 +5987,18 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
                   <ArrowRight className="w-3.5 h-3.5 text-[#0a0908]" />
                 </a>
 
+                <a
+                  href={`https://wa.me/94765917189?text=${encodeURIComponent(
+                    `Hi Dulanja & Remashi, I configured a project blueprint on The Monolith:\n\n*Tier:* ${estimatedBrief.tier}\n*Timeline:* ${estimatedBrief.window}\n*Stack:* ${estimatedBrief.baseStack}\n*Active Features:* ${estimatorFeatures.join(', ') || 'Standard Runtime'}\n\nCould we discuss this project?`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 rounded-full bg-[#1c1a17] text-[#25D366] hover:bg-[#25D366]/10 border border-[#25D366]/40 font-bold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-[#25D366]" />
+                  <span>DISPATCH VIA WHATSAPP</span>
+                </a>
+
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(estimatedBrief.body);
@@ -6446,6 +6612,29 @@ print(f"Lattice status: {stream.get_metrics().coherence_percent}%")`;
           handleOpenEditDocument(type, doc);
         }}
       />
+
+      {/* FLOATING QUICK CONSULTATION PILL */}
+      <aside aria-label="Direct Consultation" className="fixed bottom-6 right-6 z-40 flex items-center">
+        <a
+          href="https://wa.me/94765917189?text=Hello%20Dulanja%20%26%20Remashi%2C%20I'd%20like%20to%20discuss%20a%20project%20with%20The%20Monolith."
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#141311]/90 hover:bg-[#1a1815] text-[#f5f4f0] border border-[#25D366]/40 hover:border-[#25D366] shadow-[0_8px_30px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-all duration-300 hover:scale-[1.03]"
+          aria-label="Direct WhatsApp Consultation with Founding Architects"
+        >
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#25D366] opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#25D366]" />
+          </span>
+          <MessageSquare className="w-4 h-4 text-[#25D366]" />
+          <span className="text-xs font-mono tracking-wider font-semibold text-[#f5f4f0]">
+            WHATSAPP US
+          </span>
+          <span className="hidden sm:inline text-[10px] font-mono text-[#a39d96] pl-1 border-l border-[#a39d96]/20">
+            Dulanja & Remashi
+          </span>
+        </a>
+      </aside>
     </div>
   );
 }
