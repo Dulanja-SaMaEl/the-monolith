@@ -19,6 +19,78 @@ interface AdminPortalProps {
   navigate: (route: string) => void;
 }
 
+const AdminPagination: React.FC<{
+  currentPage: number;
+  totalItems: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+}> = ({ currentPage, totalItems, pageSize, onPageChange }) => {
+  const totalPages = Math.ceil(totalItems / pageSize);
+  if (totalPages <= 1) return null;
+  const startIdx = (currentPage - 1) * pageSize + 1;
+  const endIdx = Math.min(currentPage * pageSize, totalItems);
+
+  return (
+    <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-median-taupe/15 text-xs font-mono">
+      <span className="text-median-taupe/80">
+        Showing <strong className="text-black">{startIdx}</strong>–<strong className="text-black">{endIdx}</strong> of <strong className="text-black">{totalItems}</strong> entries
+      </span>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(currentPage - 1)}
+          className="px-2.5 py-1 rounded-lg border border-median-taupe/30 hover:border-black disabled:opacity-30 disabled:pointer-events-none transition-colors"
+        >
+          ← Prev
+        </button>
+        {[...Array(totalPages)].map((_, idx) => {
+          const pageNum = idx + 1;
+          return (
+            <button
+              key={pageNum}
+              type="button"
+              onClick={() => onPageChange(pageNum)}
+              className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
+                currentPage === pageNum
+                  ? 'bg-black text-white'
+                  : 'border border-median-taupe/30 hover:border-black text-black'
+              }`}
+            >
+              {pageNum}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(currentPage + 1)}
+          className="px-2.5 py-1 rounded-lg border border-median-taupe/30 hover:border-black disabled:opacity-30 disabled:pointer-events-none transition-colors"
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const AdminSkeletonList: React.FC<{ count?: number }> = ({ count = 3 }) => (
+  <div className="space-y-3 animate-pulse">
+    {[...Array(count)].map((_, i) => (
+      <div key={i} className="p-5 rounded-2xl bg-white border border-median-taupe/10 shadow-sm space-y-3">
+        <div className="flex justify-between items-start">
+          <div className="space-y-2 w-2/3">
+            <div className="h-2.5 bg-median-taupe/20 rounded w-1/4" />
+            <div className="h-5 bg-median-taupe/25 rounded w-1/2" />
+            <div className="h-3 bg-median-taupe/15 rounded w-3/4" />
+          </div>
+          <div className="h-6 w-16 bg-median-taupe/20 rounded-full" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const { user, logout, switchDemoRole, isLiveAuth } = useAuth();
 
@@ -97,6 +169,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const [postCover, setPostCover] = useState('/assets/blog-1.jpg');
   const [postExcerpt, setPostExcerpt] = useState('');
   const [postContent, setPostContent] = useState('');
+
+  // Pagination & Inline Edit States
+  const PAGE_SIZE = 5;
+  const [custPage, setCustPage] = useState(1);
+  const [partPage, setPartPage] = useState(1);
+  const [projPage, setProjPage] = useState(1);
+  const [billPage, setBillPage] = useState(1);
+  const [revPage, setRevPage] = useState(1);
+  const [blogPage, setBlogPage] = useState(1);
+  const [reqPage, setReqPage] = useState(1);
+
+  const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
+  const [editingReview, setEditingReview] = useState<CustomerReview | null>(null);
+  const [editingPost, setEditingPost] = useState<PortalBlogPost | null>(null);
 
   // Reload all data from Render Backend / Supabase DB (with fallback to sandbox)
   const refreshData = useCallback(async () => {
@@ -180,6 +266,116 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       showAlert('✓ Customer profile updated.');
     } catch (err: any) {
       showAlert(`✕ Update failed: ${err.message}`);
+    }
+  };
+
+  const handleDeleteCustomer = async (id: string, name: string) => {
+    if (!window.confirm(`Permanently delete customer account for "${name}"? This action cannot be undone.`)) return;
+    try {
+      await portalApi.deleteClient(id);
+      if (editingCustomer?.id === id) setEditingCustomer(null);
+      await refreshData();
+      showAlert(`✓ Deleted customer account for "${name}".`);
+    } catch (err: any) {
+      showAlert(`✕ Error deleting customer: ${err.message}`);
+    }
+  };
+
+  const handleSavePartnerEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPartner) return;
+    try {
+      await portalApi.updatePartner(editingPartner.id, {
+        name: editingPartner.name,
+        category: editingPartner.category,
+        website_url: editingPartner.website_url,
+        description: editingPartner.description,
+        logo_url: editingPartner.logo_url,
+        is_active: editingPartner.is_active,
+      });
+      setEditingPartner(null);
+      await refreshData();
+      showAlert(`✓ Strategic partner "${editingPartner.name}" updated.`);
+    } catch (err: any) {
+      showAlert(`✕ Update partner failed: ${err.message}`);
+    }
+  };
+
+  const handleDeletePartner = async (id: string, name: string) => {
+    if (!window.confirm(`Permanently remove partner "${name}" from ecosystem?`)) return;
+    try {
+      await portalApi.deletePartner(id);
+      if (editingPartner?.id === id) setEditingPartner(null);
+      await refreshData();
+      showAlert(`✓ Removed partner "${name}".`);
+    } catch (err: any) {
+      showAlert(`✕ Error deleting partner: ${err.message}`);
+    }
+  };
+
+  const handleSaveReviewEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingReview) return;
+    try {
+      await portalApi.updateReview(editingReview.id, {
+        client_name: editingReview.client_name,
+        client_title: editingReview.client_title,
+        company_name: editingReview.company_name,
+        rating: editingReview.rating,
+        review_text: editingReview.review_text,
+        is_featured: editingReview.is_featured,
+      });
+      setEditingReview(null);
+      await refreshData();
+      showAlert(`✓ Testimonial from "${editingReview.client_name}" updated.`);
+    } catch (err: any) {
+      showAlert(`✕ Update review failed: ${err.message}`);
+    }
+  };
+
+  const handleDeleteReview = async (id: string, name: string) => {
+    if (!window.confirm(`Permanently delete review from "${name}"?`)) return;
+    try {
+      await portalApi.deleteReview(id);
+      if (editingReview?.id === id) setEditingReview(null);
+      await refreshData();
+      showAlert(`✓ Deleted review from "${name}".`);
+    } catch (err: any) {
+      showAlert(`✕ Error deleting review: ${err.message}`);
+    }
+  };
+
+  const handleSavePostEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPost) return;
+    try {
+      await portalApi.updateBlogPost(editingPost.id, {
+        title: editingPost.title,
+        category: editingPost.category,
+        author: editingPost.author,
+        read_time: editingPost.read_time,
+        cover_image: editingPost.cover_image,
+        excerpt: editingPost.excerpt,
+        content: editingPost.content,
+        is_published: editingPost.is_published,
+      });
+      setEditingPost(null);
+      await refreshData();
+      showAlert(`✓ Article "${editingPost.title}" updated.`);
+    } catch (err: any) {
+      showAlert(`✕ Update article failed: ${err.message}`);
+    }
+  };
+
+  const handleDeletePost = async (id: string, title: string) => {
+    if (!window.confirm(`Permanently delete article "${title}"?`)) return;
+    try {
+      await portalApi.deleteBlogPost(id);
+      if (editingPost?.id === id) setEditingPost(null);
+      await refreshData();
+      showAlert(`✓ Deleted article "${title}".`);
+    } catch (err: any) {
+      showAlert(`✕ Error deleting article: ${err.message}`);
     }
   };
 
@@ -765,79 +961,99 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               <h3 className="font-oswald text-xl font-bold uppercase text-black">
                 Registered Clients ({users.filter((u) => u.role === 'client').length})
               </h3>
-              <div className="space-y-3">
-                {users
-                  .filter((u) => u.role === 'client')
-                  .map((c) => (
-                    <div
-                      key={c.id}
-                      className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-3"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                          <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
-                            {c.company_name}
-                          </span>
-                          <h4 className="font-oswald text-lg font-bold uppercase text-black">{c.full_name}</h4>
-                          <div className="text-xs text-median-taupe/80 font-mono">
-                            {c.email} {c.phone && `· ${c.phone}`}
+
+              {isSyncing ? (
+                <AdminSkeletonList count={3} />
+              ) : (
+                <div className="space-y-3">
+                  {users
+                    .filter((u) => u.role === 'client')
+                    .slice((custPage - 1) * PAGE_SIZE, custPage * PAGE_SIZE)
+                    .map((c) => (
+                      <div
+                        key={c.id}
+                        className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-3"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div>
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
+                              {c.company_name}
+                            </span>
+                            <h4 className="font-oswald text-lg font-bold uppercase text-black">{c.full_name}</h4>
+                            <div className="text-xs text-median-taupe/80 font-mono">
+                              {c.email} {c.phone && `· ${c.phone}`}
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-2">
-                          <span className="px-3 py-1 rounded-full border border-median-taupe/30 bg-median-taupe/5 text-[10px] font-mono text-median-taupe font-bold uppercase">
-                            VIP Active
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setEditingCustomer(editingCustomer?.id === c.id ? null : c)}
-                            className="px-3 py-1 rounded-full border border-black text-black hover:bg-black hover:text-white text-[10px] font-bold uppercase transition-colors"
-                          >
-                            {editingCustomer?.id === c.id ? 'Cancel' : 'Edit'}
-                          </button>
-                        </div>
-                      </div>
-
-                      {editingCustomer?.id === c.id && (
-                        <form
-                          onSubmit={handleSaveCustomerEdit}
-                          className="pt-3 border-t border-median-taupe/15 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs"
-                        >
-                          <input
-                            type="text"
-                            required
-                            value={editingCustomer.full_name}
-                            onChange={(e) => setEditingCustomer({ ...editingCustomer, full_name: e.target.value })}
-                            placeholder="Contact Name"
-                            className="px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
-                          />
-                          <input
-                            type="text"
-                            value={editingCustomer.company_name || ''}
-                            onChange={(e) => setEditingCustomer({ ...editingCustomer, company_name: e.target.value })}
-                            placeholder="Company Name"
-                            className="px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
-                          />
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={editingCustomer.phone || ''}
-                              onChange={(e) => setEditingCustomer({ ...editingCustomer, phone: e.target.value })}
-                              placeholder="Phone"
-                              className="flex-1 px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black min-w-0"
-                            />
+                          <div className="flex items-center gap-2">
+                            <span className="px-3 py-1 rounded-full border border-median-taupe/30 bg-median-taupe/5 text-[10px] font-mono text-median-taupe font-bold uppercase">
+                              VIP Active
+                            </span>
                             <button
-                              type="submit"
-                              className="px-3 py-2 rounded-lg bg-black text-white font-bold uppercase hover:bg-median-taupe transition-colors shrink-0"
+                              type="button"
+                              onClick={() => setEditingCustomer(editingCustomer?.id === c.id ? null : c)}
+                              className="px-3 py-1 rounded-full border border-black text-black hover:bg-black hover:text-white text-[10px] font-bold uppercase transition-colors"
                             >
-                              Save
+                              {editingCustomer?.id === c.id ? 'Cancel' : 'Edit'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCustomer(c.id, c.company_name || c.full_name)}
+                              className="px-3 py-1 rounded-full border border-red-300 text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 text-[10px] font-bold uppercase transition-colors"
+                            >
+                              Delete
                             </button>
                           </div>
-                        </form>
-                      )}
-                    </div>
-                  ))}
-              </div>
+                        </div>
+
+                        {editingCustomer?.id === c.id && (
+                          <form
+                            onSubmit={handleSaveCustomerEdit}
+                            className="pt-3 border-t border-median-taupe/15 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs"
+                          >
+                            <input
+                              type="text"
+                              required
+                              value={editingCustomer.full_name}
+                              onChange={(e) => setEditingCustomer({ ...editingCustomer, full_name: e.target.value })}
+                              placeholder="Contact Name"
+                              className="px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                            />
+                            <input
+                              type="text"
+                              value={editingCustomer.company_name || ''}
+                              onChange={(e) => setEditingCustomer({ ...editingCustomer, company_name: e.target.value })}
+                              placeholder="Company Name"
+                              className="px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                            />
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={editingCustomer.phone || ''}
+                                onChange={(e) => setEditingCustomer({ ...editingCustomer, phone: e.target.value })}
+                                placeholder="Phone"
+                                className="flex-1 px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black min-w-0"
+                              />
+                              <button
+                                type="submit"
+                                className="px-3 py-2 rounded-lg bg-black text-white font-bold uppercase hover:bg-median-taupe transition-colors shrink-0"
+                              >
+                                Save
+                              </button>
+                            </div>
+                          </form>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              <AdminPagination
+                currentPage={custPage}
+                totalItems={users.filter((u) => u.role === 'client').length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setCustPage}
+              />
             </div>
           </div>
         )}
@@ -915,48 +1131,174 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               <h3 className="font-oswald text-xl font-bold uppercase text-black">
                 Active Strategic Partners ({partners.length})
               </h3>
-              <div className="space-y-3">
-                {partners.map((p) => (
-                  <div
-                    key={p.id}
-                    className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm flex items-center justify-between gap-4"
-                  >
-                    <div>
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
-                        {p.category}
-                      </span>
-                      <h4 className="font-oswald text-lg font-bold uppercase text-black">{p.name}</h4>
-                      {p.description && (
-                        <p className="text-xs text-median-taupe/80 font-mono mt-1">{p.description}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          await portalApi.togglePartner(p.id, !p.is_active);
-                          await refreshData();
-                        }}
-                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase ${
-                          p.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
-                        }`}
+
+              {isSyncing ? (
+                <AdminSkeletonList count={3} />
+              ) : (
+                <div className="space-y-3">
+                  {partners
+                    .slice((partPage - 1) * PAGE_SIZE, partPage * PAGE_SIZE)
+                    .map((p) => (
+                      <div
+                        key={p.id}
+                        className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-3"
                       >
-                        {p.is_active ? 'Active' : 'Paused'}
-                      </button>
-                      {p.website_url && (
-                        <a
-                          href={p.website_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-3 py-1.5 rounded-lg border border-median-taupe/30 text-xs font-mono uppercase hover:border-black transition-colors"
-                        >
-                          Visit ↗
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div>
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
+                              {p.category}
+                            </span>
+                            <h4 className="font-oswald text-lg font-bold uppercase text-black">{p.name}</h4>
+                            {p.description && (
+                              <p className="text-xs text-median-taupe/80 font-mono mt-1">{p.description}</p>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await portalApi.togglePartner(p.id, !p.is_active);
+                                await refreshData();
+                              }}
+                              className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase ${
+                                p.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
+                              }`}
+                            >
+                              {p.is_active ? 'Active' : 'Paused'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingPartner(editingPartner?.id === p.id ? null : p)}
+                              className="px-2.5 py-1 rounded border border-black text-black hover:bg-black hover:text-white text-[10px] font-bold uppercase transition-colors"
+                            >
+                              {editingPartner?.id === p.id ? 'Cancel' : 'Edit'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePartner(p.id, p.name)}
+                              className="px-2.5 py-1 rounded border border-red-300 text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 text-[10px] font-bold uppercase transition-colors"
+                            >
+                              Delete
+                            </button>
+                            {p.website_url && (
+                              <a
+                                href={p.website_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-2.5 py-1 rounded-lg border border-median-taupe/30 text-xs font-mono uppercase hover:border-black transition-colors"
+                              >
+                                Visit ↗
+                              </a>
+                            )}
+                          </div>
+                        </div>
+
+                        {editingPartner?.id === p.id && (
+                          <form
+                            onSubmit={handleSavePartnerEdit}
+                            className="pt-3 border-t border-median-taupe/15 space-y-3 text-xs"
+                          >
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Partner Name
+                                </label>
+                                <input
+                                  type="text"
+                                  required
+                                  value={editingPartner.name}
+                                  onChange={(e) => setEditingPartner({ ...editingPartner, name: e.target.value })}
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Category
+                                </label>
+                                <select
+                                  value={editingPartner.category}
+                                  onChange={(e) => setEditingPartner({ ...editingPartner, category: e.target.value })}
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                >
+                                  <option>Cloud Infrastructure</option>
+                                  <option>Design Systems & UI/UX</option>
+                                  <option>Enterprise Architecture</option>
+                                  <option>E-Commerce & Retail</option>
+                                  <option>Healthcare & Clinical</option>
+                                  <option>Fintech & Security</option>
+                                  <option>AI & Machine Learning</option>
+                                  <option>Academic & Research</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Website URL
+                                </label>
+                                <input
+                                  type="url"
+                                  value={editingPartner.website_url || ''}
+                                  onChange={(e) => setEditingPartner({ ...editingPartner, website_url: e.target.value })}
+                                  placeholder="https://..."
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Logo URL or Asset Path
+                                </label>
+                                <input
+                                  type="text"
+                                  value={editingPartner.logo_url || ''}
+                                  onChange={(e) => setEditingPartner({ ...editingPartner, logo_url: e.target.value })}
+                                  placeholder="/assets/partner-1.png"
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                Collaboration Scope / Description
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={editingPartner.description || ''}
+                                onChange={(e) => setEditingPartner({ ...editingPartner, description: e.target.value })}
+                                className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                              />
+                            </div>
+
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setEditingPartner(null)}
+                                className="px-3 py-1.5 rounded-lg border border-median-taupe/30 text-median-taupe hover:text-black font-mono uppercase text-xs"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                className="px-4 py-1.5 rounded-lg bg-black text-white font-bold uppercase hover:bg-median-taupe transition-colors font-mono text-xs"
+                              >
+                                Save Partner Changes
+                              </button>
+                            </div>
+                          </form>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              <AdminPagination
+                currentPage={partPage}
+                totalItems={partners.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPartPage}
+              />
             </div>
           </div>
         )}
@@ -1069,7 +1411,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                 Active Projects & Progress Velocity ({projects.length})
               </h3>
 
-              {projects.map((proj) => (
+              {isSyncing ? (
+                <AdminSkeletonList count={2} />
+              ) : (
+                <div className="space-y-4">
+                  {projects
+                    .slice((projPage - 1) * PAGE_SIZE, projPage * PAGE_SIZE)
+                    .map((proj) => (
                 <div
                   key={proj.id}
                   className="p-6 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-4"
@@ -1189,6 +1537,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   </div>
                 </div>
               ))}
+                </div>
+              )}
+
+              <AdminPagination
+                currentPage={projPage}
+                totalItems={projects.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setProjPage}
+              />
             </div>
           </div>
         )}
@@ -1395,8 +1752,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                 Billing Registry ({billingDocs.length})
               </h3>
 
-              <div className="space-y-3">
-                {billingDocs.map((rawDoc) => {
+              {isSyncing ? (
+                <AdminSkeletonList count={3} />
+              ) : (
+                <div className="space-y-3">
+                  {billingDocs
+                    .slice((billPage - 1) * PAGE_SIZE, billPage * PAGE_SIZE)
+                    .map((rawDoc) => {
                   const doc = enrichBillingDoc(rawDoc);
                   return (
                   <div
@@ -1506,7 +1868,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   </div>
                   );
                 })}
-              </div>
+                </div>
+              )}
+
+              <AdminPagination
+                currentPage={billPage}
+                totalItems={billingDocs.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setBillPage}
+              />
             </div>
           </div>
         )}
@@ -1599,41 +1969,174 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                 Customer Testimonials ({reviews.length})
               </h3>
 
-              <div className="space-y-3">
-                {reviews.map((r) => (
-                  <div
-                    key={r.id}
-                    className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-2"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-oswald text-lg font-bold uppercase text-black">{r.client_name}</h4>
-                        <span className="text-xs font-mono text-median-taupe/80">
-                          {r.client_title} · <strong>{r.company_name}</strong>
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-amber-500 text-sm">{'★'.repeat(r.rating)}</span>
-                        <button
-                          onClick={async () => {
-                            await portalApi.toggleReviewFeatured(r.id, !r.is_featured);
-                            await refreshData();
-                          }}
-                          className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase ${
-                            r.is_featured ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
-                          }`}
-                        >
-                          {r.is_featured ? 'Featured on Site' : 'Hidden'}
-                        </button>
-                      </div>
-                    </div>
+              {isSyncing ? (
+                <AdminSkeletonList count={3} />
+              ) : (
+                <div className="space-y-3">
+                  {reviews
+                    .slice((revPage - 1) * PAGE_SIZE, revPage * PAGE_SIZE)
+                    .map((r) => (
+                      <div
+                        key={r.id}
+                        className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-3"
+                      >
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+                          <div>
+                            <h4 className="font-oswald text-lg font-bold uppercase text-black">{r.client_name}</h4>
+                            <span className="text-xs font-mono text-median-taupe/80">
+                              {r.client_title} · <strong>{r.company_name}</strong>
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-amber-500 text-sm">{'★'.repeat(r.rating)}</span>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await portalApi.toggleReviewFeatured(r.id, !r.is_featured);
+                                await refreshData();
+                              }}
+                              className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase ${
+                                r.is_featured ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
+                              }`}
+                            >
+                              {r.is_featured ? 'Featured on Site' : 'Hidden'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingReview(editingReview?.id === r.id ? null : r)}
+                              className="px-2.5 py-1 rounded border border-black text-black hover:bg-black hover:text-white text-[10px] font-bold uppercase transition-colors"
+                            >
+                              {editingReview?.id === r.id ? 'Cancel' : 'Edit'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteReview(r.id, r.client_name)}
+                              className="px-2.5 py-1 rounded border border-red-300 text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 text-[10px] font-bold uppercase transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
 
-                    <p className="text-xs font-mono text-black/80 italic bg-median-taupe/5 p-3 rounded-xl border border-median-taupe/15">
-                      "{r.review_text}"
-                    </p>
-                  </div>
-                ))}
-              </div>
+                        <p className="text-xs font-mono text-black/80 italic bg-median-taupe/5 p-3 rounded-xl border border-median-taupe/15">
+                          "{r.review_text}"
+                        </p>
+
+                        {editingReview?.id === r.id && (
+                          <form
+                            onSubmit={handleSaveReviewEdit}
+                            className="pt-3 border-t border-median-taupe/15 space-y-3 text-xs"
+                          >
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Client Name
+                                </label>
+                                <input
+                                  type="text"
+                                  required
+                                  value={editingReview.client_name}
+                                  onChange={(e) => setEditingReview({ ...editingReview, client_name: e.target.value })}
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Title / Role
+                                </label>
+                                <input
+                                  type="text"
+                                  required
+                                  value={editingReview.client_title}
+                                  onChange={(e) => setEditingReview({ ...editingReview, client_title: e.target.value })}
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Company Name
+                                </label>
+                                <input
+                                  type="text"
+                                  required
+                                  value={editingReview.company_name}
+                                  onChange={(e) => setEditingReview({ ...editingReview, company_name: e.target.value })}
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Rating
+                                </label>
+                                <select
+                                  value={editingReview.rating}
+                                  onChange={(e) => setEditingReview({ ...editingReview, rating: Number(e.target.value) })}
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                >
+                                  <option value={5}>★★★★★ (5 Stars)</option>
+                                  <option value={4}>★★★★☆ (4 Stars)</option>
+                                  <option value={3}>★★★☆☆ (3 Stars)</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Featured on Public Site
+                                </label>
+                                <select
+                                  value={editingReview.is_featured ? 'true' : 'false'}
+                                  onChange={(e) => setEditingReview({ ...editingReview, is_featured: e.target.value === 'true' })}
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                >
+                                  <option value="true">Yes — Featured on Public Site</option>
+                                  <option value="false">No — Hidden from Public Site</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                Testimonial Text
+                              </label>
+                              <textarea
+                                rows={3}
+                                required
+                                value={editingReview.review_text}
+                                onChange={(e) => setEditingReview({ ...editingReview, review_text: e.target.value })}
+                                className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                              />
+                            </div>
+
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setEditingReview(null)}
+                                className="px-3 py-1.5 rounded-lg border border-median-taupe/30 text-median-taupe hover:text-black font-mono uppercase text-xs"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                className="px-4 py-1.5 rounded-lg bg-black text-white font-bold uppercase hover:bg-median-taupe transition-colors font-mono text-xs"
+                              >
+                                Save Review Changes
+                              </button>
+                            </div>
+                          </form>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              <AdminPagination
+                currentPage={revPage}
+                totalItems={reviews.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setRevPage}
+              />
             </div>
           </div>
         )}
@@ -1750,34 +2253,161 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                 Published Editorial Articles ({blogPosts.length})
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {blogPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex justify-between items-center text-[10px] font-mono uppercase text-median-taupe mb-1">
-                        <span>{post.category}</span>
-                        <span>{post.read_time}</span>
-                      </div>
-                      <h4 className="font-oswald text-lg font-bold uppercase text-black mb-2">
-                        {post.title}
-                      </h4>
-                      <p className="text-xs text-median-taupe/80 font-mono line-clamp-2 mb-4">
-                        {post.excerpt}
-                      </p>
-                    </div>
+              {isSyncing ? (
+                <AdminSkeletonList count={2} />
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {blogPosts
+                    .slice((blogPage - 1) * PAGE_SIZE, blogPage * PAGE_SIZE)
+                    .map((post) => (
+                      <div
+                        key={post.id}
+                        className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm flex flex-col justify-between space-y-4"
+                      >
+                        <div>
+                          <div className="flex justify-between items-center text-[10px] font-mono uppercase text-median-taupe mb-1">
+                            <span>{post.category}</span>
+                            <span>{post.read_time}</span>
+                          </div>
+                          <h4 className="font-oswald text-lg font-bold uppercase text-black mb-2">
+                            {post.title}
+                          </h4>
+                          <p className="text-xs text-median-taupe/80 font-mono line-clamp-2 mb-4">
+                            {post.excerpt}
+                          </p>
+                        </div>
 
-                    <div className="pt-3 border-t border-median-taupe/15 flex justify-between items-center text-xs font-mono">
-                      <span className="text-median-taupe/70">By {post.author}</span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">
-                        Published
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                        <div className="pt-3 border-t border-median-taupe/15 flex flex-wrap justify-between items-center gap-2 text-xs font-mono">
+                          <span className="text-median-taupe/70">By {post.author}</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setEditingPost(editingPost?.id === post.id ? null : post)}
+                              className="px-2.5 py-1 rounded border border-black text-black hover:bg-black hover:text-white text-[10px] font-bold uppercase transition-colors"
+                            >
+                              {editingPost?.id === post.id ? 'Cancel' : 'Edit'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePost(post.id, post.title)}
+                              className="px-2.5 py-1 rounded border border-red-300 text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 text-[10px] font-bold uppercase transition-colors"
+                            >
+                              Delete
+                            </button>
+                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">
+                              Published
+                            </span>
+                          </div>
+                        </div>
+
+                        {editingPost?.id === post.id && (
+                          <form
+                            onSubmit={handleSavePostEdit}
+                            className="pt-3 border-t border-median-taupe/15 space-y-3 text-xs"
+                          >
+                            <div>
+                              <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                Article Title
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                value={editingPost.title}
+                                onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })}
+                                className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Category
+                                </label>
+                                <input
+                                  type="text"
+                                  value={editingPost.category}
+                                  onChange={(e) => setEditingPost({ ...editingPost, category: e.target.value })}
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Author
+                                </label>
+                                <input
+                                  type="text"
+                                  value={editingPost.author}
+                                  onChange={(e) => setEditingPost({ ...editingPost, author: e.target.value })}
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                  Read Time
+                                </label>
+                                <input
+                                  type="text"
+                                  value={editingPost.read_time}
+                                  onChange={(e) => setEditingPost({ ...editingPost, read_time: e.target.value })}
+                                  className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                Excerpt
+                              </label>
+                              <textarea
+                                rows={2}
+                                required
+                                value={editingPost.excerpt}
+                                onChange={(e) => setEditingPost({ ...editingPost, excerpt: e.target.value })}
+                                className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-mono uppercase font-bold text-median-taupe mb-1">
+                                Content (Markdown)
+                              </label>
+                              <textarea
+                                rows={4}
+                                required
+                                value={editingPost.content}
+                                onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
+                                className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                              />
+                            </div>
+
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setEditingPost(null)}
+                                className="px-3 py-1.5 rounded-lg border border-median-taupe/30 text-median-taupe hover:text-black font-mono uppercase text-xs"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                className="px-4 py-1.5 rounded-lg bg-black text-white font-bold uppercase hover:bg-median-taupe transition-colors font-mono text-xs"
+                              >
+                                Save Article Changes
+                              </button>
+                            </div>
+                          </form>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              <AdminPagination
+                currentPage={blogPage}
+                totalItems={blogPosts.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setBlogPage}
+              />
             </div>
           </div>
         )}
@@ -1905,48 +2535,59 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                 <h3 className="font-oswald text-xl font-bold uppercase text-black">
                   Public Contact Briefs ({inquiries.length})
                 </h3>
-                {inquiries.length === 0 ? (
+                {isSyncing ? (
+                  <AdminSkeletonList count={2} />
+                ) : inquiries.length === 0 ? (
                   <div className="p-6 rounded-2xl bg-white border border-median-taupe/20 text-center text-xs text-median-taupe">
                     No public contact inquiries submitted yet.
                   </div>
                 ) : (
-                  inquiries.map((inq) => (
-                    <div
-                      key={inq.id}
-                      className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-2"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="text-[10px] uppercase text-median-taupe font-bold block">
-                            {inq.service_need} · {inq.budget_tier || 'Budget Open'}
+                  inquiries
+                    .slice((reqPage - 1) * PAGE_SIZE, reqPage * PAGE_SIZE)
+                    .map((inq) => (
+                      <div
+                        key={inq.id}
+                        className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-2"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="text-[10px] uppercase text-median-taupe font-bold block">
+                              {inq.service_need} · {inq.budget_tier || 'Budget Open'}
+                            </span>
+                            <h4 className="font-oswald text-lg font-bold uppercase text-black">
+                              {inq.name} {inq.company && `(${inq.company})`}
+                            </h4>
+                            <span className="text-xs text-median-taupe">{inq.email}</span>
+                          </div>
+                          <span className="px-2.5 py-0.5 rounded-full bg-median-taupe/10 text-median-taupe text-[10px] font-bold uppercase">
+                            {inq.status}
                           </span>
-                          <h4 className="font-oswald text-lg font-bold uppercase text-black">
-                            {inq.name} {inq.company && `(${inq.company})`}
-                          </h4>
-                          <span className="text-xs text-median-taupe">{inq.email}</span>
                         </div>
-                        <span className="px-2.5 py-0.5 rounded-full bg-median-taupe/10 text-median-taupe text-[10px] font-bold uppercase">
-                          {inq.status}
-                        </span>
+                        <p className="text-xs text-black/80 bg-median-taupe/5 p-3 rounded-lg border border-median-taupe/15">
+                          {inq.brief}
+                        </p>
+                        {inq.status === 'new' && (
+                          <button
+                            onClick={async () => {
+                              await portalApi.updateInquiryStatus(inq.id, 'contacted');
+                              await refreshData();
+                              showAlert(`Marked inquiry from ${inq.name} as CONTACTED.`);
+                            }}
+                            className="px-3 py-1 rounded bg-black text-white text-[10px] uppercase font-bold hover:bg-median-taupe transition-colors"
+                          >
+                            Mark Contacted ✓
+                          </button>
+                        )}
                       </div>
-                      <p className="text-xs text-black/80 bg-median-taupe/5 p-3 rounded-lg border border-median-taupe/15">
-                        {inq.brief}
-                      </p>
-                      {inq.status === 'new' && (
-                        <button
-                          onClick={async () => {
-                            await portalApi.updateInquiryStatus(inq.id, 'contacted');
-                            await refreshData();
-                            showAlert(`Marked inquiry from ${inq.name} as CONTACTED.`);
-                          }}
-                          className="px-3 py-1 rounded bg-black text-white text-[10px] uppercase font-bold hover:bg-median-taupe transition-colors"
-                        >
-                          Mark Contacted ✓
-                        </button>
-                      )}
-                    </div>
-                  ))
+                    ))
                 )}
+
+                <AdminPagination
+                  currentPage={reqPage}
+                  totalItems={inquiries.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={setReqPage}
+                />
               </div>
             </div>
           </div>

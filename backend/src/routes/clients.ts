@@ -88,4 +88,24 @@ router.patch('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest
   }
 });
 
+// DELETE /api/clients/:id - Admin deletes customer
+router.delete('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', id);
+
+    if (profileError) throw profileError;
+
+    // Delete auth user if exists
+    await supabaseAdmin.auth.admin.deleteUser(id).catch(() => {});
+
+    res.json({ deleted: true, id });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

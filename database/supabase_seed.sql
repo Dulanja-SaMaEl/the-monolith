@@ -6,6 +6,26 @@
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+-- Defensive Schema Upgrades: ensure any missing columns exist on existing tables
+ALTER TABLE IF EXISTS public.partners ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE IF EXISTS public.partners ADD COLUMN IF NOT EXISTS logo_url TEXT;
+ALTER TABLE IF EXISTS public.partners ADD COLUMN IF NOT EXISTS website_url TEXT;
+ALTER TABLE IF EXISTS public.partners ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
+
+ALTER TABLE IF EXISTS public.customer_reviews ADD COLUMN IF NOT EXISTS client_name TEXT;
+ALTER TABLE IF EXISTS public.customer_reviews ADD COLUMN IF NOT EXISTS client_title TEXT;
+ALTER TABLE IF EXISTS public.customer_reviews ADD COLUMN IF NOT EXISTS company_name TEXT;
+ALTER TABLE IF EXISTS public.customer_reviews ADD COLUMN IF NOT EXISTS rating INTEGER DEFAULT 5;
+ALTER TABLE IF EXISTS public.customer_reviews ADD COLUMN IF NOT EXISTS review_text TEXT;
+ALTER TABLE IF EXISTS public.customer_reviews ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT TRUE;
+
+ALTER TABLE IF EXISTS public.blog_posts ADD COLUMN IF NOT EXISTS cover_image TEXT;
+ALTER TABLE IF EXISTS public.blog_posts ADD COLUMN IF NOT EXISTS read_time TEXT;
+ALTER TABLE IF EXISTS public.blog_posts ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT TRUE;
+
+ALTER TABLE IF EXISTS public.invoices ADD COLUMN IF NOT EXISTS client_name TEXT;
+ALTER TABLE IF EXISTS public.quotations ADD COLUMN IF NOT EXISTS client_name TEXT;
+
 -- 1. Seed Auth Accounts & Profiles (Founder Admin + 3 Enterprise Clients)
 DO $$
 DECLARE
@@ -215,13 +235,16 @@ BEGIN
   ON CONFLICT DO NOTHING;
 END $$;
 
--- 7. Strategic Partners
+-- 7. Strategic Partners (Featured on Live Homepage)
 INSERT INTO public.partners (name, category, logo_url, website_url, description, is_active)
 VALUES
-  ('AWS Cloud Architecture', 'Cloud Infrastructure', '/assets/partner-1.png', 'https://aws.amazon.com', 'High-throughput container clusters & multi-region failover', true),
-  ('Java Institute for Advanced Technology', 'Academic & Research', '/assets/partner-2.png', 'https://javainstitute.edu.lk', 'Advanced Software Engineering research & academic collaboration', true),
-  ('Redis Enterprise', 'Fintech & Security', '/assets/partner-3.png', 'https://redis.io', 'Distributed mutex locks (Redlock) and sub-millisecond session pools', true),
-  ('Birmingham City University, UK', 'Academic & Research', '/assets/partner-4.png', 'https://bcu.ac.uk', 'International software engineering curriculum alignment', true)
+  ('Italic Systems', 'Design Systems & UI/UX', '/assets/partner-1.png', 'https://italic.com', 'High-craft design systems and Haute Editorial typography standards', true),
+  ('Theo Architecture', 'Enterprise Architecture', '/assets/partner-2.png', 'https://theo.com', 'Mission-critical distributed infrastructure and micro-tier orchestration', true),
+  ('Hues Cloud Platform', 'Cloud Infrastructure', '/assets/partner-3.png', 'https://hues.com', 'Zero-downtime container clusters and multi-region event pipelines', true),
+  ('Beauty Basket Global', 'E-Commerce & Retail', '/client-logo-1.webp', 'https://beautybasket.lk', 'Omnichannel retail inventory and sub-second checkout pipelines', true),
+  ('Holistica Herbal OS', 'Healthcare & Clinical', '/client-logo-2.webp', 'https://holistica.lk', 'Clinical batch verification and pharmaceutical tracking systems', true),
+  ('Apex Global Security', 'Fintech & Security', '/assets/partner-4.png', 'https://apex.com', 'Distributed Redis mutex locking and fraud prevention engines', true),
+  ('Sphere Tech Labs', 'AI & Machine Learning', '/assets/partner-5.png', 'https://sphere.com', 'Custom vector RAG pipelines and automated LLM triage nodes', true)
 ON CONFLICT DO NOTHING;
 
 -- 8. Customer Reviews (Featured on Live Homepage)

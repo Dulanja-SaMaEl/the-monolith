@@ -189,6 +189,20 @@ export const portalApi = {
     return { client: portalStore.updateUser(id, updates), live: false };
   },
 
+  async deleteClient(id: string): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/clients/${id}`, { method: 'DELETE' }, token);
+        return;
+      } catch {
+        const { error } = await supabase.from('profiles').delete().eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.deleteUser(id);
+  },
+
   // ================= PARTNERS =================
   async getPartners(includeInactive = false): Promise<{ data: Partner[]; live: boolean }> {
     const token = await getAccessToken();
@@ -241,6 +255,34 @@ export const portalApi = {
       }
     }
     portalStore.togglePartnerStatus(id);
+  },
+
+  async updatePartner(id: string, updates: Partial<Partner>): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/partners/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }, token);
+        return;
+      } catch {
+        const { error } = await supabase.from('partners').update(updates).eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.updatePartner(id, updates);
+  },
+
+  async deletePartner(id: string): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/partners/${id}`, { method: 'DELETE' }, token);
+        return;
+      } catch {
+        const { error } = await supabase.from('partners').delete().eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.deletePartner(id);
   },
 
   // ================= PROJECTS & MILESTONES =================
@@ -603,6 +645,34 @@ export const portalApi = {
     portalStore.toggleReviewFeatured(id);
   },
 
+  async updateReview(id: string, updates: Partial<CustomerReview>): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/reviews/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }, token);
+        return;
+      } catch {
+        const { error } = await supabase.from('customer_reviews').update(updates).eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.updateReview(id, updates);
+  },
+
+  async deleteReview(id: string): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/reviews/${id}`, { method: 'DELETE' }, token);
+        return;
+      } catch {
+        const { error } = await supabase.from('customer_reviews').delete().eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.deleteReview(id);
+  },
+
   // ================= BLOG / NEWS POSTS =================
   async getBlogPosts(includeDrafts = false): Promise<{ data: PortalBlogPost[]; live: boolean }> {
     const token = await getAccessToken();
@@ -640,6 +710,34 @@ export const portalApi = {
       }
     }
     return { post: portalStore.addBlogPost(post), live: false };
+  },
+
+  async updateBlogPost(id: string, updates: Partial<PortalBlogPost>): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/posts/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }, token);
+        return;
+      } catch {
+        const { error } = await supabase.from('blog_posts').update(updates).eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.updateBlogPost(id, updates);
+  },
+
+  async deleteBlogPost(id: string): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/posts/${id}`, { method: 'DELETE' }, token);
+        return;
+      } catch {
+        const { error } = await supabase.from('blog_posts').delete().eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.deleteBlogPost(id);
   },
 
   // ================= PUBLIC CONTACT INQUIRIES =================

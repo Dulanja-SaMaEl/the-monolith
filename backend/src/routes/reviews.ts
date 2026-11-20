@@ -74,4 +74,48 @@ router.patch('/:id/feature', requireAuth, requireAdmin, async (req: Authenticate
   }
 });
 
+// PATCH /api/reviews/:id - Admin updates a customer review
+router.patch('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { client_name, client_title, company_name, rating, review_text, is_featured, client_avatar_url } = req.body;
+
+    const { data, error } = await supabaseAdmin
+      .from('customer_reviews')
+      .update({
+        ...(client_name !== undefined ? { client_name } : {}),
+        ...(client_title !== undefined ? { client_title } : {}),
+        ...(company_name !== undefined ? { company_name } : {}),
+        ...(rating !== undefined ? { rating: Math.min(5, Math.max(1, Number(rating))) } : {}),
+        ...(review_text !== undefined ? { review_text } : {}),
+        ...(is_featured !== undefined ? { is_featured } : {}),
+        ...(client_avatar_url !== undefined ? { client_avatar_url } : {}),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ review: data });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/reviews/:id - Admin deletes a customer review
+router.delete('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabaseAdmin
+      .from('customer_reviews')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    res.json({ success: true, deleted: true, id });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

@@ -110,7 +110,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-median-taupe/20 shadow-2xl bg-median-taupe/10">
               <img
                 src="/assets/photo-1.jpg"
-                alt="Monolith LK Studio Workspace"
+                alt="Monolith LK Architecture & Engineering Workspace"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
               />
             </div>

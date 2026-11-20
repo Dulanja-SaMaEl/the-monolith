@@ -748,7 +748,7 @@ export const FAQS = [
   },
   {
     question: 'Where is Monolith LK based and do you work internationally?',
-    answer: 'Our primary studio is located in Kurunegala / Colombo, Sri Lanka, with global operating hubs in Dubai and London. We work with clients across Sri Lanka, Australia, the United States, the UK, and the Middle East.'
+    answer: 'Monolith LK is headquartered in Kurunegala, Sri Lanka, with regional engineering hubs in Giriulla and Colombo. We architect high-throughput digital systems for clients across Sri Lanka, Australia, the United States, the UK, and globally.'
   }
 ];
 
@@ -762,21 +762,21 @@ export const CLIENT_LOGOS = [
 
 export const STUDIO_OFFICES = [
   {
-    city: 'Kurunegala / Colombo',
-    address: 'Monolith Architecture Labs, Central Hub',
-    region: 'Kurunegala & Colombo, Sri Lanka (7.4863° N, 80.3623° E)',
+    city: 'Kurunegala (HQ)',
+    address: 'Central Architecture Labs, Negombo Road',
+    region: 'Kurunegala, Sri Lanka (7.4863° N, 80.3623° E)',
     phone: '+94 76 591 7189'
   },
   {
-    city: 'Dubai',
-    address: 'Business Bay, Bay Square 12',
-    region: 'Level 14, Dubai, UAE',
-    phone: '+971 4 230 8910'
+    city: 'Giriulla',
+    address: 'Engineering & Distributed Systems Hub',
+    region: 'Giriulla, Sri Lanka (7.3297° N, 80.1260° E)',
+    phone: '+94 76 591 7189'
   },
   {
-    city: 'London',
-    address: '24 Old Street, Shoreditch',
-    region: 'EC1V 9AB, London, UK',
-    phone: '+44 20 7946 0912'
+    city: 'Colombo',
+    address: '148 Galle Road, Suite 5B',
+    region: 'Colombo 03, Sri Lanka (6.9271° N, 79.8612° E)',
+    phone: '+94 76 591 7189'
   }
 ];

@@ -78,17 +78,17 @@ router.patch('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest
   }
 });
 
-// DELETE /api/partners/:id - Admin deactivates partner
+// DELETE /api/partners/:id - Admin deletes partner
 router.delete('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { error } = await supabaseAdmin
       .from('partners')
-      .update({ is_active: false })
+      .delete()
       .eq('id', id);
 
     if (error) throw error;
-    res.json({ success: true, message: 'Partner deactivated' });
+    res.json({ success: true, deleted: true, id });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

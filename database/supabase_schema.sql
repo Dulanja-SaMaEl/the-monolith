@@ -296,6 +296,11 @@ CREATE POLICY "Admins can insert profiles"
   ON public.profiles FOR INSERT
   WITH CHECK (auth.uid() = id OR public.is_admin());
 
+DROP POLICY IF EXISTS "Admins can delete profiles" ON public.profiles;
+CREATE POLICY "Admins can delete profiles"
+  ON public.profiles FOR DELETE
+  USING (public.is_admin());
+
 -- Partners Policies
 DROP POLICY IF EXISTS "Partners are viewable by everyone" ON public.partners;
 CREATE POLICY "Partners are viewable by everyone"

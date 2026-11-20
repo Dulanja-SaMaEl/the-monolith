@@ -136,16 +136,16 @@ export const FullscreenMenu: React.FC<FullscreenMenuProps> = ({
               HEADQUARTERS
             </div>
             <div className="text-sm font-semibold leading-relaxed text-black">
-              148 Galle Road, Suite 5B
+              Central Architecture Labs
               <br />
-              Colombo 03, Sri Lanka
+              Kurunegala, Sri Lanka
             </div>
             <div className="mt-4 text-xs font-bold tracking-widest text-median-taupe/60 mb-2">
-              GLOBAL STUDIOS
+              REGIONAL BRANCHES
             </div>
             <div className="text-xs space-y-1">
-              <div>Dubai • Business Bay, Bay Square 12</div>
-              <div>London • 24 Old Street, Shoreditch</div>
+              <div>Giriulla • Engineering & Systems Hub</div>
+              <div>Colombo • 148 Galle Road, Suite 5B</div>
             </div>
           </div>
 
@@ -198,7 +198,7 @@ export const FullscreenMenu: React.FC<FullscreenMenuProps> = ({
 
       {/* Bottom Footer inside modal */}
       <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-12 py-4 border-t border-median-taupe/15 flex flex-col sm:flex-row justify-between text-xs text-median-taupe/70 gap-2">
-        <div>© 2026 MONOLITH LK STUDIO. ALL RIGHTS RESERVED.</div>
+        <div>© 2026 MONOLITH LK. ALL RIGHTS RESERVED.</div>
         <div className="flex gap-4">
           <button onClick={() => handleLinkClick('/style-guide')} className="hover:underline">
             Style Guide

@@ -273,19 +273,19 @@ export const ContactPage: React.FC<ContactPageProps> = ({ navigate }) => {
           <StaggerContainer staggerDelay={120} variant="scale-up" duration={750} className="space-y-4">
             {[
               {
-                city: 'Colombo',
-                address: '148 Galle Road, Suite 5B, Colombo 03, Sri Lanka',
+                city: 'Kurunegala (HQ)',
+                address: 'Central Architecture Labs, Negombo Road, Kurunegala',
                 tz: 'IST (UTC+5:30)',
               },
               {
-                city: 'Dubai',
-                address: 'Business Bay, Bay Square 12, Level 14, Dubai, UAE',
-                tz: 'GST (UTC+4)',
+                city: 'Giriulla',
+                address: 'Engineering & Systems Hub, Giriulla, Sri Lanka',
+                tz: 'IST (UTC+5:30)',
               },
               {
-                city: 'London',
-                address: '24 Old Street, Shoreditch, EC1V 9AB, London, UK',
-                tz: 'GMT/BST (UTC+0)',
+                city: 'Colombo',
+                address: '148 Galle Road, Suite 5B, Colombo 03, Sri Lanka',
+                tz: 'IST (UTC+5:30)',
               },
             ].map((loc) => (
               <div

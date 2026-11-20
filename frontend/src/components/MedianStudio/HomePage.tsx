@@ -17,18 +17,28 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
   const [, setActiveTeamId] = useState<string>(TEAM_MEMBERS[0].id);
   const [liveReviews, setLiveReviews] = useState<CustomerReview[]>([]);
   const [livePosts, setLivePosts] = useState<BlogPost[]>(BLOG_POSTS);
+  const [livePartners, setLivePartners] = useState<{ name: string; image: string }[]>(CLIENT_LOGOS);
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const [revRes, postRes] = await Promise.all([
+        const [revRes, postRes, partRes] = await Promise.all([
           portalApi.getReviews(false),
           portalApi.getBlogPosts(false),
+          portalApi.getPartners(false),
         ]);
         if (!active) return;
         if (revRes.data.length > 0) {
           setLiveReviews(revRes.data);
+        }
+        if (partRes.data.length > 0) {
+          setLivePartners(
+            partRes.data.map((p, idx) => ({
+              name: p.name,
+              image: p.logo_url || `/assets/partner-${(idx % 5) + 1}.png`,
+            }))
+          );
         }
         if (postRes.data.length > 0) {
           const mapped: BlogPost[] = postRes.data.map((p) => ({
@@ -86,14 +96,6 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
             <span className="absolute -top-2.5 -right-2.5 w-5 h-5 border-2 border-median-taupe bg-white shadow-sm" />
             <span className="absolute -bottom-2.5 -left-2.5 w-5 h-5 border-2 border-median-taupe bg-white shadow-sm" />
             <span className="absolute -bottom-2.5 -right-2.5 w-5 h-5 border-2 border-median-taupe bg-white shadow-sm" />
-
-            {/* Subtitle tag with smooth spring drop */}
-            <ScrollReveal variant="badge-drop" delay={80} duration={800}>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-median-taupe/40 text-xs font-semibold tracking-widest uppercase mb-8 text-median-taupe">
-                <span className="w-2 h-2 rounded-full bg-median-taupe animate-pulse" />
-                Independent Creative Agency & Studio
-              </div>
-            </ScrollReveal>
 
             {/* Massive Typographic Headline with Split-Mask Line Revelations */}
             <h1 className="font-oswald text-5xl sm:text-7xl md:text-9xl font-bold uppercase tracking-tight text-black leading-[0.9] select-none">
@@ -372,7 +374,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
         {/* Continuous Logo Carousel with Focus Dissolve Entrance */}
         <ScrollReveal variant="blur-focus" delay={160} duration={950} className="relative overflow-hidden py-4 select-none">
           <div className="flex whitespace-nowrap animate-marquee-left hover:[animation-play-state:paused]">
-            {[...CLIENT_LOGOS, ...CLIENT_LOGOS, ...CLIENT_LOGOS].map((client, idx) => (
+            {[...livePartners, ...livePartners, ...livePartners].map((client, idx) => (
               <div
                 key={idx}
                 className="inline-flex items-center justify-center px-10 sm:px-16 opacity-75 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"

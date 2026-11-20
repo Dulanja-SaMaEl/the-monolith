@@ -23,12 +23,12 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
               <ScrollReveal variant="card-flip-left" delay={100}>
                 <div className="space-y-2">
                   <span className="font-oswald text-lg font-semibold text-black uppercase block border-b border-median-taupe/40 pb-1 w-fit">
-                    Colombo
+                    Kurunegala
                   </span>
                   <p className="text-xs text-median-taupe/80 leading-relaxed font-normal">
-                    148 Galle Road, Suite 5B
+                    Central Architecture Labs
                     <br />
-                    Colombo 03, Sri Lanka
+                    Kurunegala, Sri Lanka
                   </p>
                 </div>
               </ScrollReveal>
@@ -36,12 +36,12 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
               <ScrollReveal variant="card-lift" delay={200}>
                 <div className="space-y-2">
                   <span className="font-oswald text-lg font-semibold text-black uppercase block border-b border-median-taupe/40 pb-1 w-fit">
-                    Dubai
+                    Giriulla
                   </span>
                   <p className="text-xs text-median-taupe/80 leading-relaxed font-normal">
-                    Business Bay, Bay Square 12
+                    Engineering & Systems Hub
                     <br />
-                    Level 14, Dubai, UAE
+                    Giriulla, Sri Lanka
                   </p>
                 </div>
               </ScrollReveal>
@@ -49,12 +49,12 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
               <ScrollReveal variant="card-flip-right" delay={300}>
                 <div className="space-y-2">
                   <span className="font-oswald text-lg font-semibold text-black uppercase block border-b border-median-taupe/40 pb-1 w-fit">
-                    London
+                    Colombo
                   </span>
                   <p className="text-xs text-median-taupe/80 leading-relaxed font-normal">
-                    24 Old Street, Shoreditch
+                    148 Galle Road, Suite 5B
                     <br />
-                    EC1V 9AB, London, UK
+                    Colombo 03, Sri Lanka
                   </p>
                 </div>
               </ScrollReveal>
@@ -113,7 +113,7 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
         <ScrollReveal variant="fade-up" delay={200} duration={650}>
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-median-taupe/70 gap-4">
             <p>
-              © 2026 Monolith LK Studio. Contemporary architectural design & digital engineering.
+              © 2026 Monolith LK. Contemporary architectural design & digital engineering.
             </p>
 
             <div className="flex items-center gap-6">
@@ -158,7 +158,7 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
                 data-cursor="pointer"
                 className="hover:text-black underline decoration-median-taupe transition-colors"
               >
-                About Studio
+                About Monolith LK
               </button>
             </div>
           </div>

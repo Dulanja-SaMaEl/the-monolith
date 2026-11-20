@@ -170,34 +170,65 @@ const initialUsers: UserProfile[] = [
 const initialPartners: Partner[] = [
   {
     id: 'part-01',
-    name: 'AWS Cloud Architecture',
-    category: 'Cloud Infrastructure',
-    website_url: 'https://aws.amazon.com',
-    description: 'High-throughput container clusters & multi-region failover',
+    name: 'Italic Systems',
+    category: 'Design Systems & UI/UX',
+    logo_url: '/assets/partner-1.png',
+    website_url: 'https://italic.com',
+    description: 'High-craft design systems and Haute Editorial typography standards',
     is_active: true,
   },
   {
     id: 'part-02',
-    name: 'Java Institute for Advanced Technology',
-    category: 'Academic & Research',
-    website_url: 'https://javainstitute.edu.lk',
-    description: 'Advanced Software Engineering research & academic collaboration',
+    name: 'Theo Architecture',
+    category: 'Enterprise Architecture',
+    logo_url: '/assets/partner-2.png',
+    website_url: 'https://theo.com',
+    description: 'Mission-critical distributed infrastructure and micro-tier orchestration',
     is_active: true,
   },
   {
     id: 'part-03',
-    name: 'Redis Enterprise',
-    category: 'Fintech & Security',
-    website_url: 'https://redis.io',
-    description: 'Distributed mutex locks (Redlock) and sub-millisecond session pools',
+    name: 'Hues Cloud Platform',
+    category: 'Cloud Infrastructure',
+    logo_url: '/assets/partner-3.png',
+    website_url: 'https://hues.com',
+    description: 'Zero-downtime container clusters and multi-region event pipelines',
     is_active: true,
   },
   {
     id: 'part-04',
-    name: 'Birmingham City University, UK',
-    category: 'Academic & Research',
-    website_url: 'https://bcu.ac.uk',
-    description: 'International software engineering curriculum alignment',
+    name: 'Beauty Basket Global',
+    category: 'E-Commerce & Retail',
+    logo_url: '/client-logo-1.webp',
+    website_url: 'https://beautybasket.lk',
+    description: 'Omnichannel retail inventory and sub-second checkout pipelines',
+    is_active: true,
+  },
+  {
+    id: 'part-05',
+    name: 'Holistica Herbal OS',
+    category: 'Healthcare & Clinical',
+    logo_url: '/client-logo-2.webp',
+    website_url: 'https://holistica.lk',
+    description: 'Clinical batch verification and pharmaceutical tracking systems',
+    is_active: true,
+  },
+  {
+    id: 'part-06',
+    name: 'Apex Global Security',
+    category: 'Fintech & Security',
+    logo_url: '/assets/partner-4.png',
+    website_url: 'https://apex.com',
+    description: 'Distributed Redis mutex locking and fraud prevention engines',
+    is_active: true,
+  },
+  {
+    id: 'part-07',
+    name: 'Sphere Tech Labs',
+    category: 'AI & Machine Learning',
+    logo_url: '/assets/partner-5.png',
+    website_url: 'https://sphere.com',
+    description: 'Custom vector RAG pipelines and automated LLM triage nodes',
     is_active: true,
   },
 ];
@@ -428,6 +459,10 @@ export const portalStore = {
     setStored('users', list);
     return updated;
   },
+  deleteUser: (id: string): void => {
+    const list = portalStore.getUsers().filter((u) => u.id !== id);
+    setStored('users', list);
+  },
 
   // Partners
   getPartners: (): Partner[] => getStored('partners', initialPartners),
@@ -436,6 +471,22 @@ export const portalStore = {
     const newPartner: Partner = { ...partner, id: `part-${Date.now()}` };
     setStored('partners', [newPartner, ...list]);
     return newPartner;
+  },
+  updatePartner: (id: string, updates: Partial<Partner>): Partner | null => {
+    let updated: Partner | null = null;
+    const list = portalStore.getPartners().map((p) => {
+      if (p.id === id) {
+        updated = { ...p, ...updates };
+        return updated;
+      }
+      return p;
+    });
+    setStored('partners', list);
+    return updated;
+  },
+  deletePartner: (id: string): void => {
+    const list = portalStore.getPartners().filter((p) => p.id !== id);
+    setStored('partners', list);
   },
   togglePartnerStatus: (id: string): void => {
     const list = portalStore.getPartners().map((p) =>
@@ -590,6 +641,22 @@ export const portalStore = {
     );
     setStored('reviews', list);
   },
+  updateReview: (id: string, updates: Partial<CustomerReview>): CustomerReview | null => {
+    let updated: CustomerReview | null = null;
+    const list = portalStore.getReviews().map((r) => {
+      if (r.id === id) {
+        updated = { ...r, ...updates };
+        return updated;
+      }
+      return r;
+    });
+    setStored('reviews', list);
+    return updated;
+  },
+  deleteReview: (id: string): void => {
+    const list = portalStore.getReviews().filter((r) => r.id !== id);
+    setStored('reviews', list);
+  },
 
   // Blog Posts
   getBlogPosts: (publishedOnly = false): PortalBlogPost[] => {
@@ -610,6 +677,10 @@ export const portalStore = {
     const list = portalStore.getBlogPosts().map((b) =>
       b.id === id ? { ...b, ...updates } : b
     );
+    setStored('blog_posts', list);
+  },
+  deleteBlogPost: (id: string): void => {
+    const list = portalStore.getBlogPosts().filter((b) => b.id !== id);
     setStored('blog_posts', list);
   },
 

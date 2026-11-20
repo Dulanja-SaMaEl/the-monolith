@@ -97,4 +97,50 @@ router.put('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, 
   }
 });
 
+// PATCH /api/posts/:id - Admin updates a blog post (alias for PUT)
+router.patch('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { title, slug, category, author, read_time, cover_image, excerpt, content_markdown, is_published } = req.body;
+
+    const { data, error } = await supabaseAdmin
+      .from('blog_posts')
+      .update({
+        ...(title !== undefined ? { title } : {}),
+        ...(slug !== undefined ? { slug } : {}),
+        ...(category !== undefined ? { category } : {}),
+        ...(author !== undefined ? { author } : {}),
+        ...(read_time !== undefined ? { read_time } : {}),
+        ...(cover_image !== undefined ? { cover_image } : {}),
+        ...(excerpt !== undefined ? { excerpt } : {}),
+        ...(content_markdown !== undefined ? { content_markdown } : {}),
+        ...(is_published !== undefined ? { is_published } : {}),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ post: data });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/posts/:id - Admin deletes a blog post
+router.delete('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabaseAdmin
+      .from('blog_posts')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    res.json({ success: true, deleted: true, id });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

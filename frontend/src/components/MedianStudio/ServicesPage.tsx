@@ -67,7 +67,7 @@ const PRACTICE_TECH_STACK: Record<string, string[]> = {
     'Interactive Figma Prototypes',
     'Information Architecture & Journey Mapping',
     'Design Tokens & Typography Rules',
-    'Monolith Studio OS Design Standards',
+    'Monolith LK Design Standards',
   ],
   'brand-growth-marketing-creative': [
     'Tactical Editorial Event Flyers',
