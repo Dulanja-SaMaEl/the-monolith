@@ -124,6 +124,18 @@ export interface PortalBlogPost {
   published_at: string;
 }
 
+export interface ContactInquiry {
+  id: string;
+  name: string;
+  email: string;
+  company?: string;
+  service_need: string;
+  budget_tier?: string;
+  brief: string;
+  status: 'new' | 'contacted' | 'converted' | 'archived';
+  created_at: string;
+}
+
 // Initial Mock Seed Data
 const initialUsers: UserProfile[] = [
   {
@@ -239,16 +251,16 @@ const initialBilling: BillingDocument[] = [
     client_name: 'ShadowTopup Global',
     project_title: 'ShadowTopup Engine',
     status: 'paid',
-    currency: 'USD',
+    currency: 'LKR',
     line_items: [
-      { id: 'li-1', description: 'Phase 02: Redis Redlock Mutex & Webhook Pipeline', quantity: 1, unit_price: 3800, total: 3800 },
-      { id: 'li-2', description: 'Sub-Second Garena Dispatch Microservices', quantity: 1, unit_price: 2400, total: 2400 },
+      { id: 'li-1', description: 'Phase 02: Redis Redlock Mutex & Webhook Pipeline', quantity: 1, unit_price: 1150000, total: 1150000 },
+      { id: 'li-2', description: 'Sub-Second Garena Dispatch Microservices', quantity: 1, unit_price: 700000, total: 700000 },
     ],
-    subtotal: 6200,
+    subtotal: 1850000,
     tax: 0,
-    total: 6200,
+    total: 1850000,
     due_date: '2026-11-05',
-    notes: 'Paid via Wire Transfer with zero ledger discrepancies.',
+    notes: 'Paid via Commercial Bank Corporate Wire Transfer with zero ledger discrepancies.',
     created_at: '2026-10-25T10:00:00Z',
   },
   {
@@ -259,16 +271,16 @@ const initialBilling: BillingDocument[] = [
     client_name: 'ShadowTopup Global',
     project_title: 'Phase 03 High-Availability Cloud Cluster',
     status: 'sent',
-    currency: 'USD',
+    currency: 'LKR',
     line_items: [
-      { id: 'li-3', description: 'Zero-Downtime AWS Multi-Region Failover Architecture', quantity: 1, unit_price: 4500, total: 4500 },
-      { id: 'li-4', description: 'Dedicated SLA Telemetry & Emergency Triage (6 Months)', quantity: 6, unit_price: 750, total: 4500 },
+      { id: 'li-3', description: 'Zero-Downtime AWS Multi-Region Failover Architecture', quantity: 1, unit_price: 1350000, total: 1350000 },
+      { id: 'li-4', description: 'Dedicated SLA Telemetry & Emergency Triage (6 Months)', quantity: 6, unit_price: 225000, total: 1350000 },
     ],
-    subtotal: 9000,
+    subtotal: 2700000,
     tax: 0,
-    total: 9000,
+    total: 2700000,
     due_date: '2026-12-01',
-    notes: 'Quotation valid for 30 business days from issue date.',
+    notes: 'Quotation valid for 30 business days from issue date. Quoted in LKR.',
     created_at: '2026-11-18T14:20:00Z',
   },
 ];
@@ -294,11 +306,11 @@ const initialRequests: ProjectRequest[] = [
     id: 'req-01',
     client_id: 'user-client-01',
     client_name: 'ShadowTopup Global',
-    project_title: 'Automated Wallet & Crypto Ramp Microservice',
+    project_title: 'Automated Wallet & LKR Settlement Ramp Microservice',
     service_category: 'Fintech & Security',
-    estimated_budget: '$8,000 - $12,000',
+    estimated_budget: 'LKR 2,500,000 - 4,000,000',
     target_timeline: 'Q1 2027',
-    project_scope: 'Require sub-second multi-currency settlement gateway with JA3/JA4 TLS anti-fraud checks.',
+    project_scope: 'Require sub-second multi-currency LKR settlement gateway with JA3/JA4 TLS anti-fraud checks.',
     status: 'under_estimation',
     created_at: '2026-11-17T11:00:00Z',
   },
@@ -400,6 +412,18 @@ export const portalStore = {
     const newUser: UserProfile = { ...user, id: `user-${Date.now()}` };
     setStored('users', [newUser, ...users]);
     return newUser;
+  },
+  updateUser: (id: string, updates: Partial<Pick<UserProfile, 'full_name' | 'company_name' | 'phone'>>): UserProfile | null => {
+    let updated: UserProfile | null = null;
+    const list = portalStore.getUsers().map((u) => {
+      if (u.id === id) {
+        updated = { ...u, ...updates };
+        return updated;
+      }
+      return u;
+    });
+    setStored('users', list);
+    return updated;
   },
 
   // Partners
@@ -569,5 +593,25 @@ export const portalStore = {
       b.id === id ? { ...b, ...updates } : b
     );
     setStored('blog_posts', list);
+  },
+
+  // Contact Inquiries
+  getInquiries: (): ContactInquiry[] => getStored('inquiries', []),
+  submitInquiry: (inquiry: Omit<ContactInquiry, 'id' | 'status' | 'created_at'>): ContactInquiry => {
+    const list = portalStore.getInquiries();
+    const newInq: ContactInquiry = {
+      ...inquiry,
+      id: `inq-${Date.now()}`,
+      status: 'new',
+      created_at: new Date().toISOString(),
+    };
+    setStored('inquiries', [newInq, ...list]);
+    return newInq;
+  },
+  updateInquiryStatus: (id: string, status: ContactInquiry['status']): void => {
+    const list = portalStore.getInquiries().map((i) =>
+      i.id === id ? { ...i, status } : i
+    );
+    setStored('inquiries', list);
   },
 };

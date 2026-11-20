@@ -350,8 +350,8 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'brand-digital-sprint',
     title: 'Brand & Digital Sprint',
-    priceMonthly: 499,
-    priceAnnual: 399,
+    priceMonthly: 149000,
+    priceAnnual: 119000,
     tagline: 'Essential high-speed digital foundation for emerging businesses',
     features: [
       'High-converting landing page (React / Next.js)',
@@ -365,15 +365,15 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'full-growth-engine',
     title: 'Full Growth Engine',
-    priceMonthly: 1299,
-    priceAnnual: 1049,
+    priceMonthly: 389000,
+    priceAnnual: 311000,
     tagline: 'Complete performance marketing & web engineering for scaling brands',
     popular: true,
     features: [
       'Bespoke multi-page high-conversion web platform',
       'Active Meta advertising management & ROAS scaling',
       'Continuous monthly creative refreshes & video ad scripts',
-      'Weekly sprint reviews with Founder Dulan',
+      'Weekly sprint reviews with Founder Dulanja Abeysinghe',
       'Private 24/7 Client Hub portal & live ROAS telemetry',
       'Direct WhatsApp emergency line & priority turnaround'
     ]
@@ -381,8 +381,8 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'enterprise-omnichannel',
     title: 'Enterprise Omnichannel',
-    priceMonthly: 2499,
-    priceAnnual: 1999,
+    priceMonthly: 749000,
+    priceAnnual: 599000,
     tagline: 'Full-spectrum growth engineering & production studio for market leaders',
     features: [
       'Custom headless web architecture & 3D WebGL scenes',
@@ -577,7 +577,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
   {
     id: 'dulanja-abeysinghe',
     name: 'Dulanja Abeysinghe',
-    role: 'Co-Founder & Principal Systems Architect',
+    role: 'Founder & Principal Systems Architect',
     image: '/dulanja.webp',
     coordinates: 'Kurunegala, Sri Lanka (7.4863° N, 80.3623° E · UTC+5:30)',
     contact: {
@@ -697,7 +697,7 @@ export const BLOG_POSTS: BlogPost[] = [
     summary: 'Why latency kills conversions, and how we engineer modern React and headless Shopify architectures that maintain 99+ Lighthouse speed.',
     author: {
       name: 'Dulanja Abeysinghe',
-      role: 'Co-Founder & Principal Systems Architect',
+      role: 'Founder & Principal Systems Architect',
       avatar: '/dulanja.webp'
     },
     content: [
@@ -740,7 +740,7 @@ export const FAQS = [
   },
   {
     question: 'What makes Monolith LK different from traditional agencies?',
-    answer: 'We eliminate the disconnect between pretty design and ruthless performance. You do not get passed off to junior account managers—you get direct WhatsApp communication with Co-Founders Dulanja Abeysinghe & Remashi Diyana, weekly sprint reviews, and 24/7 access to your private Client Hub.'
+    answer: 'We eliminate the disconnect between pretty design and ruthless performance. You do not get passed off to junior account managers—you get direct WhatsApp communication with Founder Dulanja Abeysinghe & Co-Founder Remashi Diyana, weekly sprint reviews, and 24/7 access to your private Client Hub.'
   },
   {
     question: 'What is your Meta Ads management framework?',

@@ -4,14 +4,15 @@ import { supabaseAdmin } from '../services/supabase';
 
 const router = Router();
 
-// GET /api/partners - Public or client view active partners
-router.get('/', async (_req: Request, res: Response) => {
+// GET /api/partners - Public or admin view partners
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const { data, error } = await supabaseAdmin
-      .from('partners')
-      .select('*')
-      .eq('is_active', true)
-      .order('created_at', { ascending: false });
+    const { all } = req.query;
+    let query = supabaseAdmin.from('partners').select('*');
+    if (!all) {
+      query = query.eq('is_active', true);
+    }
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) throw error;
     res.json({ partners: data });
@@ -45,6 +46,33 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
 
     if (error) throw error;
     res.status(201).json({ partner: data });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/partners/:id - Admin toggles active status or edits partner
+router.patch('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, category, logo_url, website_url, description, is_active } = req.body;
+
+    const { data, error } = await supabaseAdmin
+      .from('partners')
+      .update({
+        ...(name !== undefined ? { name } : {}),
+        ...(category !== undefined ? { category } : {}),
+        ...(logo_url !== undefined ? { logo_url } : {}),
+        ...(website_url !== undefined ? { website_url } : {}),
+        ...(description !== undefined ? { description } : {}),
+        ...(is_active !== undefined ? { is_active } : {}),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ partner: data });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

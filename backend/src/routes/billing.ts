@@ -24,7 +24,7 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =>
   }
 });
 
-// POST /api/billing - Admin creates invoice or quotation
+// POST /api/billing - Admin creates invoice or quotation (Default currency: LKR)
 router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const {
@@ -32,6 +32,7 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
       client_id,
       project_id,
       currency,
+      status,
       line_items,
       tax_percentage = 0,
       due_date,
@@ -44,16 +45,22 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
     }
 
     // Compute subtotal and total
-    const subtotal = line_items.reduce((acc: number, item: any) => {
+    const normalizedItems = line_items.map((item: any, idx: number) => {
       const qty = Number(item.quantity) || 1;
       const unit = Number(item.unit_price) || 0;
-      return acc + qty * unit;
-    }, 0);
+      return {
+        id: item.id || `li-${idx + 1}`,
+        description: String(item.description || ''),
+        quantity: qty,
+        unit_price: unit,
+        total: qty * unit,
+      };
+    });
 
+    const subtotal = normalizedItems.reduce((acc: number, item: any) => acc + item.total, 0);
     const tax = subtotal * (Number(tax_percentage) / 100);
     const total = subtotal + tax;
 
-    // Generate Document Number (e.g. INV-2026-104 or QUO-2026-104)
     const prefix = type === 'invoice' ? 'INV' : 'QUO';
     const randCode = Math.floor(1000 + Math.random() * 9000);
     const document_number = `${prefix}-${new Date().getFullYear()}-${randCode}`;
@@ -65,16 +72,16 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
         type,
         client_id,
         project_id: project_id || null,
-        status: 'draft',
-        currency: currency || 'USD',
-        line_items,
+        status: status || 'sent',
+        currency: currency || 'LKR',
+        line_items: normalizedItems,
         subtotal,
         tax,
         total,
-        due_date,
+        due_date: due_date || null,
         notes,
       })
-      .select()
+      .select('*, client:profiles!client_id(full_name, email, company_name), project:projects!project_id(title, code_name)')
       .single();
 
     if (error) throw error;
@@ -99,7 +106,7 @@ router.patch('/:id/status', requireAuth, requireAdmin, async (req: Authenticated
       .from('documents_billing')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .select()
+      .select('*, client:profiles!client_id(full_name, email, company_name), project:projects!project_id(title, code_name)')
       .single();
 
     if (error) throw error;
@@ -136,6 +143,7 @@ router.get('/:id/download', requireAuth, async (req: AuthenticatedRequest, res: 
       return;
     }
 
+    const cur = escapeHtml(doc.currency || 'LKR');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${escapeHtml(doc.document_number)}.html"`);
     res.send(`<!DOCTYPE html>
@@ -161,16 +169,16 @@ router.get('/:id/download', requireAuth, async (req: AuthenticatedRequest, res: 
   <div class="card">
     <h1>MONOLITH LK · ${escapeHtml(doc.type).toUpperCase()}: ${escapeHtml(doc.document_number)}</h1>
     <p>Issued to: <strong>${escapeHtml(doc.client?.company_name || doc.client?.full_name)}</strong> (${escapeHtml(doc.client?.email)})</p>
-    <p>Due Date: <strong>${escapeHtml(doc.due_date)}</strong> · Status: <strong>${escapeHtml(doc.status).toUpperCase()}</strong></p>
+    <p>Due Date: <strong>${escapeHtml(doc.due_date || 'Upon Receipt')}</strong> · Status: <strong>${escapeHtml(doc.status).toUpperCase()}</strong></p>
     <table>
       <thead>
         <tr><th>Deliverable Item</th><th>Qty</th><th>Unit Rate</th><th>Total</th></tr>
       </thead>
       <tbody>
-        ${(doc.line_items || []).map((i: any) => `<tr><td>${escapeHtml(i.description)}</td><td>${escapeHtml(i.quantity)}</td><td>$${Number(i.unit_price || 0).toLocaleString()}</td><td>$${Number(i.total || 0).toLocaleString()}</td></tr>`).join('')}
+        ${(doc.line_items || []).map((i: any) => `<tr><td>${escapeHtml(i.description)}</td><td>${escapeHtml(i.quantity)}</td><td>${cur} ${Number(i.unit_price || 0).toLocaleString()}</td><td>${cur} ${Number(i.total || 0).toLocaleString()}</td></tr>`).join('')}
       </tbody>
     </table>
-    <div class="total">Total Due: $${Number(doc.total || 0).toLocaleString()} ${escapeHtml(doc.currency)}</div>
+    <div class="total">Total Due: ${cur} ${Number(doc.total || 0).toLocaleString()}</div>
   </div>
 </body>
 </html>`);

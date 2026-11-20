@@ -10,6 +10,7 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
     day: 'numeric',
   });
 
+  const cur = doc.currency || 'LKR';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -367,8 +368,8 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
           <tr>
             <td class="item-desc">${item.description}</td>
             <td class="text-center">${item.quantity}</td>
-            <td class="text-right">$${item.unit_price.toLocaleString()}</td>
-            <td class="text-right font-bold">$${item.total.toLocaleString()}</td>
+            <td class="text-right">${cur} ${item.unit_price.toLocaleString()}</td>
+            <td class="text-right font-bold">${cur} ${item.total.toLocaleString()}</td>
           </tr>
         `).join('')}
       </tbody>
@@ -379,15 +380,15 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
       <div class="totals-table">
         <div class="totals-row">
           <span>Subtotal Amount:</span>
-          <span>$${doc.subtotal.toLocaleString()}</span>
+          <span>${cur} ${doc.subtotal.toLocaleString()}</span>
         </div>
         <div class="totals-row">
-          <span>VAT / Tech Export Tax (0.00%):</span>
-          <span>$${doc.tax.toLocaleString()}</span>
+          <span>VAT / SSCL Tax (0.00%):</span>
+          <span>${cur} ${doc.tax.toLocaleString()}</span>
         </div>
         <div class="totals-row grand-total">
           <span>Total Balance:</span>
-          <span>$${doc.total.toLocaleString()} ${doc.currency}</span>
+          <span>${cur} ${doc.total.toLocaleString()}</span>
         </div>
       </div>
     </div>
@@ -395,16 +396,16 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
     <!-- Notes & Settlement Instructions -->
     <div class="terms-box">
       <strong>Settlement & Banking Instructions:</strong><br>
-      ${doc.notes || 'Wire transfers payable to Monolith LK Enterprise Technology Accounts. Reference document number in payment narration.'}<br>
-      Swift / IBAN routing provided via authorized portal transmission.
+      ${doc.notes || 'Bank transfers payable to Monolith LK Enterprise Technology Accounts. Reference document number in payment narration.'}<br>
+      Sri Lanka LKR CEFTS / SLIPS & International SWIFT routing provided via authorized portal transmission.
     </div>
 
-    <!-- Dual Co-Founder Signatures -->
+    <!-- Founder & Co-Founder Signatures -->
     <div class="signatures-grid">
       <div class="sign-box">
         <div class="sign-line"></div>
         <div class="sign-name">Dulanja Abeysinghe</div>
-        <div class="sign-role">Co-Founder & Principal Systems Architect</div>
+        <div class="sign-role">Founder & Principal Systems Architect</div>
       </div>
 
       <div class="sign-box">

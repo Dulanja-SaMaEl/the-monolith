@@ -134,21 +134,21 @@ export const PricingPage: React.FC<PricingPageProps> = ({ navigate }) => {
 
                   {/* Price */}
                   <div className="mb-8 pb-6 border-b border-current/20">
-                    <div className="flex items-baseline gap-1">
+                    <div className="flex items-baseline gap-1.5 flex-wrap">
                       <span
-                        className={`font-oswald text-5xl sm:text-6xl font-bold ${
+                        className={`font-oswald text-4xl sm:text-5xl font-bold ${
                           plan.popular ? 'text-white' : 'text-black'
                         }`}
                       >
-                        ${price}
+                        LKR {price.toLocaleString()}
                       </span>
                       <span className="text-xs font-semibold uppercase opacity-80">
-                        USD / mo
+                        / mo
                       </span>
                     </div>
                     {isAnnual && (
                       <span className="text-[11px] font-semibold opacity-75 mt-1 block">
-                        Billed annually (${price * 12}/year)
+                        Billed annually (LKR {(price * 12).toLocaleString()}/year)
                       </span>
                     )}
                   </div>

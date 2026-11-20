@@ -6,8 +6,10 @@ interface AuthContextType {
   user: UserProfile | null;
   role: 'admin' | 'client' | null;
   isAuthenticated: boolean;
+  isLiveAuth: boolean;
   isLoading: boolean;
-  login: (email: string, password?: string) => Promise<{ success: boolean; error?: string; role?: 'admin' | 'client' }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; role?: 'admin' | 'client' }>;
+  loginDemo: (targetRole: 'admin' | 'client') => { success: boolean; role: 'admin' | 'client' };
   logout: () => Promise<void>;
   switchDemoRole: (targetRole: 'admin' | 'client') => void;
 }
@@ -21,7 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (saved) {
         try {
           return JSON.parse(saved);
-        } catch (e) {
+        } catch {
           return null;
         }
       }
@@ -29,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return null;
   });
 
+  const [isLiveAuth, setIsLiveAuth] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -37,28 +40,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
+            setIsLiveAuth(true);
             const { data: profile } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
               .single();
 
-            if (profile) {
-              const u: UserProfile = {
-                id: profile.id,
-                email: profile.email,
-                full_name: profile.full_name,
-                role: profile.role,
-                company_name: profile.company_name,
-                phone: profile.phone,
-                avatar_url: profile.avatar_url,
-              };
-              setUser(u);
-              localStorage.setItem('monolith_active_user', JSON.stringify(u));
-            }
+            const metaRole = session.user.user_metadata?.role as 'admin' | 'client' | undefined;
+            const u: UserProfile = {
+              id: session.user.id,
+              email: profile?.email || session.user.email || '',
+              full_name: profile?.full_name || session.user.user_metadata?.full_name || 'Authenticated User',
+              role: (profile?.role || metaRole || 'client') as 'admin' | 'client',
+              company_name: profile?.company_name || session.user.user_metadata?.company_name || '',
+              phone: profile?.phone,
+              avatar_url: profile?.avatar_url,
+            };
+            setUser(u);
+            localStorage.setItem('monolith_active_user', JSON.stringify(u));
           }
         } catch (err) {
-          console.warn('Supabase session fetch bypassed:', err);
+          console.warn('Supabase session check skipped:', err);
         }
       }
       setIsLoading(false);
@@ -69,27 +72,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (
     email: string,
-    password = ''
+    password: string
   ): Promise<{ success: boolean; error?: string; role?: 'admin' | 'client' }> => {
     setIsLoading(true);
 
-    // 1. Try Supabase Auth if online and configured
-    if (isSupabaseConfigured && password) {
+    if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (!error && data.user) {
+        if (error) {
+          // If real Supabase auth failed (e.g. wrong password or user not seeded yet), surface clear message
+          setIsLoading(false);
+          return {
+            success: false,
+            error: `${error.message}. If you have not seeded Supabase Auth yet, use Demo Sandbox below.`,
+          };
+        }
+
+        if (data.user) {
+          setIsLiveAuth(true);
           const { data: profile } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', data.user.id)
             .single();
 
+          const metaRole = data.user.user_metadata?.role as 'admin' | 'client' | undefined;
           const activeProfile: UserProfile = {
             id: data.user.id,
             email: data.user.email || email,
-            full_name: profile?.full_name || 'Authenticated User',
-            role: profile?.role || 'client',
-            company_name: profile?.company_name || 'Client Enterprise',
+            full_name: profile?.full_name || data.user.user_metadata?.full_name || 'Authenticated User',
+            role: (profile?.role || metaRole || 'client') as 'admin' | 'client',
+            company_name: profile?.company_name || data.user.user_metadata?.company_name || 'Client Enterprise',
             phone: profile?.phone,
           };
 
@@ -98,39 +111,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsLoading(false);
           return { success: true, role: activeProfile.role };
         }
-      } catch (e) {
-        console.warn('Supabase auth failed, trying local fallback:', e);
+      } catch (e: any) {
+        setIsLoading(false);
+        return { success: false, error: e?.message || 'Supabase connection error.' };
       }
     }
 
-    // 2. Local Fallback Demo Auth
+    // Offline Demo Auth fallback when Supabase URL/key is not configured
     const users = portalStore.getUsers();
     const matched = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-
     if (matched) {
+      setIsLiveAuth(false);
       setUser(matched);
       localStorage.setItem('monolith_active_user', JSON.stringify(matched));
       setIsLoading(false);
       return { success: true, role: matched.role };
     }
 
-    // If typing any client-like email, auto-create demo client
-    if (email.includes('@')) {
-      const isCompanyAdmin = email.includes('admin') || email.includes('monolith.lk');
-      const newUser = portalStore.addUser({
-        email,
-        full_name: email.split('@')[0].toUpperCase(),
-        role: isCompanyAdmin ? 'admin' : 'client',
-        company_name: isCompanyAdmin ? 'Monolith LK Executive Cluster' : 'Enterprise Partner Client',
-      });
-      setUser(newUser);
-      localStorage.setItem('monolith_active_user', JSON.stringify(newUser));
-      setIsLoading(false);
-      return { success: true, role: newUser.role };
-    }
-
     setIsLoading(false);
-    return { success: false, error: 'Invalid credentials. Please enter a valid email address.' };
+    return { success: false, error: 'Invalid credentials.' };
+  };
+
+  const loginDemo = (targetRole: 'admin' | 'client'): { success: boolean; role: 'admin' | 'client' } => {
+    setIsLiveAuth(false);
+    const users = portalStore.getUsers();
+    const found = users.find((u) => u.role === targetRole) || users[0];
+    setUser(found);
+    localStorage.setItem('monolith_active_user', JSON.stringify(found));
+    return { success: true, role: found.role };
   };
 
   const logout = async (): Promise<void> => {
@@ -141,17 +149,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.warn('Supabase signOut error:', e);
       }
     }
+    setIsLiveAuth(false);
     setUser(null);
     localStorage.removeItem('monolith_active_user');
   };
 
   const switchDemoRole = (targetRole: 'admin' | 'client'): void => {
-    const users = portalStore.getUsers();
-    const found = users.find((u) => u.role === targetRole);
-    if (found) {
-      setUser(found);
-      localStorage.setItem('monolith_active_user', JSON.stringify(found));
-    }
+    loginDemo(targetRole);
   };
 
   return (
@@ -160,8 +164,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         role: user?.role || null,
         isAuthenticated: Boolean(user),
+        isLiveAuth,
         isLoading,
         login,
+        loginDemo,
         logout,
         switchDemoRole,
       }}

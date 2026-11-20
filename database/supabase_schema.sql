@@ -1,6 +1,6 @@
 -- ====================================================================
 -- MONOLITH LK DATABASE SCHEMA (SUPABASE POSTGRESQL)
--- Enterprise Portal & Studio OS Schema with RLS and Seed Data
+-- Enterprise Portal & Studio OS Schema with Grants, RLS, and Seed Data
 -- ====================================================================
 
 -- Enable UUID extension
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 CREATE TABLE IF NOT EXISTS public.partners (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
-  category TEXT NOT NULL, -- 'Academic & Research', 'Cloud Infrastructure', 'Fintech & Security', 'Enterprise'
+  category TEXT NOT NULL,
   logo_url TEXT,
   website_url TEXT,
   description TEXT,
@@ -60,25 +60,28 @@ CREATE TABLE IF NOT EXISTS public.project_milestones (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. Invoices & Quotations Table
+-- 5. Invoices & Quotations Table (Default Currency: LKR)
 CREATE TABLE IF NOT EXISTS public.documents_billing (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  document_number TEXT UNIQUE NOT NULL, -- e.g. 'INV-2026-001', 'QUO-2026-002'
+  document_number TEXT UNIQUE NOT NULL,
   type TEXT CHECK (type IN ('quotation', 'invoice')) NOT NULL,
   client_id UUID REFERENCES public.profiles(id) ON DELETE RESTRICT,
   project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
   status TEXT CHECK (status IN ('draft', 'sent', 'approved', 'paid', 'overdue')) DEFAULT 'draft',
-  currency TEXT DEFAULT 'USD',
-  line_items JSONB NOT NULL DEFAULT '[]'::jsonb, -- Array of { description, quantity, unit_price, total }
-  subtotal NUMERIC(12, 2) NOT NULL DEFAULT 0,
-  tax NUMERIC(12, 2) DEFAULT 0,
-  total NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  currency TEXT DEFAULT 'LKR',
+  line_items JSONB NOT NULL DEFAULT '[]'::jsonb,
+  subtotal NUMERIC(14, 2) NOT NULL DEFAULT 0,
+  tax NUMERIC(14, 2) DEFAULT 0,
+  total NUMERIC(14, 2) NOT NULL DEFAULT 0,
   due_date DATE,
   notes TEXT,
   pdf_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure existing installs also update default currency to LKR
+ALTER TABLE public.documents_billing ALTER COLUMN currency SET DEFAULT 'LKR';
 
 -- 6. Project Requests Table (Submitted by Clients)
 CREATE TABLE IF NOT EXISTS public.project_requests (
@@ -136,6 +139,34 @@ CREATE TABLE IF NOT EXISTS public.blog_posts (
   published_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 10. Public Contact Inquiries (Submitted from /contact -> Triaged by Admin)
+CREATE TABLE IF NOT EXISTS public.contact_inquiries (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  company TEXT,
+  service_need TEXT NOT NULL,
+  budget_tier TEXT,
+  brief TEXT NOT NULL,
+  status TEXT CHECK (status IN ('new', 'contacted', 'converted', 'archived')) DEFAULT 'new',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ====================================================================
+-- SCHEMA & ROLE PERMISSIONS (Fixes 42501 permission denied errors)
+-- ====================================================================
+
+GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT SELECT ON public.partners, public.customer_reviews, public.blog_posts TO anon;
+GRANT INSERT ON public.contact_inquiries TO anon, authenticated;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO postgres, anon, authenticated, service_role;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO postgres, anon, authenticated, service_role;
+
 -- ====================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ====================================================================
@@ -149,6 +180,7 @@ ALTER TABLE public.project_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.meeting_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customer_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_inquiries ENABLE ROW LEVEL SECURITY;
 
 -- Helper function: Is Admin?
 CREATE OR REPLACE FUNCTION public.is_admin()
@@ -183,7 +215,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- Public Profiles: User can view their own profile, Admins can view all
+-- Public Profiles Policies
 DROP POLICY IF EXISTS "Profiles are viewable by user and admins" ON public.profiles;
 CREATE POLICY "Profiles are viewable by user and admins"
   ON public.profiles FOR SELECT
@@ -199,7 +231,7 @@ CREATE POLICY "Admins can insert profiles"
   ON public.profiles FOR INSERT
   WITH CHECK (auth.uid() = id OR public.is_admin());
 
--- Partners: Publicly readable; Admins can modify
+-- Partners Policies
 DROP POLICY IF EXISTS "Partners are viewable by everyone" ON public.partners;
 CREATE POLICY "Partners are viewable by everyone"
   ON public.partners FOR SELECT
@@ -210,7 +242,7 @@ CREATE POLICY "Admins have full access to partners"
   ON public.partners FOR ALL
   USING (public.is_admin());
 
--- Projects: Clients can view their own projects; Admins can do everything
+-- Projects Policies
 DROP POLICY IF EXISTS "Clients can view their own projects" ON public.projects;
 CREATE POLICY "Clients can view their own projects"
   ON public.projects FOR SELECT
@@ -221,7 +253,7 @@ CREATE POLICY "Admins have full access to projects"
   ON public.projects FOR ALL
   USING (public.is_admin());
 
--- Project Milestones: Inherit view rights from projects
+-- Project Milestones Policies
 DROP POLICY IF EXISTS "Milestones viewable by project client and admins" ON public.project_milestones;
 CREATE POLICY "Milestones viewable by project client and admins"
   ON public.project_milestones FOR SELECT
@@ -238,7 +270,7 @@ CREATE POLICY "Admins have full access to project milestones"
   ON public.project_milestones FOR ALL
   USING (public.is_admin());
 
--- Documents Billing: Clients view their own invoices/quotes; Admins manage all
+-- Documents Billing Policies
 DROP POLICY IF EXISTS "Clients view own billing documents" ON public.documents_billing;
 CREATE POLICY "Clients view own billing documents"
   ON public.documents_billing FOR SELECT
@@ -249,7 +281,7 @@ CREATE POLICY "Admins manage billing documents"
   ON public.documents_billing FOR ALL
   USING (public.is_admin());
 
--- Project Requests: Clients create and view their own; Admins manage all
+-- Project Requests Policies
 DROP POLICY IF EXISTS "Clients create project requests" ON public.project_requests;
 CREATE POLICY "Clients create project requests"
   ON public.project_requests FOR INSERT
@@ -265,7 +297,7 @@ CREATE POLICY "Admins manage all project requests"
   ON public.project_requests FOR ALL
   USING (public.is_admin());
 
--- Meeting Requests: Clients book and view their own; Admins manage all
+-- Meeting Requests Policies
 DROP POLICY IF EXISTS "Clients create meeting requests" ON public.meeting_requests;
 CREATE POLICY "Clients create meeting requests"
   ON public.meeting_requests FOR INSERT
@@ -281,7 +313,7 @@ CREATE POLICY "Admins manage all meeting requests"
   ON public.meeting_requests FOR ALL
   USING (public.is_admin());
 
--- Customer Reviews: Publicly readable if featured; Admins manage all
+-- Customer Reviews Policies
 DROP POLICY IF EXISTS "Featured reviews viewable by everyone" ON public.customer_reviews;
 CREATE POLICY "Featured reviews viewable by everyone"
   ON public.customer_reviews FOR SELECT
@@ -292,7 +324,7 @@ CREATE POLICY "Admins manage all customer reviews"
   ON public.customer_reviews FOR ALL
   USING (public.is_admin());
 
--- Blog Posts: Publicly readable if published; Admins manage all
+-- Blog Posts Policies
 DROP POLICY IF EXISTS "Published blogs viewable by everyone" ON public.blog_posts;
 CREATE POLICY "Published blogs viewable by everyone"
   ON public.blog_posts FOR SELECT
@@ -303,21 +335,13 @@ CREATE POLICY "Admins manage all blog posts"
   ON public.blog_posts FOR ALL
   USING (public.is_admin());
 
--- ====================================================================
--- SEED DATA (Demonstration Data for Development & Testing)
--- ====================================================================
+-- Contact Inquiries Policies
+DROP POLICY IF EXISTS "Anyone can submit contact inquiry" ON public.contact_inquiries;
+CREATE POLICY "Anyone can submit contact inquiry"
+  ON public.contact_inquiries FOR INSERT
+  WITH CHECK (true);
 
--- Strategic Partners
-INSERT INTO public.partners (name, category, logo_url, website_url, description) VALUES
-('AWS Cloud Architecture', 'Cloud Infrastructure', 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=120&auto=format&fit=crop&q=80', 'https://aws.amazon.com', 'High-throughput container clusters & multi-region failover'),
-('Java Institute for Advanced Technology', 'Academic & Research', 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=120&auto=format&fit=crop&q=80', 'https://javainstitute.edu.lk', 'Advanced Software Engineering research & academic collaboration'),
-('Redis Enterprise', 'Fintech & Security', 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80', 'https://redis.io', 'Distributed mutex locks (Redlock) and sub-millisecond session pools'),
-('Birmingham City University, UK', 'Academic & Research', 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=120&auto=format&fit=crop&q=80', 'https://bcu.ac.uk', 'International software engineering curriculum alignment')
-ON CONFLICT DO NOTHING;
-
--- Initial Customer Reviews
-INSERT INTO public.customer_reviews (client_name, client_title, company_name, rating, review_text, is_featured) VALUES
-('Marcus Vance', 'VP of Global Operations', 'ShadowTopup Global', 5, 'Monolith LK transformed our fulfillment architecture. Sub-second API dispatches and zero double-claim errors across 50,000+ live transactions.', true),
-('Dr. H. Jayasuriya', 'Chief Medical Director', 'Clinical Pharmacy OS', 5, 'The zero-leak prescription and batch-tracking system completely eliminated drug expiry waste across all teaching hospitals. Uncompromising precision.', true),
-('Damian Cruz', 'Managing Director', 'The Menu Enterprise', 5, 'Real-time WebSocket kitchen display systems with zero reload latency. The Haute Editorial styling gave our brand the premium prestige we required.', true)
-ON CONFLICT DO NOTHING;
+DROP POLICY IF EXISTS "Admins manage contact inquiries" ON public.contact_inquiries;
+CREATE POLICY "Admins manage contact inquiries"
+  ON public.contact_inquiries FOR ALL
+  USING (public.is_admin());

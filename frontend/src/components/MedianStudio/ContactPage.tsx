@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { portalApi } from '../../lib/portalApi';
 import { RotatingRibbons } from './RotatingRibbons';
 import { ScrollReveal, StaggerContainer } from './ScrollReveal';
 
@@ -11,8 +12,8 @@ export const ContactPage: React.FC<ContactPageProps> = ({ navigate }) => {
     name: '',
     email: '',
     company: '',
-    service: 'Website Design',
-    budget: '$5k – $15k',
+    service: 'Custom Software Engineering',
+    budget: 'LKR 250,000 – 750,000',
     message: '',
   });
 
@@ -30,19 +31,28 @@ export const ContactPage: React.FC<ContactPageProps> = ({ navigate }) => {
   ];
 
   const budgetTiers = [
-    '< $5,000',
-    '$5,000 – $15,000',
-    '$15,000 – $35,000',
-    '$35,000+',
+    '< LKR 250,000',
+    'LKR 250,000 – 750,000',
+    'LKR 750,000 – 2,000,000',
+    'LKR 2,000,000+',
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await portalApi.submitContactInquiry({
+        name: formData.name,
+        email: formData.email,
+        company: formData.company,
+        service_need: formData.service,
+        budget_tier: formData.budget,
+        brief: formData.message,
+      });
       setIsSubmitted(true);
-    }, 1000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -92,8 +102,8 @@ export const ContactPage: React.FC<ContactPageProps> = ({ navigate }) => {
                       name: '',
                       email: '',
                       company: '',
-                      service: 'Website Design',
-                      budget: '$5k – $15k',
+                      service: 'Custom Software Engineering',
+                      budget: 'LKR 250,000 – 750,000',
                       message: '',
                     });
                   }}

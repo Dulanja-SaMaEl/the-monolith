@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { portalStore, PortalProject, MeetingRequest, ProjectRequest, BillingDocument } from '../../../lib/portalStore';
+import { PortalProject, MeetingRequest, ProjectRequest, BillingDocument } from '../../../lib/portalStore';
+import { portalApi } from '../../../lib/portalApi';
 import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
-import { ScrollReveal } from '../../MedianStudio/ScrollReveal';
 
 interface ClientPortalProps {
   navigate: (route: string) => void;
 }
 
 export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, isLiveAuth } = useAuth();
   const [activeTab, setActiveTab] = useState<'projects' | 'request' | 'meetings' | 'billing'>('projects');
+  const [isLiveDb, setIsLiveDb] = useState<boolean>(false);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
 
   // Client Data States
   const [projects, setProjects] = useState<PortalProject[]>([]);
@@ -22,7 +24,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
   // New Project Request Form State
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState('Custom Software Engineering');
-  const [newBudget, setNewBudget] = useState('$5,000 - $10,000');
+  const [newBudget, setNewBudget] = useState('LKR 500,000 - 1,500,000');
   const [newTimeline, setNewTimeline] = useState('Q1 2027');
   const [newScope, setNewScope] = useState('');
   const [requestSubmitted, setRequestSubmitted] = useState(false);
@@ -34,26 +36,40 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
   const [meetAgenda, setMeetAgenda] = useState('');
   const [meetingBooked, setMeetingBooked] = useState(false);
 
-  // Load client-specific records
-  useEffect(() => {
-    if (user?.id) {
-      setProjects(portalStore.getProjects(user.id));
-      setRequests(portalStore.getProjectRequests(user.id));
-      setMeetings(portalStore.getMeetings(user.id));
-      setBillingDocs(portalStore.getBillingDocuments(user.id));
+  const loadClientData = useCallback(async () => {
+    if (!user?.id) return;
+    setIsLoadingData(true);
+    try {
+      const [projRes, reqRes, meetRes, billRes] = await Promise.all([
+        portalApi.getProjects(user.id),
+        portalApi.getProjectRequests(user.id),
+        portalApi.getMeetings(user.id),
+        portalApi.getBillingDocuments(user.id),
+      ]);
+      setProjects(projRes.data);
+      setRequests(reqRes.data);
+      setMeetings(meetRes.data);
+      setBillingDocs(billRes.data);
+      setIsLiveDb(projRes.live || isLiveAuth);
+    } finally {
+      setIsLoadingData(false);
     }
-  }, [user]);
+  }, [user, isLiveAuth]);
+
+  useEffect(() => {
+    loadClientData();
+  }, [loadClientData]);
 
   const handleLogout = async () => {
     await logout();
     navigate('/portal/login');
   };
 
-  const handleCreateProjectRequest = (e: React.FormEvent) => {
+  const handleCreateProjectRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle || !newScope || !user) return;
 
-    const created = portalStore.submitProjectRequest({
+    const { request } = await portalApi.submitProjectRequest({
       client_id: user.id,
       client_name: user.company_name || user.full_name,
       project_title: newTitle,
@@ -63,18 +79,18 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
       project_scope: newScope,
     });
 
-    setRequests([created, ...requests]);
+    setRequests([request, ...requests]);
     setRequestSubmitted(true);
     setNewTitle('');
     setNewScope('');
     setTimeout(() => setRequestSubmitted(false), 5000);
   };
 
-  const handleBookMeeting = (e: React.FormEvent) => {
+  const handleBookMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!meetDate || !meetAgenda || !user) return;
 
-    const booked = portalStore.scheduleMeeting({
+    const { meeting } = await portalApi.scheduleMeeting({
       client_id: user.id,
       client_name: user.company_name || user.full_name,
       requested_date: meetDate,
@@ -84,7 +100,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
       agenda: meetAgenda,
     });
 
-    setMeetings([booked, ...meetings]);
+    setMeetings([meeting, ...meetings]);
     setMeetingBooked(true);
     setMeetAgenda('');
     setTimeout(() => setMeetingBooked(false), 5000);
@@ -141,8 +157,14 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
         <div className="mb-8 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-median-taupe/30 bg-median-taupe/5 text-[10px] font-mono uppercase tracking-widest text-median-taupe mb-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Live Cluster Status: Nominal (99.98% SLA)</span>
+              <span className={`w-2 h-2 rounded-full animate-pulse ${isLiveDb ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+              <span>
+                {isLoadingData
+                  ? 'Synchronizing Cluster...'
+                  : isLiveDb
+                  ? 'Live Supabase DB Sync · Nominal (99.98% SLA)'
+                  : 'Offline Preview Sandbox · Local State'}
+              </span>
             </div>
             <h1 className="font-oswald text-3xl sm:text-4xl font-bold uppercase tracking-tight text-black">
               Welcome, {user?.company_name || user?.full_name}
@@ -409,17 +431,17 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-black mb-1.5 font-mono">
-                      Estimated Budget Window
+                      Estimated Budget Window (LKR)
                     </label>
                     <select
                       value={newBudget}
                       onChange={(e) => setNewBudget(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-sm text-black focus:outline-none focus:border-black"
                     >
-                      <option>$3,000 - $5,000</option>
-                      <option>$5,000 - $10,000</option>
-                      <option>$10,000 - $25,000</option>
-                      <option>$25,000+ (Enterprise)</option>
+                      <option>LKR 250,000 - 500,000</option>
+                      <option>LKR 500,000 - 1,500,000</option>
+                      <option>LKR 1,500,000 - 3,500,000</option>
+                      <option>LKR 3,500,000+ (Enterprise)</option>
                     </select>
                   </div>
                 </div>
@@ -701,7 +723,9 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                         {doc.line_items.map((item) => (
                           <div key={item.id} className="flex justify-between text-xs font-mono">
                             <span className="text-black/80 truncate max-w-[220px]">{item.description}</span>
-                            <span className="font-semibold text-black">${item.total.toLocaleString()}</span>
+                            <span className="font-semibold text-black">
+                              {doc.currency || 'LKR'} {item.total.toLocaleString()}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -711,7 +735,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                       <div>
                         <span className="text-[10px] font-mono uppercase text-median-taupe block">Total Amount</span>
                         <span className="font-oswald text-2xl font-bold text-median-taupe">
-                          ${doc.total.toLocaleString()} {doc.currency}
+                          {doc.currency || 'LKR'} {doc.total.toLocaleString()}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -783,26 +807,30 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                     <tr key={item.id}>
                       <td className="py-3 text-black font-semibold">{item.description}</td>
                       <td className="py-3 text-center">{item.quantity}</td>
-                      <td className="py-3 text-right">${item.unit_price.toLocaleString()}</td>
-                      <td className="py-3 text-right font-bold text-black">${item.total.toLocaleString()}</td>
+                      <td className="py-3 text-right">
+                        {selectedBillingDoc.currency || 'LKR'} {item.unit_price.toLocaleString()}
+                      </td>
+                      <td className="py-3 text-right font-bold text-black">
+                        {selectedBillingDoc.currency || 'LKR'} {item.total.toLocaleString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
               <div className="border-t border-median-taupe/20 pt-4 flex flex-col items-end gap-1 font-mono text-xs">
-                <div className="flex justify-between w-48 text-median-taupe">
+                <div className="flex justify-between w-56 text-median-taupe">
                   <span>Subtotal:</span>
-                  <span>${selectedBillingDoc.subtotal.toLocaleString()}</span>
+                  <span>{selectedBillingDoc.currency || 'LKR'} {selectedBillingDoc.subtotal.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between w-48 text-median-taupe">
+                <div className="flex justify-between w-56 text-median-taupe">
                   <span>Tax:</span>
-                  <span>${selectedBillingDoc.tax.toLocaleString()}</span>
+                  <span>{selectedBillingDoc.currency || 'LKR'} {selectedBillingDoc.tax.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between w-48 font-bold text-sm text-black pt-2 border-t border-median-taupe/20">
+                <div className="flex justify-between w-56 font-bold text-sm text-black pt-2 border-t border-median-taupe/20">
                   <span>Total Amount:</span>
                   <span className="font-oswald text-lg text-median-taupe">
-                    ${selectedBillingDoc.total.toLocaleString()} {selectedBillingDoc.currency}
+                    {selectedBillingDoc.currency || 'LKR'} {selectedBillingDoc.total.toLocaleString()}
                   </span>
                 </div>
               </div>

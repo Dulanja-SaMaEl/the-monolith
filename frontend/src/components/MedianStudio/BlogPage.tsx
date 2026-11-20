@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BLOG_POSTS, BlogPost } from './siteData';
-import { portalStore } from '../../lib/portalStore';
+import { portalApi } from '../../lib/portalApi';
 import { ArticleReaderModal } from './ArticleReaderModal';
 import { RotatingRibbons } from './RotatingRibbons';
 import { ScrollReveal, StaggerContainer } from './ScrollReveal';
@@ -12,37 +12,49 @@ interface BlogPageProps {
 export const BlogPage: React.FC<BlogPageProps> = ({ navigate }) => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
+  const [allPosts, setAllPosts] = useState<BlogPost[]>(BLOG_POSTS);
 
-  const allPosts = useMemo<BlogPost[]>(() => {
-    const dynamicPosts: BlogPost[] = portalStore.getBlogPosts(true).map((p) => ({
-      id: p.id,
-      title: p.title,
-      category: p.category,
-      date: new Date(p.published_at).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      }),
-      image: p.cover_image || '/assets/blog-1.jpg',
-      readTime: p.read_time || '5 min read',
-      summary: p.excerpt,
-      author: {
-        name: p.author || 'Monolith LK Editorial',
-        role: 'Monolith LK Studio',
-        avatar: '/dulanja.webp',
-      },
-      content: p.content_markdown
-        .split(/\n\n+/)
-        .map((para) => para.trim())
-        .filter(Boolean),
-    }));
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await portalApi.getBlogPosts(false);
+        if (!active || res.data.length === 0) return;
+        const dynamicPosts: BlogPost[] = res.data.map((p) => ({
+          id: p.id,
+          title: p.title,
+          category: p.category,
+          date: new Date(p.published_at).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }),
+          image: p.cover_image || '/assets/blog-1.jpg',
+          readTime: p.read_time || '5 min read',
+          summary: p.excerpt,
+          author: {
+            name: p.author || 'Dulanja Abeysinghe',
+            role: p.author === 'Remashi Diyana' ? 'Co-Founder & Head of Creative Strategy' : 'Founder & Principal Systems Architect',
+            avatar: p.author === 'Remashi Diyana' ? '/remashi.jpg' : '/dulanja.webp',
+          },
+          content: p.content_markdown
+            .split(/\n\n+/)
+            .map((para) => para.trim())
+            .filter(Boolean),
+        }));
 
-    const seen = new Set(dynamicPosts.map((p) => p.title.toLowerCase()));
-    const merged = [
-      ...dynamicPosts,
-      ...BLOG_POSTS.filter((p) => !seen.has(p.title.toLowerCase())),
-    ];
-    return merged;
+        const seen = new Set(dynamicPosts.map((p) => p.title.toLowerCase()));
+        setAllPosts([
+          ...dynamicPosts,
+          ...BLOG_POSTS.filter((p) => !seen.has(p.title.toLowerCase())),
+        ]);
+      } catch {
+        // Fallback to static articles
+      }
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const categories = ['ALL', ...Array.from(new Set(allPosts.map((p) => p.category.toUpperCase())))];

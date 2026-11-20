@@ -40,16 +40,17 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
 
     if (authError) throw authError;
 
-    // 2. Insert into public.profiles
+    // 2. Upsert into public.profiles
     const { data: profileData, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .insert({
+      .upsert({
         id: authData.user.id,
         email,
         full_name,
         company_name,
         phone,
         role: 'client',
+        updated_at: new Date().toISOString(),
       })
       .select()
       .single();
@@ -57,6 +58,31 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
     if (profileError) throw profileError;
 
     res.status(201).json({ client: profileData });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/clients/:id - Admin updates customer details
+router.patch('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { full_name, company_name, phone } = req.body;
+
+    const { data, error } = await supabaseAdmin
+      .from('profiles')
+      .update({
+        ...(full_name !== undefined ? { full_name } : {}),
+        ...(company_name !== undefined ? { company_name } : {}),
+        ...(phone !== undefined ? { phone } : {}),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ client: data });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

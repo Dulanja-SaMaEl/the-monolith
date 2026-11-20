@@ -215,7 +215,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/95 backdrop-blur-sm text-[10px] font-bold uppercase tracking-widest text-median-taupe border border-median-taupe/30 shadow-sm">
-                      Co-Founder
+                      {member.id === 'dulanja-abeysinghe' ? 'Founder' : 'Co-Founder'}
                     </div>
                     <div className="absolute bottom-4 left-4 right-4 p-3 rounded-xl bg-black/75 backdrop-blur-md text-white text-[11px] font-mono tracking-wider flex items-center justify-between border border-white/10">
                       <span className="flex items-center gap-2 truncate">

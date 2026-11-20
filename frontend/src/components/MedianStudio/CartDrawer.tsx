@@ -124,8 +124,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
                         </span>
                       )}
                     </div>
-                    <span className="font-oswald text-base font-semibold text-black">
-                      ${item.price.toFixed(2)} USD
+                    <span className="font-oswald text-base font-semibold text-black whitespace-nowrap">
+                      LKR {item.price.toLocaleString()}
                     </span>
                   </div>
 
@@ -170,7 +170,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ navigate }) => {
             <div className="flex justify-between items-center text-sm font-semibold text-black">
               <span>SUBTOTAL</span>
               <span className="font-oswald text-xl">
-                ${subtotal.toFixed(2)} USD
+                LKR {subtotal.toLocaleString()}
               </span>
             </div>
             <p className="text-[11px] text-median-taupe/70 leading-relaxed">

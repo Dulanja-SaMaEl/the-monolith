@@ -30,7 +30,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
     addToCart({
       id: `project-${project.id}`,
       title: `${project.title} — Digital Template`,
-      price: 199,
+      price: 59000,
       image: project.image,
       type: 'Project Template',
     });
@@ -201,7 +201,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                 Want a custom adaptation of this build?
               </span>
               <span className="font-oswald text-lg text-black font-semibold">
-                Available as a Turnkey System ($199 USD)
+                Available as a Turnkey System (LKR 59,000)
               </span>
             </div>
 

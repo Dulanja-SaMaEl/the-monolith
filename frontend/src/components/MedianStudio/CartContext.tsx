@@ -33,7 +33,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     {
       id: 'single-page-website',
       title: 'Single-Page Website',
-      price: 199,
+      price: 59000,
       image: '/assets/work-4.jpg',
       quantity: 1,
       type: 'Template Package'

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { SERVICES } from './siteData';
-import { ScrollReveal, StaggerContainer } from './ScrollReveal';
+import { ScrollReveal } from './ScrollReveal';
 
 interface ServicesPageProps {
   navigate: (route: string) => void;
@@ -207,7 +207,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ navigate, initialSec
 
       {/* ================= DETAILED SERVICES BREAKDOWN ================= */}
       <section className="max-w-7xl mx-auto px-6 md:px-12 space-y-24">
-        {SERVICES.map((srv, idx) => {
+        {SERVICES.map((srv) => {
           const stack = PRACTICE_TECH_STACK[srv.id] || [];
           const engagement = PRACTICE_ENGAGEMENT_MODELS[srv.id] || {
             model: 'Custom Engineering Contract',
@@ -364,7 +364,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ navigate, initialSec
               Ready to Architect Your Enterprise Infrastructure?
             </h2>
             <p className="text-xs sm:text-base text-black/80 max-w-xl mx-auto leading-relaxed mb-8">
-              Speak directly with Dulanja Abeysinghe (Principal Systems Architect) and Remashi Diyana (Head of Creative Strategy) to scope your technical pipeline.
+              Speak directly with Dulanja Abeysinghe (Founder & Principal Systems Architect) and Remashi Diyana (Co-Founder & Head of Creative Strategy) to scope your technical pipeline.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4">

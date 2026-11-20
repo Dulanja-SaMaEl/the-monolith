@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { PROJECTS, CLIENT_LOGOS, TEAM_MEMBERS, BLOG_POSTS, SERVICES, Project, BlogPost, ServiceItem } from './siteData';
+import React, { useState, useEffect } from 'react';
+import { PROJECTS, CLIENT_LOGOS, TEAM_MEMBERS, BLOG_POSTS, SERVICES, Project, BlogPost } from './siteData';
+import { portalApi } from '../../lib/portalApi';
+import { CustomerReview } from '../../lib/portalStore';
 import { RotatingRibbons } from './RotatingRibbons';
 import { ProjectDetailModal } from './ProjectDetailModal';
 import { ArticleReaderModal } from './ArticleReaderModal';
@@ -13,6 +15,52 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [, setActiveTeamId] = useState<string>(TEAM_MEMBERS[0].id);
+  const [liveReviews, setLiveReviews] = useState<CustomerReview[]>([]);
+  const [livePosts, setLivePosts] = useState<BlogPost[]>(BLOG_POSTS);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const [revRes, postRes] = await Promise.all([
+          portalApi.getReviews(false),
+          portalApi.getBlogPosts(false),
+        ]);
+        if (!active) return;
+        if (revRes.data.length > 0) {
+          setLiveReviews(revRes.data);
+        }
+        if (postRes.data.length > 0) {
+          const mapped: BlogPost[] = postRes.data.map((p) => ({
+            id: p.id,
+            title: p.title,
+            category: p.category,
+            date: new Date(p.published_at).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            }),
+            image: p.cover_image || '/assets/blog-1.jpg',
+            readTime: p.read_time || '5 min read',
+            summary: p.excerpt,
+            author: {
+              name: p.author || 'Dulanja Abeysinghe',
+              role: p.author === 'Remashi Diyana' ? 'Co-Founder & Head of Creative Strategy' : 'Founder & Principal Systems Architect',
+              avatar: p.author === 'Remashi Diyana' ? '/remashi.jpg' : '/dulanja.webp',
+            },
+            content: p.content_markdown.split(/\n\n+/).map((x) => x.trim()).filter(Boolean),
+          }));
+          const seen = new Set(mapped.map((m) => m.title.toLowerCase()));
+          setLivePosts([...mapped, ...BLOG_POSTS.filter((b) => !seen.has(b.title.toLowerCase()))].slice(0, 4));
+        }
+      } catch {
+        // Fallback to static data
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const scrollToServices = () => {
     const el = document.getElementById('services-section');
@@ -443,7 +491,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
             </ScrollReveal>
           </div>
 
-          {/* 2 Co-Founders with High-Craft Architectural Cards */}
+          {/* Founder & Co-Founder Architectural Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {TEAM_MEMBERS.map((member, idx) => {
               const teamVariants: RevealVariant[] = [
@@ -474,7 +522,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                           <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-bold uppercase tracking-widest text-median-taupe border border-median-taupe/30 shadow-sm">
-                            Co-Founder
+                            {idx === 0 ? 'Founder' : 'Co-Founder'}
                           </span>
                         </div>
                       </ScrollReveal>
@@ -623,6 +671,44 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
               );
             })}
           </div>
+          {/* Featured Client Testimonials (Connected to Admin Reviews) */}
+          {liveReviews.length > 0 && (
+            <div className="mt-16 pt-16 border-t border-median-taupe/20">
+              <div className="text-center mb-10">
+                <span className="text-xs font-bold tracking-widest uppercase text-median-taupe/70 block mb-2">
+                  Client Voices
+                </span>
+                <h3 className="font-oswald text-2xl sm:text-4xl font-bold uppercase text-black">
+                  Verified Enterprise Endorsements
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {liveReviews.slice(0, 3).map((rev) => (
+                  <div
+                    key={rev.id}
+                    className="p-6 sm:p-8 rounded-2xl border border-median-taupe/20 bg-[#FAF8F5] flex flex-col justify-between shadow-sm hover:border-median-taupe transition-colors"
+                  >
+                    <div>
+                      <div className="text-amber-500 text-xs mb-3 tracking-widest">
+                        {'★'.repeat(rev.rating || 5)}
+                      </div>
+                      <p className="text-xs sm:text-sm text-black/85 leading-relaxed mb-6">
+                        &ldquo;{rev.review_text}&rdquo;
+                      </p>
+                    </div>
+                    <div className="pt-4 border-t border-median-taupe/15">
+                      <div className="font-oswald text-base font-bold uppercase text-black">
+                        {rev.client_name}
+                      </div>
+                      <div className="text-[11px] text-median-taupe uppercase">
+                        {rev.client_title} · {rev.company_name}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -660,7 +746,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
           {/* Article 1 slides from Left, Article 2 slides from Right + Inner Content Cascade */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {BLOG_POSTS.map((post, idx) => {
+            {livePosts.slice(0, 2).map((post, idx) => {
               const articleVariant: RevealVariant = idx % 2 === 0 ? 'horizontal-slide-left' : 'horizontal-slide-right';
               const baseDelay = idx * 150;
 

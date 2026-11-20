@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import {
-  portalStore,
   UserProfile,
   Partner,
   PortalProject,
@@ -11,7 +10,9 @@ import {
   ProjectRequest,
   MeetingRequest,
   BillingLineItem,
+  ContactInquiry,
 } from '../../../lib/portalStore';
+import { portalApi } from '../../../lib/portalApi';
 import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
 
 interface AdminPortalProps {
@@ -19,12 +20,14 @@ interface AdminPortalProps {
 }
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
-  const { user, logout, switchDemoRole } = useAuth();
+  const { user, logout, switchDemoRole, isLiveAuth } = useAuth();
 
   // Active Admin View
   const [activeTab, setActiveTab] = useState<
     'overview' | 'customers' | 'partners' | 'projects' | 'billing' | 'reviews' | 'blog' | 'requests'
   >('overview');
+  const [isLiveDb, setIsLiveDb] = useState<boolean>(false);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   // Live Data States
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -35,6 +38,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const [blogPosts, setBlogPosts] = useState<PortalBlogPost[]>([]);
   const [requests, setRequests] = useState<ProjectRequest[]>([]);
   const [meetings, setMeetings] = useState<MeetingRequest[]>([]);
+  const [inquiries, setInquiries] = useState<ContactInquiry[]>([]);
 
   // Feedback Notification
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
@@ -44,11 +48,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   };
 
   // Form States
-  // 1. New Customer
+  // 1. New / Edit Customer
   const [newCustName, setNewCustName] = useState('');
   const [newCustEmail, setNewCustEmail] = useState('');
   const [newCustCompany, setNewCustCompany] = useState('');
   const [newCustPhone, setNewCustPhone] = useState('');
+  const [newCustPassword, setNewCustPassword] = useState('MonolithClient2026!');
+  const [editingCustomer, setEditingCustomer] = useState<UserProfile | null>(null);
 
   // 2. New Partner
   const [newPartnerName, setNewPartnerName] = useState('');
@@ -64,14 +70,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const [projTargetDate, setProjTargetDate] = useState('2027-01-31');
   const [projSummary, setProjSummary] = useState('');
 
-  // 4. Invoicing / Quotation Builder
+  // 4. Invoicing / Quotation Builder (Default Currency: LKR)
   const [billType, setBillType] = useState<'quotation' | 'invoice'>('invoice');
   const [billClientId, setBillClientId] = useState('');
   const [billProjectTitle, setBillProjectTitle] = useState('');
   const [billDueDate, setBillDueDate] = useState('');
   const [billNotes, setBillNotes] = useState('');
   const [lineItems, setLineItems] = useState<BillingLineItem[]>([
-    { id: '1', description: 'Core Microservices Architecture & Redis Mutex Implementation', quantity: 1, unit_price: 3500, total: 3500 },
+    { id: '1', description: 'Core Microservices Architecture & Redis Mutex Implementation', quantity: 1, unit_price: 950000, total: 950000 },
   ]);
   const [selectedBillingDoc, setSelectedBillingDoc] = useState<BillingDocument | null>(null);
   const [lastCreatedDoc, setLastCreatedDoc] = useState<BillingDocument | null>(null);
@@ -88,122 +94,173 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const [postCategory, setPostCategory] = useState('Architecture');
   const [postAuthor, setPostAuthor] = useState('Dulanja Abeysinghe');
   const [postReadTime, setPostReadTime] = useState('5 min read');
-  const [postCover, setPostCover] = useState('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&auto=format&fit=crop&q=80');
+  const [postCover, setPostCover] = useState('/assets/blog-1.jpg');
   const [postExcerpt, setPostExcerpt] = useState('');
   const [postContent, setPostContent] = useState('');
 
-  // Reload data
-  const refreshData = () => {
-    setUsers(portalStore.getUsers());
-    setPartners(portalStore.getPartners());
-    setProjects(portalStore.getProjects());
-    setBillingDocs(portalStore.getBillingDocuments());
-    setReviews(portalStore.getReviews(false));
-    setBlogPosts(portalStore.getBlogPosts(false));
-    setRequests(portalStore.getProjectRequests());
-    setMeetings(portalStore.getMeetings());
-  };
+  // Reload all data from Render Backend / Supabase DB (with fallback to sandbox)
+  const refreshData = useCallback(async () => {
+    setIsSyncing(true);
+    try {
+      const [clientsRes, partRes, projRes, billRes, revRes, blogRes, reqRes, meetRes, inqRes] =
+        await Promise.all([
+          portalApi.getClients(),
+          portalApi.getPartners(true),
+          portalApi.getProjects(),
+          portalApi.getBillingDocuments(),
+          portalApi.getReviews(true),
+          portalApi.getBlogPosts(true),
+          portalApi.getProjectRequests(),
+          portalApi.getMeetings(),
+          portalApi.getContactInquiries(),
+        ]);
+
+      setUsers(clientsRes.data);
+      setPartners(partRes.data);
+      setProjects(projRes.data);
+      setBillingDocs(billRes.data);
+      setReviews(revRes.data);
+      setBlogPosts(blogRes.data);
+      setRequests(reqRes.data);
+      setMeetings(meetRes.data);
+      setInquiries(inqRes.data);
+      setIsLiveDb(clientsRes.live || isLiveAuth);
+    } catch (err: any) {
+      showAlert(`⚠ Sync notice: ${err?.message || 'Using cached state'}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [isLiveAuth]);
 
   useEffect(() => {
     refreshData();
-  }, []);
+  }, [refreshData]);
 
   const handleLogout = async () => {
     await logout();
     navigate('/portal/login');
   };
 
-  // 1. Submit New Customer
-  const handleAddCustomer = (e: React.FormEvent) => {
+  // 1. Submit New Customer or Update Existing Customer
+  const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCustName || !newCustEmail) return;
 
-    portalStore.addUser({
-      email: newCustEmail,
-      full_name: newCustName,
-      company_name: newCustCompany || 'Enterprise Client',
-      phone: newCustPhone,
-      role: 'client',
-    });
+    try {
+      await portalApi.createClient({
+        email: newCustEmail,
+        password: newCustPassword || 'MonolithClient2026!',
+        full_name: newCustName,
+        company_name: newCustCompany || 'Enterprise Client',
+        phone: newCustPhone,
+      });
 
-    setNewCustName('');
-    setNewCustEmail('');
-    setNewCustCompany('');
-    setNewCustPhone('');
-    refreshData();
-    showAlert('✓ Customer record successfully registered into Monolith OS.');
+      setNewCustName('');
+      setNewCustEmail('');
+      setNewCustCompany('');
+      setNewCustPhone('');
+      await refreshData();
+      showAlert('✓ Customer account registered and persisted.');
+    } catch (err: any) {
+      showAlert(`✕ Error creating customer: ${err.message}`);
+    }
+  };
+
+  const handleSaveCustomerEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCustomer) return;
+    try {
+      await portalApi.updateClient(editingCustomer.id, {
+        full_name: editingCustomer.full_name,
+        company_name: editingCustomer.company_name,
+        phone: editingCustomer.phone,
+      });
+      setEditingCustomer(null);
+      await refreshData();
+      showAlert('✓ Customer profile updated.');
+    } catch (err: any) {
+      showAlert(`✕ Update failed: ${err.message}`);
+    }
   };
 
   // 2. Submit New Partner
-  const handleAddPartner = (e: React.FormEvent) => {
+  const handleAddPartner = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPartnerName) return;
 
-    portalStore.addPartner({
-      name: newPartnerName,
-      category: newPartnerCategory,
-      website_url: newPartnerWebsite,
-      description: newPartnerDesc,
-      is_active: true,
-    });
+    try {
+      await portalApi.createPartner({
+        name: newPartnerName,
+        category: newPartnerCategory,
+        website_url: newPartnerWebsite,
+        description: newPartnerDesc,
+        is_active: true,
+      });
 
-    setNewPartnerName('');
-    setNewPartnerWebsite('');
-    setNewPartnerDesc('');
-    refreshData();
-    showAlert('✓ Strategic partner registered and published.');
+      setNewPartnerName('');
+      setNewPartnerWebsite('');
+      setNewPartnerDesc('');
+      await refreshData();
+      showAlert('✓ Strategic partner registered and published.');
+    } catch (err: any) {
+      showAlert(`✕ Error adding partner: ${err.message}`);
+    }
   };
 
   // 3. Submit New Project
-  const handleAddProject = (e: React.FormEvent) => {
+  const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!projTitle || !projClientId) return;
 
     const selectedClient = users.find((u) => u.id === projClientId);
     const clientName = selectedClient?.company_name || selectedClient?.full_name || 'Enterprise Client';
 
-    portalStore.addProject({
-      client_id: projClientId,
-      client_name: clientName,
-      title: projTitle,
-      code_name: projCode || `PRJ-${Math.floor(100 + Math.random() * 900)}`,
-      category: projCategory,
-      status: 'architecture',
-      progress_percentage: 15,
-      target_launch_date: projTargetDate,
-      summary: projSummary || 'High-throughput enterprise service pipeline.',
-      milestones: [
-        { id: `m-${Date.now()}-1`, title: 'Architecture Schema & Core Protocol Design', is_completed: true },
-        { id: `m-${Date.now()}-2`, title: 'Microservices & Idempotent Webhook Pipeline', is_completed: false },
-        { id: `m-${Date.now()}-3`, title: 'Load Simulation & Multi-Region Cutover', is_completed: false },
-      ],
-    });
+    try {
+      await portalApi.createProject({
+        client_id: projClientId,
+        client_name: clientName,
+        title: projTitle,
+        code_name: projCode || `PRJ-${Math.floor(100 + Math.random() * 900)}`,
+        category: projCategory,
+        status: 'architecture',
+        progress_percentage: 15,
+        target_launch_date: projTargetDate,
+        summary: projSummary || 'High-throughput enterprise service pipeline.',
+        milestones: [
+          { title: 'Architecture Schema & Core Protocol Design', is_completed: true },
+          { title: 'Microservices & Idempotent Webhook Pipeline', is_completed: false },
+          { title: 'Load Simulation & Multi-Region Cutover', is_completed: false },
+        ],
+      });
 
-    setProjTitle('');
-    setProjCode('');
-    setProjSummary('');
-    refreshData();
-    showAlert('✓ New project commissioned and assigned to client VIP portal.');
+      setProjTitle('');
+      setProjCode('');
+      setProjSummary('');
+      await refreshData();
+      showAlert('✓ New project commissioned and assigned to client VIP portal.');
+    } catch (err: any) {
+      showAlert(`✕ Error creating project: ${err.message}`);
+    }
   };
 
   // Project Progress Quick Update
-  const handleUpdateProgress = (projectId: string, delta: number) => {
+  const handleUpdateProgress = async (projectId: string, delta: number) => {
     const proj = projects.find((p) => p.id === projectId);
     if (!proj) return;
     const nextVal = Math.min(100, Math.max(0, proj.progress_percentage + delta));
     const nextStatus = nextVal === 100 ? 'deployed' : nextVal > 70 ? 'qa_testing' : 'in_progress';
-    portalStore.updateProjectProgress(projectId, {
+    await portalApi.updateProject(projectId, {
       progress_percentage: nextVal,
       status: nextStatus,
     });
-    refreshData();
+    await refreshData();
   };
 
   // 4. Invoicing Line Items Handlers
   const addLineItem = () => {
     setLineItems([
       ...lineItems,
-      { id: String(Date.now()), description: '', quantity: 1, unit_price: 1000, total: 1000 },
+      { id: String(Date.now()), description: '', quantity: 1, unit_price: 250000, total: 250000 },
     ]);
   };
 
@@ -225,42 +282,47 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
     setLineItems((prev) => prev.filter((i) => i.id !== id));
   };
 
-  const createBillingRecord = (): BillingDocument | null => {
+  const createBillingRecord = async (): Promise<BillingDocument | null> => {
     if (!billClientId || lineItems.length === 0) return null;
 
     const selectedClient = users.find((u) => u.id === billClientId);
     const subtotal = lineItems.reduce((acc, i) => acc + i.total, 0);
 
-    const created = portalStore.createBillingDocument({
-      type: billType,
-      client_id: billClientId,
-      client_name: selectedClient?.company_name || selectedClient?.full_name || 'Client',
-      project_title: billProjectTitle || 'Enterprise Architecture Sprints',
-      status: 'sent',
-      currency: 'USD',
-      line_items: lineItems,
-      subtotal,
-      tax: 0,
-      total: subtotal,
-      due_date: billDueDate || '2026-12-15',
-      notes: billNotes || 'Standard Net-30 enterprise terms.',
-    });
+    try {
+      const { document: created } = await portalApi.createBillingDocument({
+        type: billType,
+        client_id: billClientId,
+        client_name: selectedClient?.company_name || selectedClient?.full_name || 'Client',
+        project_title: billProjectTitle || 'Enterprise Architecture Sprints',
+        status: 'sent',
+        currency: 'LKR',
+        line_items: lineItems,
+        subtotal,
+        tax: 0,
+        total: subtotal,
+        due_date: billDueDate || '2026-12-15',
+        notes: billNotes || 'Settled in LKR via Sri Lanka CEFTS / Corporate Bank Wire.',
+      });
 
-    setLastCreatedDoc(created);
-    setBillProjectTitle('');
-    setBillNotes('');
-    refreshData();
-    showAlert(`✓ ${billType.toUpperCase()} (${created.document_number}) generated and ready to download.`);
-    return created;
+      setLastCreatedDoc(created);
+      setBillProjectTitle('');
+      setBillNotes('');
+      await refreshData();
+      showAlert(`✓ ${billType.toUpperCase()} (${created.document_number}) generated in LKR and ready to download.`);
+      return created;
+    } catch (err: any) {
+      showAlert(`✕ Error creating billing document: ${err.message}`);
+      return null;
+    }
   };
 
-  const handleCreateBilling = (e: React.FormEvent) => {
+  const handleCreateBilling = async (e: React.FormEvent) => {
     e.preventDefault();
-    createBillingRecord();
+    await createBillingRecord();
   };
 
-  const handleCreateAndDownload = (format: 'html' | 'pdf') => {
-    const created = createBillingRecord();
+  const handleCreateAndDownload = async (format: 'html' | 'pdf') => {
+    const created = await createBillingRecord();
     if (!created) {
       showAlert('Please select a client and add at least one deliverable item first.');
       return;
@@ -273,51 +335,59 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   };
 
   // 5. Submit Customer Review
-  const handleAddReview = (e: React.FormEvent) => {
+  const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!revName || !revCompany || !revText) return;
 
-    portalStore.addReview({
-      client_name: revName,
-      client_title: revTitle || 'Managing Director',
-      company_name: revCompany,
-      rating: revRating,
-      review_text: revText,
-      is_featured: true,
-    });
+    try {
+      await portalApi.addReview({
+        client_name: revName,
+        client_title: revTitle || 'Managing Director',
+        company_name: revCompany,
+        rating: revRating,
+        review_text: revText,
+        is_featured: true,
+      });
 
-    setRevName('');
-    setRevTitle('');
-    setRevCompany('');
-    setRevText('');
-    refreshData();
-    showAlert('✓ Testimonial approved and published to live website.');
+      setRevName('');
+      setRevTitle('');
+      setRevCompany('');
+      setRevText('');
+      await refreshData();
+      showAlert('✓ Testimonial approved and published to live website.');
+    } catch (err: any) {
+      showAlert(`✕ Error publishing review: ${err.message}`);
+    }
   };
 
   // 6. Submit Blog Post
-  const handleAddPost = (e: React.FormEvent) => {
+  const handleAddPost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!postTitle || !postExcerpt || !postContent) return;
 
     const slug = postTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    portalStore.addBlogPost({
-      slug,
-      title: postTitle,
-      category: postCategory,
-      author: postAuthor,
-      read_time: postReadTime,
-      cover_image: postCover,
-      excerpt: postExcerpt,
-      content_markdown: postContent,
-      is_published: true,
-    });
+    try {
+      await portalApi.addBlogPost({
+        slug,
+        title: postTitle,
+        category: postCategory,
+        author: postAuthor,
+        read_time: postReadTime,
+        cover_image: postCover,
+        excerpt: postExcerpt,
+        content_markdown: postContent,
+        is_published: true,
+      });
 
-    setPostTitle('');
-    setPostExcerpt('');
-    setPostContent('');
-    refreshData();
-    showAlert('✓ Editorial piece published to live "Latest News" & /blog.');
+      setPostTitle('');
+      setPostExcerpt('');
+      setPostContent('');
+      await refreshData();
+      showAlert('✓ Editorial piece published to live "Latest News" & /blog.');
+    } catch (err: any) {
+      showAlert(`✕ Error publishing article: ${err.message}`);
+    }
   };
 
   return (
@@ -339,8 +409,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               </span>
             </button>
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase text-median-taupe/80">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Studio OS: Active</span>
+              <span className={`w-2 h-2 rounded-full animate-pulse ${isLiveDb ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+              <span>{isLiveDb ? 'Live Supabase DB' : 'Demo Sandbox Mode'}</span>
             </div>
           </div>
 
@@ -354,7 +424,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               { id: 'billing', label: 'Invoices & Quotations', count: billingDocs.length },
               { id: 'reviews', label: 'Customer Reviews', count: reviews.length },
               { id: 'blog', label: 'Editorial & News CMS', count: blogPosts.length },
-              { id: 'requests', label: 'Inquiries & Meetings', count: requests.length + meetings.length },
+              { id: 'requests', label: 'Inquiries & Meetings', count: requests.length + meetings.length + inquiries.length },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -431,8 +501,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
 
           <div className="flex items-center gap-3">
             <span className="px-3 py-1 rounded-full border border-median-taupe/30 bg-median-taupe/5 text-[10px] font-mono text-median-taupe">
-              SLA Latency: &lt; 25ms
+              {isSyncing ? 'Syncing DB...' : isLiveDb ? 'Connected: Supabase + Render' : 'Local Demo Sandbox'}
             </span>
+            <button
+              type="button"
+              onClick={refreshData}
+              className="px-3 py-1 rounded-full border border-median-taupe/30 hover:border-black text-[10px] font-bold uppercase text-black transition-colors"
+            >
+              ↻ Sync
+            </button>
           </div>
         </div>
 
@@ -452,11 +529,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                 { label: 'Active Enterprise Clients', val: users.filter((u) => u.role === 'client').length, suffix: '+' },
                 { label: 'Live Projects Dispatched', val: projects.length, suffix: '' },
                 {
-                  label: 'Total Billing Volume',
-                  val: `$${(billingDocs.reduce((acc, d) => acc + d.total, 0) / 1000).toFixed(1)}K`,
+                  label: 'Total Billing Volume (LKR)',
+                  val: `LKR ${(billingDocs.reduce((acc, d) => acc + d.total, 0) / 1000000).toFixed(2)}M`,
                   suffix: '',
                 },
-                { label: 'Pending Client Inquiries', val: requests.length + meetings.length, suffix: '' },
+                { label: 'Pending Inquiries & Meetings', val: requests.length + meetings.length + inquiries.length, suffix: '' },
               ].map((card, idx) => (
                 <div
                   key={idx}
@@ -606,6 +683,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   />
                 </div>
 
+                <div>
+                  <label className="block font-bold uppercase text-black mb-1">Initial Portal Password *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newCustPassword}
+                    onChange={(e) => setNewCustPassword(e.target.value)}
+                    placeholder="MonolithClient2026!"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-sm text-black focus:outline-none focus:border-black"
+                  />
+                </div>
+
                 <button
                   type="submit"
                   className="w-full py-3 rounded-xl bg-black text-white font-oswald text-xs uppercase tracking-widest hover:bg-median-taupe transition-colors"
@@ -615,7 +704,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               </form>
             </div>
 
-            {/* Customers List */}
+            {/* Customers List + Inline Editor */}
             <div className="lg:col-span-7 space-y-4">
               <h3 className="font-oswald text-xl font-bold uppercase text-black">
                 Registered Clients ({users.filter((u) => u.role === 'client').length})
@@ -626,23 +715,70 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   .map((c) => (
                     <div
                       key={c.id}
-                      className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                      className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-3"
                     >
-                      <div>
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
-                          {c.company_name}
-                        </span>
-                        <h4 className="font-oswald text-lg font-bold uppercase text-black">{c.full_name}</h4>
-                        <div className="text-xs text-median-taupe/80 font-mono">
-                          {c.email} {c.phone && `· ${c.phone}`}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
+                            {c.company_name}
+                          </span>
+                          <h4 className="font-oswald text-lg font-bold uppercase text-black">{c.full_name}</h4>
+                          <div className="text-xs text-median-taupe/80 font-mono">
+                            {c.email} {c.phone && `· ${c.phone}`}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="px-3 py-1 rounded-full border border-median-taupe/30 bg-median-taupe/5 text-[10px] font-mono text-median-taupe font-bold uppercase">
+                            VIP Active
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setEditingCustomer(editingCustomer?.id === c.id ? null : c)}
+                            className="px-3 py-1 rounded-full border border-black text-black hover:bg-black hover:text-white text-[10px] font-bold uppercase transition-colors"
+                          >
+                            {editingCustomer?.id === c.id ? 'Cancel' : 'Edit'}
+                          </button>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <span className="px-3 py-1 rounded-full border border-median-taupe/30 bg-median-taupe/5 text-[10px] font-mono text-median-taupe font-bold uppercase">
-                          VIP Active
-                        </span>
-                      </div>
+                      {editingCustomer?.id === c.id && (
+                        <form
+                          onSubmit={handleSaveCustomerEdit}
+                          className="pt-3 border-t border-median-taupe/15 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs"
+                        >
+                          <input
+                            type="text"
+                            required
+                            value={editingCustomer.full_name}
+                            onChange={(e) => setEditingCustomer({ ...editingCustomer, full_name: e.target.value })}
+                            placeholder="Contact Name"
+                            className="px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                          />
+                          <input
+                            type="text"
+                            value={editingCustomer.company_name || ''}
+                            onChange={(e) => setEditingCustomer({ ...editingCustomer, company_name: e.target.value })}
+                            placeholder="Company Name"
+                            className="px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                          />
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={editingCustomer.phone || ''}
+                              onChange={(e) => setEditingCustomer({ ...editingCustomer, phone: e.target.value })}
+                              placeholder="Phone"
+                              className="flex-1 px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black min-w-0"
+                            />
+                            <button
+                              type="submit"
+                              className="px-3 py-2 rounded-lg bg-black text-white font-bold uppercase hover:bg-median-taupe transition-colors shrink-0"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </form>
+                      )}
                     </div>
                   ))}
               </div>
@@ -738,16 +874,30 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                         <p className="text-xs text-median-taupe/80 font-mono mt-1">{p.description}</p>
                       )}
                     </div>
-                    {p.website_url && (
-                      <a
-                        href={p.website_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 py-1.5 rounded-lg border border-median-taupe/30 text-xs font-mono uppercase hover:border-black transition-colors"
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await portalApi.togglePartner(p.id, !p.is_active);
+                          await refreshData();
+                        }}
+                        className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase ${
+                          p.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
+                        }`}
                       >
-                        Visit ↗
-                      </a>
-                    )}
+                        {p.is_active ? 'Active' : 'Paused'}
+                      </button>
+                      {p.website_url && (
+                        <a
+                          href={p.website_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-1.5 rounded-lg border border-median-taupe/30 text-xs font-mono uppercase hover:border-black transition-colors"
+                        >
+                          Visit ↗
+                        </a>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -936,11 +1086,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                         <span className="font-semibold text-black uppercase">Stage:</span>
                         <select
                           value={proj.status}
-                          onChange={(e) => {
-                            portalStore.updateProjectProgress(proj.id, {
+                          onChange={async (e) => {
+                            await portalApi.updateProject(proj.id, {
                               status: e.target.value as PortalProject['status'],
                             });
-                            refreshData();
+                            await refreshData();
                             showAlert(`Updated ${proj.code_name} stage to ${e.target.value.replace('_', ' ').toUpperCase()}.`);
                           }}
                           className="px-2.5 py-1 rounded-lg border border-median-taupe/30 bg-white text-xs text-black uppercase font-semibold"
@@ -960,14 +1110,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                             <button
                               key={ms.id}
                               type="button"
-                              onClick={() => {
+                              onClick={async () => {
                                 const updatedMilestones = proj.milestones.map((item) =>
                                   item.id === ms.id ? { ...item, is_completed: !item.is_completed } : item
                                 );
-                                portalStore.updateProjectProgress(proj.id, {
-                                  milestones: updatedMilestones,
-                                });
-                                refreshData();
+                                await portalApi.toggleMilestone(proj.id, ms.id, !ms.is_completed, updatedMilestones);
+                                await refreshData();
                               }}
                               className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-colors ${
                                 ms.is_completed
@@ -1110,7 +1258,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   <div className="mt-4 p-3 rounded-lg bg-median-taupe/5 flex justify-between font-bold text-sm text-black">
                     <span>Total Calculation:</span>
                     <span className="font-oswald text-base text-median-taupe">
-                      ${lineItems.reduce((acc, i) => acc + i.total, 0).toLocaleString()} USD
+                      LKR {lineItems.reduce((acc, i) => acc + i.total, 0).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -1204,7 +1352,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                         </span>
                         <h4 className="font-oswald text-lg font-bold uppercase text-black">{doc.client_name}</h4>
                         <span className="text-xs font-mono text-median-taupe/80">
-                          Total: <strong className="text-black font-semibold">${doc.total.toLocaleString()} USD</strong>
+                          Total: <strong className="text-black font-semibold">{doc.currency || 'LKR'} {doc.total.toLocaleString()}</strong>
                         </span>
                       </div>
 
@@ -1223,9 +1371,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                     <div className="pt-3 border-t border-median-taupe/15 flex flex-wrap items-center justify-between gap-2">
                       <div className="flex gap-2">
                         <button
-                          onClick={() => {
-                            portalStore.updateBillingStatus(doc.id, 'paid');
-                            refreshData();
+                          onClick={async () => {
+                            await portalApi.updateBillingStatus(doc.id, 'paid');
+                            await refreshData();
                             showAlert(`Marked ${doc.document_number} as PAID.`);
                           }}
                           className="px-3 py-1 rounded bg-emerald-600 text-white text-[10px] font-mono font-bold hover:bg-emerald-700 transition-colors"
@@ -1233,9 +1381,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                           Mark Paid ✓
                         </button>
                         <button
-                          onClick={() => {
-                            portalStore.updateBillingStatus(doc.id, 'approved');
-                            refreshData();
+                          onClick={async () => {
+                            await portalApi.updateBillingStatus(doc.id, 'approved');
+                            await refreshData();
                             showAlert(`Marked ${doc.document_number} as APPROVED.`);
                           }}
                           className="px-3 py-1 rounded bg-blue-600 text-white text-[10px] font-mono font-bold hover:bg-blue-700 transition-colors"
@@ -1382,9 +1530,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                       <div className="flex items-center gap-2">
                         <span className="text-amber-500 text-sm">{'★'.repeat(r.rating)}</span>
                         <button
-                          onClick={() => {
-                            portalStore.toggleReviewFeatured(r.id);
-                            refreshData();
+                          onClick={async () => {
+                            await portalApi.toggleReviewFeatured(r.id, !r.is_featured);
+                            await refreshData();
                           }}
                           className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase ${
                             r.is_featured ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
@@ -1590,9 +1738,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
 
                     <div className="pt-2 flex gap-2">
                       <button
-                        onClick={() => {
-                          portalStore.updateProjectRequestStatus(r.id, 'approved');
-                          refreshData();
+                        onClick={async () => {
+                          await portalApi.updateProjectRequestStatus(r.id, 'approved');
+                          await refreshData();
                           showAlert(`Approved inquiry for ${r.project_title}.`);
                         }}
                         className="px-3 py-1 rounded bg-black text-white text-[10px] font-mono uppercase font-bold hover:bg-median-taupe transition-colors"
@@ -1648,13 +1796,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                     {m.status === 'pending' && (
                       <div className="pt-2">
                         <button
-                          onClick={() => {
-                            portalStore.updateMeetingStatus(
+                          onClick={async () => {
+                            await portalApi.updateMeetingStatus(
                               m.id,
                               'confirmed',
                               'https://meet.google.com/monolith-architecture-session'
                             );
-                            refreshData();
+                            await refreshData();
                             showAlert('Meeting confirmed and Google Meet room assigned.');
                           }}
                           className="px-3 py-1 rounded bg-black text-white text-[10px] font-mono uppercase font-bold hover:bg-median-taupe transition-colors"
@@ -1666,6 +1814,55 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   </div>
                 ))
               )}
+
+              {/* Public Contact Form Submissions */}
+              <div className="pt-6 space-y-4">
+                <h3 className="font-oswald text-xl font-bold uppercase text-black">
+                  Public Contact Briefs ({inquiries.length})
+                </h3>
+                {inquiries.length === 0 ? (
+                  <div className="p-6 rounded-2xl bg-white border border-median-taupe/20 text-center text-xs text-median-taupe">
+                    No public contact inquiries submitted yet.
+                  </div>
+                ) : (
+                  inquiries.map((inq) => (
+                    <div
+                      key={inq.id}
+                      className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-2"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="text-[10px] uppercase text-median-taupe font-bold block">
+                            {inq.service_need} · {inq.budget_tier || 'Budget Open'}
+                          </span>
+                          <h4 className="font-oswald text-lg font-bold uppercase text-black">
+                            {inq.name} {inq.company && `(${inq.company})`}
+                          </h4>
+                          <span className="text-xs text-median-taupe">{inq.email}</span>
+                        </div>
+                        <span className="px-2.5 py-0.5 rounded-full bg-median-taupe/10 text-median-taupe text-[10px] font-bold uppercase">
+                          {inq.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-black/80 bg-median-taupe/5 p-3 rounded-lg border border-median-taupe/15">
+                        {inq.brief}
+                      </p>
+                      {inq.status === 'new' && (
+                        <button
+                          onClick={async () => {
+                            await portalApi.updateInquiryStatus(inq.id, 'contacted');
+                            await refreshData();
+                            showAlert(`Marked inquiry from ${inq.name} as CONTACTED.`);
+                          }}
+                          className="px-3 py-1 rounded bg-black text-white text-[10px] uppercase font-bold hover:bg-median-taupe transition-colors"
+                        >
+                          Mark Contacted ✓
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -1716,26 +1913,30 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                     <tr key={item.id}>
                       <td className="py-3 text-black font-semibold">{item.description}</td>
                       <td className="py-3 text-center text-black/80">{item.quantity}</td>
-                      <td className="py-3 text-right text-black/80">${item.unit_price.toLocaleString()}</td>
-                      <td className="py-3 text-right font-bold text-black">${item.total.toLocaleString()}</td>
+                      <td className="py-3 text-right text-black/80">
+                        {selectedBillingDoc.currency || 'LKR'} {item.unit_price.toLocaleString()}
+                      </td>
+                      <td className="py-3 text-right font-bold text-black">
+                        {selectedBillingDoc.currency || 'LKR'} {item.total.toLocaleString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
               <div className="border-t border-median-taupe/20 pt-4 flex flex-col items-end gap-1 text-xs">
-                <div className="flex justify-between w-52 text-median-taupe">
+                <div className="flex justify-between w-56 text-median-taupe">
                   <span>Subtotal:</span>
-                  <span>${selectedBillingDoc.subtotal.toLocaleString()}</span>
+                  <span>{selectedBillingDoc.currency || 'LKR'} {selectedBillingDoc.subtotal.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between w-52 text-median-taupe">
+                <div className="flex justify-between w-56 text-median-taupe">
                   <span>Tax:</span>
-                  <span>${selectedBillingDoc.tax.toLocaleString()}</span>
+                  <span>{selectedBillingDoc.currency || 'LKR'} {selectedBillingDoc.tax.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between w-52 font-bold text-sm text-black pt-2 border-t border-median-taupe/20">
+                <div className="flex justify-between w-56 font-bold text-sm text-black pt-2 border-t border-median-taupe/20">
                   <span>Total Amount:</span>
                   <span className="font-oswald text-lg text-median-taupe">
-                    ${selectedBillingDoc.total.toLocaleString()} {selectedBillingDoc.currency}
+                    {selectedBillingDoc.currency || 'LKR'} {selectedBillingDoc.total.toLocaleString()}
                   </span>
                 </div>
               </div>

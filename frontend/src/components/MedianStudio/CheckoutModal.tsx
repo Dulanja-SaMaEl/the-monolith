@@ -100,7 +100,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
               </div>
               <div className="flex justify-between">
                 <span className="text-median-taupe/70">Total Paid:</span>
-                <span className="font-bold text-black">${subtotal.toFixed(2)} USD</span>
+                <span className="font-bold text-black">LKR {subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-median-taupe/70">Status:</span>
@@ -122,7 +122,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
             <div className="p-4 rounded-xl bg-median-taupe/5 border border-median-taupe/15 space-y-2">
               <div className="flex justify-between items-center text-xs font-bold text-black">
                 <span>ITEMS ({items.reduce((s, i) => s + i.quantity, 0)})</span>
-                <span className="font-oswald text-base">${subtotal.toFixed(2)} USD</span>
+                <span className="font-oswald text-base">LKR {subtotal.toLocaleString()}</span>
               </div>
               <div className="text-[11px] text-median-taupe/70 truncate">
                 {items.map((i) => `${i.title} (x${i.quantity})`).join(', ')}
@@ -212,7 +212,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
                 </>
               ) : (
                 <>
-                  <span>Pay ${subtotal.toFixed(2)} USD</span>
+                  <span>Pay LKR {subtotal.toLocaleString()}</span>
                   <span>→</span>
                 </>
               )}
