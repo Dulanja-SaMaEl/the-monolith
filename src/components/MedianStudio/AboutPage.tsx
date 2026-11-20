@@ -174,7 +174,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
         </div>
       </section>
 
-      {/* Full Team Directory */}
+      {/* Full Team Directory & Founding Dossier */}
       <section className="max-w-7xl mx-auto px-6 md:px-12 mb-28">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-16 gap-4">
           <ScrollReveal variant="fade-up" duration={800}>
@@ -182,41 +182,184 @@ export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
               The Minds Behind Monolith LK
             </span>
             <h2 className="font-oswald text-4xl sm:text-6xl font-bold uppercase tracking-tight text-black">
-              The Team
+              Founding Leadership
             </h2>
+          </ScrollReveal>
+          <ScrollReveal variant="horizontal-slide-right" delay={180} duration={850}>
+            <p className="text-xs sm:text-sm text-median-taupe/80 max-w-sm font-normal">
+              Direct-to-architect access. No account management layers, no generic templates, absolute engineering and creative fidelity.
+            </p>
           </ScrollReveal>
         </div>
 
-        <StaggerContainer
-          staggerDelay={160}
-          variant="scale-up"
-          duration={850}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
-        >
-          {TEAM_MEMBERS.map((member) => (
-            <div
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {TEAM_MEMBERS.map((member, idx) => (
+            <ScrollReveal
               key={member.id}
-              className="p-8 rounded-2xl bg-white border border-median-taupe/20 hover:border-median-taupe transition-all shadow-sm h-full"
+              variant={idx === 0 ? 'card-flip-left' : 'card-flip-right'}
+              delay={idx * 160}
+              duration={900}
+              className="h-full"
             >
-              <div className="aspect-[4/5] rounded-xl overflow-hidden mb-6 bg-median-taupe/10 border border-median-taupe/15">
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
+              <div className="p-8 sm:p-10 rounded-3xl bg-white border border-median-taupe/20 hover:border-median-taupe transition-all duration-300 shadow-sm hover:shadow-2xl flex flex-col justify-between h-full relative">
+                {/* Architectural Corner Markers */}
+                <span className="absolute -top-2.5 -left-2.5 w-4 h-4 border-2 border-median-taupe bg-white" />
+                <span className="absolute -top-2.5 -right-2.5 w-4 h-4 border-2 border-median-taupe bg-white" />
+
+                <div>
+                  {/* Portrait & Identity Header */}
+                  <div className="relative aspect-[16/11] rounded-2xl overflow-hidden mb-8 bg-median-taupe/10 border border-median-taupe/15">
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/95 backdrop-blur-sm text-[10px] font-bold uppercase tracking-widest text-median-taupe border border-median-taupe/30 shadow-sm">
+                      Co-Founder
+                    </div>
+                    <div className="absolute bottom-4 left-4 right-4 p-3 rounded-xl bg-black/75 backdrop-blur-md text-white text-[11px] font-mono tracking-wider flex items-center justify-between border border-white/10">
+                      <span className="flex items-center gap-2 truncate">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                        <span className="truncate">{member.coordinates}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Name & Role */}
+                  <div className="mb-6">
+                    <h3 className="font-oswald text-3xl sm:text-4xl font-bold uppercase text-black">
+                      {member.name}
+                    </h3>
+                    <span className="text-xs sm:text-sm font-semibold text-median-taupe uppercase tracking-wider block mt-1">
+                      {member.role}
+                    </span>
+                  </div>
+
+                  {/* Contact Channels & Social Profiles */}
+                  <div className="flex flex-wrap items-center gap-3 pb-6 border-b border-median-taupe/15">
+                    <a
+                      href={`mailto:${member.contact.email}`}
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-median-taupe/40 hover:border-median-taupe hover:bg-median-taupe hover:text-white text-xs font-semibold text-black transition-colors"
+                    >
+                      <span>✉</span>
+                      <span>{member.contact.email}</span>
+                    </a>
+                    {member.contact.phone && (
+                      <a
+                        href={`tel:${member.contact.phone.replace(/\s+/g, '')}`}
+                        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-median-taupe/40 hover:border-median-taupe hover:bg-median-taupe hover:text-white text-xs font-semibold text-black transition-colors"
+                      >
+                        <span>☎</span>
+                        <span>{member.contact.phone}</span>
+                      </a>
+                    )}
+                    {member.profiles.linkedin && (
+                      <a
+                        href={member.profiles.linkedin}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3.5 py-1.5 rounded-full bg-median-taupe/10 hover:bg-median-taupe hover:text-white text-xs font-bold uppercase tracking-wider text-median-taupe transition-colors"
+                      >
+                        LinkedIn ↗
+                      </a>
+                    )}
+                    {member.profiles.github && (
+                      <a
+                        href={member.profiles.github}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3.5 py-1.5 rounded-full bg-median-taupe/10 hover:bg-median-taupe hover:text-white text-xs font-bold uppercase tracking-wider text-median-taupe transition-colors"
+                      >
+                        GitHub ↗
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Bio Prose */}
+                  <div className="py-6 border-b border-median-taupe/15">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-median-taupe/70 block mb-2">
+                      Architectural Profile
+                    </span>
+                    <p className="text-xs sm:text-sm text-black/80 font-normal leading-relaxed">
+                      {member.bio}
+                    </p>
+                  </div>
+
+                  {/* Academic Credentials & Honors */}
+                  <div className="py-6 border-b border-median-taupe/15 space-y-3">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-median-taupe/70 block">
+                      Academic Credentials & Honors
+                    </span>
+                    <ul className="space-y-2">
+                      {member.academic.map((deg, dIdx) => (
+                        <li key={dIdx} className="flex items-start gap-2.5 text-xs text-black/85 font-normal leading-relaxed">
+                          <span className="w-1.5 h-1.5 rounded-full bg-median-taupe mt-1.5 flex-shrink-0" />
+                          <span>{deg}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    {member.certifications && member.certifications.length > 0 && (
+                      <div className="pt-2 flex flex-wrap gap-1.5">
+                        {member.certifications.map((cert, cIdx) => (
+                          <span
+                            key={cIdx}
+                            className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-median-taupe/5 border border-median-taupe/20 text-median-taupe"
+                          >
+                            ✓ {cert}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Career & Industry Track Record */}
+                  <div className="py-6 border-b border-median-taupe/15 space-y-4">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-median-taupe/70 block">
+                      Career & Industry Track Record
+                    </span>
+                    <div className="space-y-3">
+                      {member.trackRecord.map((tr, tIdx) => (
+                        <div
+                          key={tIdx}
+                          className="p-3.5 rounded-xl bg-median-taupe/5 border border-median-taupe/15 hover:border-median-taupe/40 transition-colors"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                            <h4 className="font-oswald text-sm font-bold uppercase text-black">
+                              {tr.company}
+                            </h4>
+                            <span className="text-[11px] font-semibold text-median-taupe uppercase">
+                              {tr.role}
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-black/75 font-normal leading-relaxed">
+                            {tr.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mastery Skills Cloud */}
+                  <div className="pt-6">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-median-taupe/70 block mb-3">
+                      Core Mastery & Domains
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {member.mastery.map((skill, sIdx) => (
+                        <span
+                          key={sIdx}
+                          className="text-[11px] font-semibold uppercase px-3 py-1 rounded-full border border-median-taupe/30 hover:border-median-taupe text-black bg-white hover:bg-median-taupe hover:text-white transition-all shadow-sm"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h3 className="font-oswald text-2xl font-bold uppercase text-black">
-                {member.name}
-              </h3>
-              <span className="text-xs font-semibold text-median-taupe uppercase block mt-1">
-                {member.role}
-              </span>
-              <p className="text-xs text-black/75 font-normal leading-relaxed mt-3">
-                {member.bio}
-              </p>
-            </div>
+            </ScrollReveal>
           ))}
-        </StaggerContainer>
+        </div>
       </section>
 
       {/* Rotating Ribbons Banner */}

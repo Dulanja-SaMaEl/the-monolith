@@ -247,10 +247,10 @@ export const ContactPage: React.FC<ContactPageProps> = ({ navigate }) => {
                   contact@monolith.lk
                 </a>
                 <a
-                  href="tel:+94760967884"
+                  href="tel:+94765917189"
                   className="font-oswald text-2xl font-bold uppercase text-black hover:text-median-taupe block"
                 >
-                  +94 76 096 7884
+                  +94 76 591 7189
                 </a>
               </div>
             </div>

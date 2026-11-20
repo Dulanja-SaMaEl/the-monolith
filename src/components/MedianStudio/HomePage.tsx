@@ -445,16 +445,15 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
             </ScrollReveal>
           </div>
 
-          {/* 3 Team Members with 3D Tilt + Inner Portrait & Bio Data Animations */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* 2 Co-Founders with High-Craft Architectural Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {TEAM_MEMBERS.map((member, idx) => {
               const teamVariants: RevealVariant[] = [
                 'card-flip-left',
-                'card-lift',
                 'card-flip-right',
               ];
               const variant = teamVariants[idx % teamVariants.length];
-              const baseDelay = idx * 140;
+              const baseDelay = idx * 160;
 
               return (
                 <ScrollReveal
@@ -468,32 +467,76 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
                     onMouseEnter={() => setActiveTeamId(member.id)}
                     className="group p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 hover:border-median-taupe transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col justify-between h-full"
                   >
-                    <ScrollReveal variant="curtain-expand" delay={baseDelay + 120} duration={850}>
-                      <div className="aspect-[4/5] w-full rounded-xl overflow-hidden bg-median-taupe/10 mb-6 border border-median-taupe/15">
-                        <img
-                          src={member.image}
-                          alt={member.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                    </ScrollReveal>
-
                     <div>
+                      <ScrollReveal variant="curtain-expand" delay={baseDelay + 120} duration={850}>
+                        <div className="aspect-[4/5] w-full rounded-xl overflow-hidden bg-median-taupe/10 mb-6 border border-median-taupe/15 relative">
+                          <img
+                            src={member.image}
+                            alt={member.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-bold uppercase tracking-widest text-median-taupe border border-median-taupe/30 shadow-sm">
+                            Co-Founder
+                          </span>
+                        </div>
+                      </ScrollReveal>
+
                       <ScrollReveal variant="skew-up" delay={baseDelay + 220} duration={800}>
-                        <h3 className="font-oswald text-2xl font-bold uppercase text-black group-hover:text-median-taupe transition-colors">
+                        <div className="text-[11px] font-mono tracking-wider text-median-taupe/70 mb-1.5 uppercase flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-median-taupe animate-pulse" />
+                          <span>{member.coordinates}</span>
+                        </div>
+                        <h3 className="font-oswald text-2xl sm:text-3xl font-bold uppercase text-black group-hover:text-median-taupe transition-colors">
                           {member.name}
                         </h3>
                       </ScrollReveal>
                       <ScrollReveal variant="horizontal-slide-left" delay={baseDelay + 300} duration={800}>
-                        <span className="text-xs font-semibold uppercase text-median-taupe/80 block mt-1">
+                        <span className="text-xs font-semibold uppercase text-median-taupe block mt-1">
                           {member.role}
                         </span>
                       </ScrollReveal>
+
+                      {/* Primary Academic Badge */}
+                      {member.academic && member.academic[0] && (
+                        <div className="mt-3 text-[11px] text-black/80 bg-median-taupe/5 border border-median-taupe/20 px-3 py-1.5 rounded-lg font-normal leading-relaxed">
+                          {member.academic[0]}
+                        </div>
+                      )}
+
                       <ScrollReveal variant="blur-focus" delay={baseDelay + 380} duration={850}>
-                        <p className="text-xs text-median-taupe/70 font-normal leading-relaxed mt-3">
+                        <p className="text-xs text-median-taupe/80 font-normal leading-relaxed mt-3">
                           {member.bio}
                         </p>
                       </ScrollReveal>
+
+                      {/* Mastery Pill Preview */}
+                      <div className="flex flex-wrap gap-1.5 mt-4 pt-4 border-t border-median-taupe/15">
+                        {member.mastery.slice(0, 4).map((skill, sIdx) => (
+                          <span
+                            key={sIdx}
+                            className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full border border-median-taupe/30 text-median-taupe bg-median-taupe/5"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Footer link to full dossier */}
+                    <div className="mt-6 pt-4 border-t border-median-taupe/15 flex items-center justify-between text-xs font-bold uppercase text-black">
+                      <button
+                        onClick={() => {
+                          navigate('/about');
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="hover:text-median-taupe underline decoration-median-taupe flex items-center gap-1.5 transition-colors"
+                      >
+                        <span>Full Architectural Dossier</span>
+                        <span>→</span>
+                      </button>
+                      <span className="font-mono text-[10px] text-median-taupe/60">
+                        0{idx + 1} / 02
+                      </span>
                     </div>
                   </div>
                 </ScrollReveal>

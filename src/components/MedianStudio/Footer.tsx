@@ -73,10 +73,10 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
               <ScrollReveal variant="horizontal-slide-right" delay={250}>
                 <div>
                   <a
-                    href="tel:+94760967884"
+                    href="tel:+94765917189"
                     className="font-oswald text-2xl font-semibold text-black hover:text-median-taupe transition-colors block border-b border-median-taupe/40 pb-1 w-fit"
                   >
-                    +94 76 096 7884
+                    +94 76 591 7189
                   </a>
                 </div>
               </ScrollReveal>

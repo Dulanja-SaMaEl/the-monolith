@@ -157,7 +157,7 @@ export const FullscreenMenu: React.FC<FullscreenMenuProps> = ({
             >
               contact@monolith.lk
             </a>
-            <div className="text-sm font-medium">+94 76 096 7884</div>
+            <div className="text-sm font-medium">+94 76 591 7189</div>
           </div>
 
           <div>

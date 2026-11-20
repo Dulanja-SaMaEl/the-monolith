@@ -48,6 +48,23 @@ export interface TeamMember {
   name: string;
   role: string;
   image: string;
+  coordinates: string;
+  contact: {
+    email: string;
+    phone?: string;
+  };
+  profiles: {
+    linkedin?: string;
+    github?: string;
+  };
+  academic: string[];
+  certifications?: string[];
+  trackRecord: {
+    company: string;
+    role: string;
+    description: string;
+  }[];
+  mastery: string[];
   bio: string;
 }
 
@@ -193,26 +210,115 @@ export const PRICING_PLANS: PricingPlan[] = [
 
 export const TEAM_MEMBERS: TeamMember[] = [
   {
-    id: 'dulan-founder',
-    name: 'Dulan',
-    role: 'Founder & Growth Architect',
-    image: '/founder.webp',
-    bio: 'Visionary engineer & performance strategist with over 45 successful growth systems deployed across Sri Lanka, UAE, and the USA.'
+    id: 'dulanja-abeysinghe',
+    name: 'Dulanja Abeysinghe',
+    role: 'Co-Founder & Principal Systems Architect',
+    image: '/dulanja.webp',
+    coordinates: 'Kurunegala, Sri Lanka (7.4863° N, 80.3623° E · UTC+5:30)',
+    contact: {
+      email: 'dulanja150abeysinghe@gmail.com',
+      phone: '+94 76 591 7189',
+    },
+    profiles: {
+      linkedin: 'https://linkedin.com/in/dulanja-abeysinghe',
+      github: 'https://github.com/Dulanja-SaMaEl',
+    },
+    academic: [
+      'BSc (Hons) in Software Engineering — Second Upper Division (Birmingham City University, UK delivered via Java Institute)',
+      'Professional Higher Diploma in Software Engineering (Skills & Educational Group Awards, UK, 2025)',
+    ],
+    certifications: [
+      'Deep Learning A-Z',
+      'Machine Learning Specialist',
+      'The AI Engineer',
+      'Ethical Hacking',
+    ],
+    trackRecord: [
+      {
+        company: 'Biotech Software Solutions',
+        role: 'Junior Software Engineer',
+        description: 'On-site hospital LIS engineering (Peradeniya, Ragama, Kurunegala Teaching Hospitals); OPD Pharmacy Management System integration; direct C/C++ driver bridging for ACL TOP and AU 480 clinical laboratory analyzers.',
+      },
+      {
+        company: 'GrayNode DevOps / NerdTech Labs',
+        role: 'Co-Founder & Lead Developer',
+        description: 'Microservices architecture, high-availability cloud deployments, LLM automated customer FAQ intelligence.',
+      },
+      {
+        company: 'r-pac Printcare Lanka',
+        role: 'Software Developer & Automation',
+        description: 'Java/MySQL production scheduling optimization, internal C#/ASP.NET/PHP decision tooling.',
+      },
+      {
+        company: 'Dula AI',
+        role: 'Founder & Technical Author',
+        description: 'Technical content authoring structured learning roadmaps across ML, Data Science, and LLMs.',
+      },
+    ],
+    mastery: [
+      'High-Concurrency Multi-Tier Arch',
+      'Gaming Fintech Payment Gateways',
+      'Redis Redlock Distributed Mutex',
+      'Idempotent Webhook Engines',
+      'BullMQ / Laravel Queue Pipelines',
+      'Docker & Microservices',
+      'RAG LLM Pipelines',
+      'Prometheus & Grafana Telemetry',
+    ],
+    bio: 'Principal systems architect specializing in high-concurrency enterprise multi-tier infrastructure, clinical lab analyzer driver engineering, gaming fintech transaction gateways, distributed Redis Redlock mutex locks, and production RAG LLM pipelines.',
   },
   {
-    id: 'sithum-perera-creative-tech',
-    name: 'Sithum Perera',
-    role: 'Lead Creative Technologist',
-    image: '/3d-developer.webp',
-    bio: 'Specialist in hardware-accelerated 3D graphics, Three.js shaders, and buttery-smooth spatial web interfaces.'
+    id: 'remashi-diyana',
+    name: 'Remashi Diyana',
+    role: 'Co-Founder & Head of Creative Strategy & UI/UX',
+    image: '/remashi.jpg',
+    coordinates: 'Giriulla / Kurunegala, Sri Lanka (7.3333° N, 80.1333° E · UTC+5:30)',
+    contact: {
+      email: 'diyanamashi@gmail.com',
+      phone: '+94 76 591 7189',
+    },
+    profiles: {
+      linkedin: 'https://linkedin.com/in/remashi-diyana-b332a3272',
+    },
+    academic: [
+      'Bachelor of Social Work (Honours) — Second-Year Undergraduate (National Institute of Social Development, NISD, Sri Lanka)',
+      'Diploma in International Studies (University of Kelaniya, Sri Lanka)',
+      'Higher National Diploma (HND) in Software Engineering & BEng (Hons) studies (ESOFT Metro Campus / London Metropolitan University, UK)',
+    ],
+    trackRecord: [
+      {
+        company: 'The Volunteers Academy',
+        role: 'Primary Graphic Designer',
+        description: 'High-engagement promotional flyers, social campaigns, event branding, driving national volunteer recruitment.',
+      },
+      {
+        company: 'The Movement Projects',
+        role: 'Visual Campaign Strategist',
+        description: 'Advocacy visual campaigns, editorial social media layouts, community outreach collateral.',
+      },
+      {
+        company: 'DIA Academy',
+        role: 'Founder & Lead Educator',
+        description: 'Complete brand identity, educational flyer series, promotional graphics, operations.',
+      },
+      {
+        company: 'Silvermill Group',
+        role: 'Application Developer Intern',
+        description: 'Internal software workflow alignment and digital optimization.',
+      },
+    ],
+    mastery: [
+      'Tactical Editorial Flyer Design',
+      'Visual Brand Identity Systems',
+      'Social Media Marketing Funnels',
+      'Canva (Fluent)',
+      'Adobe Illustrator & Photoshop',
+      'Human-Centered UI/UX Wireframing',
+      'Design Thinking & User Research',
+      'Haute Editorial Front-End Styling',
+    ],
+    bio: 'Head of creative strategy and UI/UX uniting human-centered social sciences with software engineering foundations. Spearheads tactical editorial design, high-converting social campaigns, and luxury brand identity systems.',
   },
-  {
-    id: 'kavinda-fernando-media',
-    name: 'Kavinda Fernando',
-    role: 'Head of Media & Ads',
-    image: '/assets/team-2.jpg',
-    bio: 'Direct-response performance marketing lead with an average 4.8X blended ROAS across e-commerce and high-ticket B2B.'
-  }
 ];
 
 export const BLOG_POSTS: BlogPost[] = [
@@ -225,9 +331,9 @@ export const BLOG_POSTS: BlogPost[] = [
     readTime: '6 min read',
     summary: 'Why latency kills conversions, and how we engineer modern React and headless Shopify architectures that maintain 99+ Lighthouse speed.',
     author: {
-      name: 'Dulan',
-      role: 'Founder & Growth Architect',
-      avatar: '/founder.webp'
+      name: 'Dulanja Abeysinghe',
+      role: 'Co-Founder & Principal Systems Architect',
+      avatar: '/dulanja.webp'
     },
     content: [
       'Every 100 milliseconds of latency costs up to 7% in checkout drop-off. In contemporary digital commerce, speed is not an optimization checklist item—it is the bedrock of consumer trust.',
@@ -245,9 +351,9 @@ export const BLOG_POSTS: BlogPost[] = [
     readTime: '5 min read',
     summary: 'Browser cookie loss costs brands up to 35% of their ad attribution data. Here is how server-side Conversion API restores mathematical tracking certainty.',
     author: {
-      name: 'Kavinda Fernando',
-      role: 'Head of Media & Ads',
-      avatar: '/assets/team-2.jpg'
+      name: 'Remashi Diyana',
+      role: 'Co-Founder & Head of Creative Strategy & UI/UX',
+      avatar: '/remashi.jpg'
     },
     content: [
       'Standard browser pixels are losing visibility every month due to privacy sandboxes, ad blockers, and mobile operating system restrictions.',
@@ -269,7 +375,7 @@ export const FAQS = [
   },
   {
     question: 'What makes Monolith LK different from traditional agencies?',
-    answer: 'We eliminate the disconnect between pretty design and ruthless performance. You do not get passed off to junior account managers—you get direct WhatsApp communication with Founder Dulan, weekly sprint reviews, and 24/7 access to your private Client Hub.'
+    answer: 'We eliminate the disconnect between pretty design and ruthless performance. You do not get passed off to junior account managers—you get direct WhatsApp communication with Co-Founders Dulanja Abeysinghe & Remashi Diyana, weekly sprint reviews, and 24/7 access to your private Client Hub.'
   },
   {
     question: 'What is your Meta Ads management framework?',
@@ -277,7 +383,7 @@ export const FAQS = [
   },
   {
     question: 'Where is Monolith LK based and do you work internationally?',
-    answer: 'Our primary studio is located in Colombo, Sri Lanka, with global operating hubs in Dubai and London. We work with clients across Sri Lanka, Australia, the United States, the UK, and the Middle East.'
+    answer: 'Our primary studio is located in Kurunegala / Colombo, Sri Lanka, with global operating hubs in Dubai and London. We work with clients across Sri Lanka, Australia, the United States, the UK, and the Middle East.'
   }
 ];
 
@@ -291,10 +397,10 @@ export const CLIENT_LOGOS = [
 
 export const STUDIO_OFFICES = [
   {
-    city: 'Colombo',
-    address: '148 Galle Road, Suite 5B',
-    region: 'Colombo 03, Sri Lanka',
-    phone: '+94 76 096 7884'
+    city: 'Kurunegala / Colombo',
+    address: 'Monolith Architecture Labs, Central Hub',
+    region: 'Kurunegala & Colombo, Sri Lanka (7.4863° N, 80.3623° E)',
+    phone: '+94 76 591 7189'
   },
   {
     city: 'Dubai',
