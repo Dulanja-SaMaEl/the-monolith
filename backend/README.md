@@ -22,7 +22,7 @@ Set the following variables:
 ### 2. Local Development
 
 ```bash
-cd server
+cd backend
 npm install
 npm run dev
 ```
@@ -40,7 +40,7 @@ curl http://localhost:10000/api/health
 2. Click **New +** -> **Web Service**.
 3. Connect your GitHub repository (`Dulanja-SaMaEl/the-monolith`).
 4. Configure:
-   - **Root Directory**: `server`
+   - **Root Directory**: `backend`
    - **Build Command**: `npm install && npm run build`
    - **Start Command**: `npm start`
 5. Add Environment Variables:

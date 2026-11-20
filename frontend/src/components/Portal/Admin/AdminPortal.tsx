@@ -12,6 +12,7 @@ import {
   MeetingRequest,
   BillingLineItem,
 } from '../../../lib/portalStore';
+import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
 
 interface AdminPortalProps {
   navigate: (route: string) => void;
@@ -1094,28 +1095,47 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                       </span>
                     </div>
 
-                    {/* Status Toggle Buttons */}
-                    <div className="pt-3 border-t border-median-taupe/15 flex gap-2">
-                      <button
-                        onClick={() => {
-                          portalStore.updateBillingStatus(doc.id, 'paid');
-                          refreshData();
-                          showAlert(`Marked ${doc.document_number} as PAID.`);
-                        }}
-                        className="px-3 py-1 rounded bg-emerald-600 text-white text-[10px] font-mono font-bold hover:bg-emerald-700 transition-colors"
-                      >
-                        Mark as Paid ✓
-                      </button>
-                      <button
-                        onClick={() => {
-                          portalStore.updateBillingStatus(doc.id, 'approved');
-                          refreshData();
-                          showAlert(`Marked ${doc.document_number} as APPROVED.`);
-                        }}
-                        className="px-3 py-1 rounded bg-blue-600 text-white text-[10px] font-mono font-bold hover:bg-blue-700 transition-colors"
-                      >
-                        Mark Approved
-                      </button>
+                    {/* Status Toggle & Download Buttons */}
+                    <div className="pt-3 border-t border-median-taupe/15 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            portalStore.updateBillingStatus(doc.id, 'paid');
+                            refreshData();
+                            showAlert(`Marked ${doc.document_number} as PAID.`);
+                          }}
+                          className="px-3 py-1 rounded bg-emerald-600 text-white text-[10px] font-mono font-bold hover:bg-emerald-700 transition-colors"
+                        >
+                          Mark Paid ✓
+                        </button>
+                        <button
+                          onClick={() => {
+                            portalStore.updateBillingStatus(doc.id, 'approved');
+                            refreshData();
+                            showAlert(`Marked ${doc.document_number} as APPROVED.`);
+                          }}
+                          className="px-3 py-1 rounded bg-blue-600 text-white text-[10px] font-mono font-bold hover:bg-blue-700 transition-colors"
+                        >
+                          Mark Approved
+                        </button>
+                      </div>
+
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => downloadBillingVoucherHtml(doc)}
+                          title="Download Voucher File (.html)"
+                          className="px-2.5 py-1 rounded border border-median-taupe/40 text-black hover:border-black text-[10px] font-mono font-semibold transition-colors"
+                        >
+                          ↓ Download
+                        </button>
+                        <button
+                          onClick={() => printBillingVoucherPdf(doc)}
+                          title="Print / Save PDF"
+                          className="px-2.5 py-1 rounded border border-black bg-black text-white hover:bg-median-taupe text-[10px] font-mono font-semibold transition-colors"
+                        >
+                          PDF ↗
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

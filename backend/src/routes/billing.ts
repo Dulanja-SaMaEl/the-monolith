@@ -109,4 +109,62 @@ router.patch('/:id/status', requireAuth, requireAdmin, async (req: Authenticated
   }
 });
 
+// GET /api/billing/:id/download - Download voucher file
+router.get('/:id/download', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    let query = supabaseAdmin
+      .from('documents_billing')
+      .select('*, client:profiles!client_id(full_name, email, company_name)')
+      .eq('id', id);
+
+    if (req.user?.role !== 'admin') {
+      query = query.eq('client_id', req.user?.id);
+    }
+
+    const { data: doc, error } = await query.single();
+    if (error || !doc) {
+      res.status(404).json({ error: 'Billing document not found or access denied' });
+      return;
+    }
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${doc.document_number}.html"`);
+    res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${doc.document_number} — Monolith LK</title>
+  <style>
+    body { font-family: sans-serif; padding: 40px; background: #faf8f5; color: #141414; }
+    .card { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 12px; border: 1px solid #9f8170; }
+    h1 { margin: 0 0 10px; font-size: 24px; text-transform: uppercase; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+    th { color: #9f8170; }
+    .total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 20px; color: #9f8170; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>MONOLITH LK · ${doc.type.toUpperCase()}: ${doc.document_number}</h1>
+    <p>Issued to: <strong>${doc.client?.company_name || doc.client?.full_name}</strong> (${doc.client?.email})</p>
+    <p>Due Date: <strong>${doc.due_date}</strong> · Status: <strong>${doc.status.toUpperCase()}</strong></p>
+    <table>
+      <thead>
+        <tr><th>Deliverable Item</th><th>Qty</th><th>Unit Rate</th><th>Total</th></tr>
+      </thead>
+      <tbody>
+        ${(doc.line_items || []).map((i: any) => `<tr><td>${i.description}</td><td>${i.quantity}</td><td>$${i.unit_price}</td><td>$${i.total}</td></tr>`).join('')}
+      </tbody>
+    </table>
+    <div class="total">Total Due: $${doc.total} ${doc.currency}</div>
+  </div>
+</body>
+</html>`);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

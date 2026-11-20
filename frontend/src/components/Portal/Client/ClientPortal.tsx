@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { portalStore, PortalProject, MeetingRequest, ProjectRequest, BillingDocument } from '../../../lib/portalStore';
+import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
 import { ScrollReveal } from '../../MedianStudio/ScrollReveal';
 
 interface ClientPortalProps {
@@ -713,12 +714,21 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                           ${doc.total.toLocaleString()} {doc.currency}
                         </span>
                       </div>
-                      <button
-                        onClick={() => setSelectedBillingDoc(doc)}
-                        className="px-4 py-2 rounded-xl border border-black text-black hover:bg-black hover:text-white text-xs font-mono uppercase font-semibold transition-colors"
-                      >
-                        View Voucher Details
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => downloadBillingVoucherHtml(doc)}
+                          title="Download Official Voucher File (.html)"
+                          className="px-3 py-2 rounded-xl border border-median-taupe/40 text-black hover:border-black text-xs font-mono uppercase font-semibold transition-colors flex items-center gap-1"
+                        >
+                          <span>↓ Download</span>
+                        </button>
+                        <button
+                          onClick={() => setSelectedBillingDoc(doc)}
+                          className="px-4 py-2 rounded-xl border border-black text-black hover:bg-black hover:text-white text-xs font-mono uppercase font-semibold transition-colors"
+                        >
+                          View Details
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -804,16 +814,25 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
               </div>
             )}
 
-            <div className="flex justify-between items-center pt-4 border-t border-median-taupe/20">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-median-taupe/20">
               <span className="text-[10px] font-mono text-median-taupe">
                 Payment Status: <strong className="uppercase">{selectedBillingDoc.status}</strong>
               </span>
-              <button
-                onClick={() => window.print()}
-                className="px-5 py-2.5 rounded-xl bg-black text-white font-oswald text-xs uppercase tracking-wider hover:bg-median-taupe transition-colors"
-              >
-                Print / Save PDF Voucher
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => downloadBillingVoucherHtml(selectedBillingDoc)}
+                  className="px-5 py-2.5 rounded-xl border border-median-taupe text-black hover:border-black font-oswald text-xs uppercase tracking-wider transition-colors flex items-center gap-1.5"
+                >
+                  <span>↓ Download Voucher (.html)</span>
+                </button>
+                <button
+                  onClick={() => printBillingVoucherPdf(selectedBillingDoc)}
+                  className="px-5 py-2.5 rounded-xl bg-black text-white font-oswald text-xs uppercase tracking-wider hover:bg-median-taupe transition-colors flex items-center gap-1.5"
+                >
+                  <span>Print / Save PDF</span>
+                  <span>↗</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
