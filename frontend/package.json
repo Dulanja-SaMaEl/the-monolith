@@ -1,8 +1,11 @@
 {
   "name": "the-monolith",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -16,8 +19,7 @@
     "lucide-react": "^1.49.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "tailwind-merge": "^3.7.0",
-    "three": "^0.186.1"
+    "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",
