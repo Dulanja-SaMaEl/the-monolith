@@ -27,12 +27,13 @@ export const FullscreenMenu: React.FC<FullscreenMenuProps> = ({
   const navLinks = [
     { label: 'Home', path: '/', number: '01' },
     { label: 'About', path: '/about', number: '02' },
-    { label: 'Work', path: '/work', number: '03' },
-    { label: 'Pricing', path: '/pricing', number: '04' },
-    { label: 'Blog', path: '/blog', number: '05' },
-    { label: 'Contact', path: '/contact', number: '06' },
-    { label: 'Style Guide', path: '/style-guide', number: '07' },
-    { label: 'Client & Studio Portal', path: '/portal/login', number: '08' },
+    { label: 'Services', path: '/services', number: '03' },
+    { label: 'Work', path: '/work', number: '04' },
+    { label: 'Pricing', path: '/pricing', number: '05' },
+    { label: 'Blog', path: '/blog', number: '06' },
+    { label: 'Contact', path: '/contact', number: '07' },
+    { label: 'Style Guide', path: '/style-guide', number: '08' },
+    { label: 'Client & Studio Portal', path: '/portal/login', number: '09' },
   ];
 
   const handleLinkClick = (path: string) => {

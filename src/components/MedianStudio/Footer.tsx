@@ -141,6 +141,17 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
               <span>•</span>
               <button
                 onClick={() => {
+                  navigate('/services');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                data-cursor="pointer"
+                className="hover:text-black underline decoration-median-taupe transition-colors"
+              >
+                Services
+              </button>
+              <span>•</span>
+              <button
+                onClick={() => {
                   navigate('/about');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}

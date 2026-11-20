@@ -97,13 +97,25 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
               </ScrollReveal>
             </div>
             <ScrollReveal variant="horizontal-slide-right" delay={180} duration={850}>
-              <p className="text-xs sm:text-sm text-median-taupe/80 max-w-md font-normal leading-relaxed">
-                From bespoke enterprise transactional applications and custom generative AI/RAG models to zero-downtime cloud infrastructure, low-level security mimicry, and high-impact editorial brand marketing.
-              </p>
+              <div className="flex flex-col sm:items-end gap-3">
+                <p className="text-xs sm:text-sm text-median-taupe/80 max-w-md font-normal leading-relaxed sm:text-right">
+                  High-concurrency transactional architectures, deterministic AI/RAG models, zero-downtime cloud topology, and tactical editorial marketing.
+                </p>
+                <button
+                  onClick={() => {
+                    navigate('/services');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="px-5 py-2.5 rounded-full border border-black bg-black text-white hover:bg-median-taupe hover:border-median-taupe text-xs font-oswald uppercase tracking-wider font-bold transition-all shadow-sm flex items-center gap-2 w-fit"
+                >
+                  <span>Explore In-Depth Services Guide</span>
+                  <span>→</span>
+                </button>
+              </div>
             </ScrollReveal>
           </div>
 
-          {/* 7 Comprehensive Practice Columns */}
+          {/* 7 Concise Practice Overview Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {SERVICES.map((srv, idx) => {
               const baseDelay = (idx % 3) * 120;
@@ -146,24 +158,19 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
                         {srv.description}
                       </p>
 
-                      {/* Sub-Capabilities List */}
-                      <div className="pt-6 border-t border-median-taupe/15">
-                        <span className="text-[10px] font-bold tracking-widest uppercase text-median-taupe/70 block mb-3">
-                          Specialized Practice Modules:
+                      {/* Concise Capabilities Focus Pills */}
+                      <div className="pt-4 border-t border-median-taupe/15">
+                        <span className="text-[10px] font-mono font-bold tracking-widest uppercase text-median-taupe/70 block mb-3">
+                          Core Practice Capabilities:
                         </span>
-                        <div className={isFullSpan ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3' : 'space-y-3'}>
+                        <div className="flex flex-wrap gap-1.5">
                           {srv.capabilities.map((cap, cIdx) => (
-                            <div
+                            <span
                               key={cIdx}
-                              className="p-3.5 rounded-xl bg-median-taupe/5 border border-median-taupe/15 hover:border-median-taupe/40 transition-colors"
+                              className="text-[10px] font-mono font-medium px-2.5 py-1 rounded-full border border-median-taupe/25 text-black bg-median-taupe/5 group-hover:border-median-taupe/50 group-hover:bg-white transition-colors"
                             >
-                              <h4 className="font-oswald text-sm font-bold uppercase text-black mb-1">
-                                {cap.title}
-                              </h4>
-                              <p className="text-[11px] text-black/75 font-normal leading-relaxed">
-                                {cap.description}
-                              </p>
-                            </div>
+                              • {cap.title}
+                            </span>
                           ))}
                         </div>
                       </div>
@@ -173,12 +180,12 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
                     <div className="mt-8 pt-5 border-t border-median-taupe/15 flex items-center justify-between">
                       <button
                         onClick={() => {
-                          navigate('/contact');
+                          navigate(`/services#${srv.id}`);
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
                         className="text-xs font-bold uppercase text-black hover:text-median-taupe underline decoration-median-taupe flex items-center gap-1.5 transition-colors"
                       >
-                        <span>Scope Practice Inquiries</span>
+                        <span>View Practice Specs & Modules</span>
                         <span>→</span>
                       </button>
                       <span className="font-mono text-[11px] text-median-taupe/60 font-semibold">

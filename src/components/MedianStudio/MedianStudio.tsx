@@ -12,6 +12,7 @@ import { Footer } from './Footer';
 // Pages
 import { HomePage } from './HomePage';
 import { AboutPage } from './AboutPage';
+import { ServicesPage } from './ServicesPage';
 import { WorkPage } from './WorkPage';
 import { PricingPage } from './PricingPage';
 import { BlogPage } from './BlogPage';
@@ -82,6 +83,9 @@ const MedianStudioContent: React.FC<MedianStudioProps> = ({ onSwitchView }) => {
         return <AdminPortal navigate={navigate} />;
       case '/about':
         return <AboutPage navigate={navigate} />;
+      case '/services':
+      case '/service':
+        return <ServicesPage navigate={navigate} />;
       case '/work':
       case '/works':
         return <WorkPage navigate={navigate} />;
