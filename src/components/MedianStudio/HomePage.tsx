@@ -537,52 +537,78 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
         </div>
       </section>
 
-      {/* ================= AWARDS SECTION WITH ANIMATED COUNTERS ================= */}
+      {/* ================= SECTION: OUR RESULTS WITH ANIMATED COUNTERS ================= */}
       <section className="py-24 border-t border-median-taupe/20 bg-white">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <ScrollReveal variant="badge-drop" duration={750}>
               <span className="text-xs font-bold tracking-widest uppercase text-median-taupe/70 block mb-2">
-                Industry Recognition
+                Measurable Impact
               </span>
             </ScrollReveal>
             <ScrollReveal variant="split-mask" delay={100} duration={850}>
               <h2 className="font-oswald text-4xl sm:text-6xl font-bold uppercase tracking-tight text-black">
-                You get results, we get awards
+                Our Results
               </h2>
             </ScrollReveal>
           </div>
 
-          {/* Awards: Distinct Outer Card Physics + Inner Counter Pop & Description Blur */}
+          {/* Results: Distinct Outer Card Physics + Inner Counter Pop & Description Blur */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             {[
-              { title: 'Awwards', count: 14, desc: 'Site of the Day & Developer Honors', variant: 'counter-pop' as RevealVariant },
-              { title: 'CSS Design Awards', count: 34, desc: 'Special Kudos & Best UI/UX Innovation', variant: 'card-lift' as RevealVariant },
-              { title: 'The FWA', count: 7, desc: 'FWA of the Day & Cutting-Edge Craft', variant: 'zoom-rotate' as RevealVariant },
-            ].map((award, idx) => {
+              {
+                title: 'Customers',
+                count: 15,
+                suffix: '+',
+                desc: 'Active Enterprise Clients & Strategic Partners',
+                variant: 'counter-pop' as RevealVariant,
+              },
+              {
+                title: 'Transactions Processed',
+                count: 50,
+                suffix: 'K+',
+                desc: 'Sub-Second Top-ups & High-Frequency API Dispatches',
+                variant: 'card-lift' as RevealVariant,
+              },
+              {
+                title: 'System Uptime & Integrity',
+                count: 99.98,
+                decimals: 2,
+                suffix: '%',
+                desc: 'Fault-Tolerant Microservices & Zero-Loss Ledger Locks',
+                variant: 'zoom-rotate' as RevealVariant,
+              },
+            ].map((result, idx) => {
               const baseDelay = idx * 140;
               return (
                 <ScrollReveal
                   key={idx}
-                  variant={award.variant}
+                  variant={result.variant}
                   delay={baseDelay}
                   duration={950}
                   className="h-full"
                 >
-                  <div className="p-8 md:p-12 rounded-2xl border border-median-taupe/20 bg-median-taupe/5 hover:border-median-taupe hover:bg-white transition-all duration-300 group h-full">
-                    <ScrollReveal variant="badge-drop" delay={baseDelay + 140} duration={750}>
-                      <h3 className="font-oswald text-2xl font-bold uppercase text-black mb-4">
-                        {award.title}
-                      </h3>
-                    </ScrollReveal>
-                    <ScrollReveal variant="counter-pop" delay={baseDelay + 240} duration={850}>
-                      <div className="font-oswald text-7xl sm:text-8xl font-bold text-median-taupe my-2 group-hover:scale-105 transition-transform">
-                        <CountingNumber value={award.count} duration={1800} />
-                      </div>
-                    </ScrollReveal>
+                  <div className="p-8 md:p-12 rounded-2xl border border-median-taupe/20 bg-median-taupe/5 hover:border-median-taupe hover:bg-white transition-all duration-300 group h-full flex flex-col justify-between">
+                    <div>
+                      <ScrollReveal variant="badge-drop" delay={baseDelay + 140} duration={750}>
+                        <h3 className="font-oswald text-xl sm:text-2xl font-bold uppercase text-black mb-4">
+                          {result.title}
+                        </h3>
+                      </ScrollReveal>
+                      <ScrollReveal variant="counter-pop" delay={baseDelay + 240} duration={850}>
+                        <div className="font-oswald text-6xl sm:text-7xl lg:text-8xl font-bold text-median-taupe my-2 group-hover:scale-105 transition-transform">
+                          <CountingNumber
+                            value={result.count}
+                            suffix={result.suffix}
+                            decimals={result.decimals}
+                            duration={1800}
+                          />
+                        </div>
+                      </ScrollReveal>
+                    </div>
                     <ScrollReveal variant="blur-focus" delay={baseDelay + 340} duration={800}>
-                      <p className="text-xs text-median-taupe/70 font-normal uppercase tracking-wider mt-2">
-                        {award.desc}
+                      <p className="text-xs text-median-taupe/70 font-normal uppercase tracking-wider mt-4">
+                        {result.desc}
                       </p>
                     </ScrollReveal>
                   </div>

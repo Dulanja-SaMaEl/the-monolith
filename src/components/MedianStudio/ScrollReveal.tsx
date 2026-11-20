@@ -467,6 +467,7 @@ interface CountingNumberProps {
   duration?: number;
   prefix?: string;
   suffix?: string;
+  decimals?: number;
   className?: string;
 }
 
@@ -475,6 +476,7 @@ export const CountingNumber: React.FC<CountingNumberProps> = ({
   duration = 1800,
   prefix = '',
   suffix = '',
+  decimals,
   className = '',
 }) => {
   const [displayValue, setDisplayValue] = useState(0);
@@ -518,7 +520,9 @@ export const CountingNumber: React.FC<CountingNumberProps> = ({
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const easedProgress = 1 - Math.pow(1 - progress, 3);
-      const currentVal = Math.floor(easedProgress * value);
+      const currentVal = decimals !== undefined
+        ? Number((easedProgress * value).toFixed(decimals))
+        : Math.floor(easedProgress * value);
 
       setDisplayValue(currentVal);
 
@@ -531,9 +535,11 @@ export const CountingNumber: React.FC<CountingNumberProps> = ({
 
     animId = requestAnimationFrame(updateCounter);
     return () => cancelAnimationFrame(animId);
-  }, [isActive, value, duration]);
+  }, [isActive, value, duration, decimals]);
 
-  const formatted = value < 10 ? String(displayValue).padStart(2, '0') : String(displayValue);
+  const formatted = decimals !== undefined
+    ? displayValue.toFixed(decimals)
+    : (value < 10 ? String(displayValue).padStart(2, '0') : String(displayValue));
 
   return (
     <span ref={ref} className={className}>
