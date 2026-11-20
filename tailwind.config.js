@@ -3,50 +3,92 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    "./*.{js,ts,jsx,tsx}"
   ],
   theme: {
     extend: {
-      colors: {
-        monolith: {
-          void: '#080807',
-          surface: '#141310',
-          elevated: '#1c1a16',
-          card: '#181714',
-          text: '#fbfbf9',
-          amber: '#ff9500',
-          amberLight: '#ffa726',
-          amberDark: '#e68500',
-          champagne: '#e8dcc4',
-          silver: '#e5e0d8',
-          muted: '#a8a29a',
-          fog: '#7e786f',
-          taupe: '#8e867b',
-          dust: '#dcd7cf',
-          border: 'rgba(168, 162, 154, 0.15)',
-          borderHover: 'rgba(255, 149, 0, 0.4)',
-        }
-      },
       fontFamily: {
-        sans: ['Manrope', 'Plus Jakarta Sans', 'Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Space Mono', 'monospace'],
-        display: ['Space Grotesk', 'Manrope', 'sans-serif']
+        kanit: ['Kanit', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        heading: ['Outfit', 'sans-serif'],
+        serif: ['"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
+        editorial: ['"Instrument Serif"', '"Playfair Display"', 'serif'],
+        'tt-norms': ['"TT Norms Pro"', 'system-ui', 'sans-serif'],
+        oswald: ['Oswald', 'sans-serif'],
+        inter: ['"Inter Tight"', 'sans-serif'],
+      },
+      colors: {
+        median: {
+          taupe: '#9F8170',
+          'taupe-light': '#b59b8c',
+          'taupe-dark': '#836555',
+          cream: '#FAF8F5',
+          dark: '#141414',
+          black: '#000000',
+          white: '#ffffff',
+          line: 'rgba(159, 129, 112, 0.25)',
+          'line-dark': 'rgba(0, 0, 0, 0.1)',
+        },
+        void: '#08090B',
+        deep: '#0D1117',
+        surface: {
+          DEFAULT: '#121820',
+          soft: '#18212B',
+          card: 'rgba(18, 24, 32, 0.7)',
+        },
+        cyan: {
+          400: '#7DE7FF',
+          500: '#22D3EE',
+          300: '#A5F3FC',
+        },
+        orange: {
+          400: '#FFB26B',
+          500: '#FF7A3D',
+          600: '#D96B27',
+          700: '#88300A',
+        },
+        ice: '#C9F3FF',
+        muted: '#AAB3BF',
       },
       boxShadow: {
-        'amber-glow': '0 0 35px -5px rgba(255, 149, 0, 0.35)',
-        'amber-glow-lg': '0 0 70px -10px rgba(255, 149, 0, 0.28)',
-        'taupe-glow': '0 0 50px -10px rgba(255, 149, 0, 0.15)',
-        'taupe-glow-lg': '0 0 80px -15px rgba(255, 149, 0, 0.22)',
-        'glass-inset': 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.08)',
+        'glow-cyan': '0 0 35px rgba(125, 231, 255, 0.25)',
+        'glow-orange': '0 0 35px rgba(255, 122, 61, 0.25)',
+        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
       },
       animation: {
-        'pulse-subtle': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'float-slow': 'float 6s ease-in-out infinite',
+        'marquee': 'marquee 25s linear infinite',
+        'marquee-reverse': 'marquee-reverse 25s linear infinite',
+        'float': 'float 6s ease-in-out infinite',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'marquee-left': 'marqueeLeft 35s linear infinite',
+        'marquee-right': 'marqueeRight 35s linear infinite',
+        'pulse-subtle': 'pulseSubtle 3s ease-in-out infinite',
       },
       keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        'marquee-reverse': {
+          '0%': { transform: 'translateX(-50%)' },
+          '100%': { transform: 'translateX(0%)' },
+        },
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-6px)' },
-        }
+          '50%': { transform: 'translateY(-12px)' },
+        },
+        marqueeLeft: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        marqueeRight: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        pulseSubtle: {
+          '0%, 100%': { opacity: '0.4' },
+          '50%': { opacity: '0.8' },
+        },
       }
     },
   },
