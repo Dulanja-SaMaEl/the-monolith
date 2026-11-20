@@ -440,18 +440,48 @@ export const downloadBillingVoucherHtml = (doc: BillingDocument): void => {
 };
 
 /**
- * Opens a dedicated print window with this invoice and automatically triggers print/save to PDF
+ * Renders the voucher into a hidden iframe (never blocked by popup blockers)
+ * and opens the native Print / Save as PDF dialog cleanly.
  */
 export const printBillingVoucherPdf = (doc: BillingDocument): void => {
   const htmlContent = generateInvoiceHtml(doc);
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.open();
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-    }, 450);
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  iframe.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(iframe);
+
+  const iframeDoc = iframe.contentWindow?.document;
+  if (!iframeDoc || !iframe.contentWindow) {
+    document.body.removeChild(iframe);
+    downloadBillingVoucherHtml(doc);
+    return;
+  }
+
+  iframeDoc.open();
+  iframeDoc.write(htmlContent);
+  iframeDoc.close();
+
+  const triggerPrint = () => {
+    try {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+    } finally {
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 1500);
+    }
+  };
+
+  if (iframeDoc.fonts && iframeDoc.fonts.ready) {
+    iframeDoc.fonts.ready.then(() => setTimeout(triggerPrint, 200));
+  } else {
+    setTimeout(triggerPrint, 500);
   }
 };

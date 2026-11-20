@@ -73,6 +73,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const [lineItems, setLineItems] = useState<BillingLineItem[]>([
     { id: '1', description: 'Core Microservices Architecture & Redis Mutex Implementation', quantity: 1, unit_price: 3500, total: 3500 },
   ]);
+  const [selectedBillingDoc, setSelectedBillingDoc] = useState<BillingDocument | null>(null);
+  const [lastCreatedDoc, setLastCreatedDoc] = useState<BillingDocument | null>(null);
 
   // 5. Customer Review Form
   const [revName, setRevName] = useState('');
@@ -223,14 +225,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
     setLineItems((prev) => prev.filter((i) => i.id !== id));
   };
 
-  const handleCreateBilling = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!billClientId || lineItems.length === 0) return;
+  const createBillingRecord = (): BillingDocument | null => {
+    if (!billClientId || lineItems.length === 0) return null;
 
     const selectedClient = users.find((u) => u.id === billClientId);
     const subtotal = lineItems.reduce((acc, i) => acc + i.total, 0);
 
-    portalStore.createBillingDocument({
+    const created = portalStore.createBillingDocument({
       type: billType,
       client_id: billClientId,
       client_name: selectedClient?.company_name || selectedClient?.full_name || 'Client',
@@ -245,10 +246,30 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       notes: billNotes || 'Standard Net-30 enterprise terms.',
     });
 
+    setLastCreatedDoc(created);
     setBillProjectTitle('');
     setBillNotes('');
     refreshData();
-    showAlert(`✓ ${billType.toUpperCase()} successfully generated and dispatched to client.`);
+    showAlert(`✓ ${billType.toUpperCase()} (${created.document_number}) generated and ready to download.`);
+    return created;
+  };
+
+  const handleCreateBilling = (e: React.FormEvent) => {
+    e.preventDefault();
+    createBillingRecord();
+  };
+
+  const handleCreateAndDownload = (format: 'html' | 'pdf') => {
+    const created = createBillingRecord();
+    if (!created) {
+      showAlert('Please select a client and add at least one deliverable item first.');
+      return;
+    }
+    if (format === 'pdf') {
+      printBillingVoucherPdf(created);
+    } else {
+      downloadBillingVoucherHtml(created);
+    }
   };
 
   // 5. Submit Customer Review
@@ -1105,13 +1126,63 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full py-3 rounded-xl bg-black text-white font-oswald text-xs uppercase tracking-widest hover:bg-median-taupe transition-colors"
-                >
-                  Generate & Send Document →
-                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+                  <button
+                    type="submit"
+                    className="w-full py-3 rounded-xl bg-black text-white font-oswald text-xs uppercase tracking-widest hover:bg-median-taupe transition-colors"
+                  >
+                    Generate & Send →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCreateAndDownload('pdf')}
+                    className="w-full py-3 rounded-xl border border-black text-black hover:bg-black hover:text-white font-oswald text-xs uppercase tracking-widest transition-colors"
+                  >
+                    Generate & Save PDF ↓
+                  </button>
+                </div>
               </form>
+
+              {/* Quick Download Banner for Newly Generated Voucher */}
+              {lastCreatedDoc && (
+                <div className="mt-5 p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-emerald-900 uppercase">
+                      ✓ Ready: {lastCreatedDoc.document_number} ({lastCreatedDoc.type})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setLastCreatedDoc(null)}
+                      className="text-emerald-700 hover:text-black font-bold"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBillingDoc(lastCreatedDoc)}
+                      className="px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-900 hover:bg-emerald-100 text-[11px] font-semibold uppercase"
+                    >
+                      Preview Voucher
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => downloadBillingVoucherHtml(lastCreatedDoc)}
+                      className="px-3 py-1.5 rounded-lg bg-white border border-emerald-700 text-emerald-900 hover:bg-emerald-700 hover:text-white text-[11px] font-semibold uppercase transition-colors"
+                    >
+                      ↓ Download (.html)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => printBillingVoucherPdf(lastCreatedDoc)}
+                      className="px-3 py-1.5 rounded-lg bg-black text-white hover:bg-median-taupe text-[11px] font-semibold uppercase transition-colors"
+                    >
+                      Print / Save PDF ↗
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Issued Invoices & Status Adjusters */}
@@ -1173,20 +1244,30 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                         </button>
                       </div>
 
-                      <div className="flex gap-1.5">
+                      <div className="flex flex-wrap gap-1.5">
                         <button
+                          type="button"
+                          onClick={() => setSelectedBillingDoc(doc)}
+                          title="Preview Full Voucher"
+                          className="px-2.5 py-1 rounded border border-median-taupe/40 text-median-taupe hover:border-black hover:text-black text-[10px] font-semibold uppercase transition-colors"
+                        >
+                          Preview
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => downloadBillingVoucherHtml(doc)}
                           title="Download Voucher File (.html)"
-                          className="px-2.5 py-1 rounded border border-median-taupe/40 text-black hover:border-black text-[10px] font-mono font-semibold transition-colors"
+                          className="px-2.5 py-1 rounded border border-median-taupe/40 text-black hover:border-black text-[10px] font-semibold uppercase transition-colors"
                         >
                           ↓ Download
                         </button>
                         <button
+                          type="button"
                           onClick={() => printBillingVoucherPdf(doc)}
-                          title="Print / Save PDF"
-                          className="px-2.5 py-1 rounded border border-black bg-black text-white hover:bg-median-taupe text-[10px] font-mono font-semibold transition-colors"
+                          title="Print / Save as PDF"
+                          className="px-2.5 py-1 rounded border border-black bg-black text-white hover:bg-median-taupe hover:border-median-taupe text-[10px] font-semibold uppercase transition-colors"
                         >
-                          PDF ↗
+                          Save PDF ↗
                         </button>
                       </div>
                     </div>
@@ -1589,6 +1670,107 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
           </div>
         )}
       </main>
+
+      {/* Haute Editorial Admin Voucher Preview & Download Modal */}
+      {selectedBillingDoc && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#FAF8F5] max-w-2xl w-full rounded-2xl border border-median-taupe/30 shadow-2xl p-8 sm:p-10 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start border-b border-median-taupe/20 pb-6 mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-3.5 h-3.5 bg-black flex items-center justify-center text-white text-[8px] font-bold">
+                    ■
+                  </span>
+                  <span className="font-oswald text-lg font-bold tracking-[0.2em] text-black uppercase">
+                    MONOLITH<span className="text-median-taupe ml-1">LK</span>
+                  </span>
+                </div>
+                <h3 className="font-oswald text-2xl font-bold uppercase text-black">
+                  {selectedBillingDoc.type.toUpperCase()}: {selectedBillingDoc.document_number}
+                </h3>
+                <span className="text-xs text-median-taupe">
+                  Issued to: <strong className="text-black">{selectedBillingDoc.client_name}</strong> · Due: {selectedBillingDoc.due_date}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedBillingDoc(null)}
+                className="w-9 h-9 rounded-full border border-median-taupe/40 flex items-center justify-center text-sm font-bold text-median-taupe hover:text-black hover:border-black transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-median-taupe/20 text-median-taupe uppercase text-left">
+                    <th className="py-2 font-oswald tracking-wider">Deliverable Item</th>
+                    <th className="py-2 text-center font-oswald tracking-wider">Qty</th>
+                    <th className="py-2 text-right font-oswald tracking-wider">Unit Price</th>
+                    <th className="py-2 text-right font-oswald tracking-wider">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-median-taupe/15">
+                  {selectedBillingDoc.line_items.map((item) => (
+                    <tr key={item.id}>
+                      <td className="py-3 text-black font-semibold">{item.description}</td>
+                      <td className="py-3 text-center text-black/80">{item.quantity}</td>
+                      <td className="py-3 text-right text-black/80">${item.unit_price.toLocaleString()}</td>
+                      <td className="py-3 text-right font-bold text-black">${item.total.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="border-t border-median-taupe/20 pt-4 flex flex-col items-end gap-1 text-xs">
+                <div className="flex justify-between w-52 text-median-taupe">
+                  <span>Subtotal:</span>
+                  <span>${selectedBillingDoc.subtotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between w-52 text-median-taupe">
+                  <span>Tax:</span>
+                  <span>${selectedBillingDoc.tax.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between w-52 font-bold text-sm text-black pt-2 border-t border-median-taupe/20">
+                  <span>Total Amount:</span>
+                  <span className="font-oswald text-lg text-median-taupe">
+                    ${selectedBillingDoc.total.toLocaleString()} {selectedBillingDoc.currency}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {selectedBillingDoc.notes && (
+              <div className="p-4 rounded-xl bg-median-taupe/5 border border-median-taupe/20 text-xs text-median-taupe mb-6">
+                <strong className="text-black">Voucher Notes:</strong> {selectedBillingDoc.notes}
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-median-taupe/20">
+              <span className="text-xs text-median-taupe">
+                Status: <strong className="uppercase text-black">{selectedBillingDoc.status}</strong>
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => downloadBillingVoucherHtml(selectedBillingDoc)}
+                  className="px-5 py-2.5 rounded-xl border border-median-taupe text-black hover:border-black font-oswald text-xs uppercase tracking-wider transition-colors"
+                >
+                  ↓ Download Voucher (.html)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => printBillingVoucherPdf(selectedBillingDoc)}
+                  className="px-5 py-2.5 rounded-xl bg-black text-white font-oswald text-xs uppercase tracking-wider hover:bg-median-taupe transition-colors"
+                >
+                  Print / Save PDF ↗
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
