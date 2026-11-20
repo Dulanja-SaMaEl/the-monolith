@@ -11,6 +11,7 @@ export interface Project {
   challenge: string;
   solution: string;
   metrics?: string;
+  stack?: string[];
   quote?: {
     text: string;
     author: string;
@@ -84,92 +85,264 @@ export interface TeamMember {
 
 export const PROJECTS: Project[] = [
   {
-    id: 'apex-global-ecommerce',
-    title: 'Apex Global Commerce',
-    category: 'Meta Ads & Headless Web',
-    tag: 'E-Commerce',
+    id: 'shadowtopup-engine',
+    title: 'ShadowTopup Engine',
+    category: 'Fintech & Gaming API',
+    tag: 'Fintech',
     image: '/assets/work-6.jpg',
-    year: '2024',
-    client: 'Apex International',
-    metrics: '5.8x ROAS • $840K Client Revenue',
-    description: 'An avant-garde headless commerce architecture pairing sub-1.1s page speeds with precision Meta CAPI advertising across international markets.',
-    deliverables: ['Headless React Store', 'Conversion API (CAPI) Pixel', 'Multivariate Creative Funnels', 'Stripe & Regional Checkout'],
-    challenge: 'Scaling international checkout conversion while maintaining lightning-fast load speeds across high-latency mobile networks.',
-    solution: 'Designed an ultra-lightweight React commerce stack with edge-cached product catalogs and automated retargeting loops.',
+    year: '2025',
+    client: 'ShadowTopup Global',
+    description: 'Automated digital gaming currency fulfillment platform connecting Next.js 14 and Laravel microservices. Automated Garena player validation, webhook reconciliations, and instant wallet balances with sub-second dispatching.',
+    deliverables: [
+      'Next.js 14 Player Portal',
+      'Laravel 11 Microservices Dispatcher',
+      'Garena API Player Validation',
+      'Automated Webhook Reconciliation Engine',
+      'Sub-Second Digital Fulfillment Core'
+    ],
+    challenge: 'High-frequency gaming flash sales causing player validation bottlenecks, race conditions on wallet balance deduction, and webhook state drift.',
+    solution: 'Architected a decoupled microservices pipeline with Redis asynchronous queue workers and sub-second Garena API validation achieving sub-850ms turnaround.',
+    metrics: '50,000+ Transactions • < 850 ms Dispatch Speed • 99.98% Fulfillment Reliability',
+    stack: ['Next.js 14', 'Laravel 11', 'Garena API', 'MySQL', 'Webhooks', 'Tailwind CSS'],
     quote: {
-      text: 'Monolith LK transformed our digital storefront into our highest-yield sales engine within 60 days.',
-      author: 'Marcus Sterling, Chief Commercial Officer'
+      text: 'ShadowTopup handled tens of thousands of simultaneous flash top-ups without a single ledger discrepancy.',
+      author: 'Operations Director, ShadowTopup Global'
     }
   },
   {
-    id: 'neurosync-ai-platform',
-    title: 'NeuroSync AI Platform',
-    category: 'Web App & B2B Lead Funnel',
-    tag: 'SaaS Platform',
+    id: 'nexustopup-gateway',
+    title: 'NexusTopUp Automation Gateway',
+    category: 'Distributed Microservices & Security',
+    tag: 'Security & Infra',
     image: '/assets/work-4.jpg',
-    year: '2024',
-    client: 'NeuroSync Labs USA',
-    metrics: '+340% Pipeline • $1.2M Contract Value',
-    description: 'A tactile, interactive SaaS platform designed to capture high-intent enterprise buyers and turn casual traffic into booked sales calls.',
-    deliverables: ['Next.js Interactive Platform', 'Tactile 3D Motion Core', 'B2B Funnel Optimization', 'Enterprise Lead Routing'],
-    challenge: 'Explaining a complex multi-agent neural network architecture to enterprise decision-makers without friction.',
-    solution: 'Built interactive 3D WebGL visualizations and streamlined single-action consultation flows that increased booking rates by 340%.'
+    year: '2025',
+    client: 'NexusTopUp Infrastructure',
+    description: 'Microservice gateway automating digital gaming top-ups. Features warm Redis session pools (12h TTL), 2FA TOTP generation from seed, distributed Redlock mutex locks, and Chrome JA3/JA4 TLS fingerprint mimicry bypassing strict WAF security.',
+    deliverables: [
+      'Warm Redis Session Pool Manager (12h TTL)',
+      'Deterministic 2FA TOTP Seed Generator',
+      'Distributed Redis Redlock Mutex Lock',
+      'Chrome JA3/JA4 TLS Fingerprint Mimicry',
+      'Prometheus Telemetry & Telegram Alerts'
+    ],
+    challenge: 'Bypassing aggressive Cloudflare/WAF anti-bot protections and mitigating double-claim race conditions across high-throughput distributed workers.',
+    solution: 'Engineered Chrome TLS fingerprinting to pass browser integrity challenges alongside distributed Redis Redlock mutex locks to eliminate duplicate claims completely.',
+    metrics: 'Session Latency 8s → 1.4s • 100% Automated 2FA TOTP • 0.00% Zero-Loss Double Claims',
+    stack: ['Node.js / TypeScript', 'Docker Compose', 'Redis / Redlock', 'TLS Fingerprinting', 'Prometheus', 'Telegram Bot'],
+    quote: {
+      text: 'The JA3/JA4 fingerprinting engine unlocked uninterrupted automated fulfillment through strict enterprise WAFs.',
+      author: 'Lead Infrastructure Engineer, NexusTopUp'
+    }
   },
   {
-    id: 'solaris-luxury-villas',
-    title: 'Solaris Luxury Villas',
-    category: 'Cinematic Branding & Web',
-    tag: 'Hospitality',
-    image: '/assets/work-2.jpg',
-    year: '2024',
-    client: 'Solaris Retreats Global',
-    metrics: '$1.8M Direct Bookings • Zero OTA Fees',
-    description: 'A luxury architectural portfolio and direct-booking portal for ultra-high-net-worth travelers, bypassing third-party OTA commissions entirely.',
-    deliverables: ['3D Spatial Villa Walkthrough', 'Direct Booking Architecture', '4K Drone Media Production', 'High-Intent Meta Ad Suite'],
-    challenge: 'Eliminating the 20% commission fee levied by Booking.com and Airbnb while attracting discerning direct luxury travelers.',
-    solution: 'Engineered an opulent, tactile editorial booking site powered by targeted Meta paid acquisition in high-income international corridors.'
-  },
-  {
-    id: 'beauty-basket-cosmetics',
-    title: 'Beauty Basket Cosmetics',
-    category: 'Paid Acquisition & Viral Media',
-    tag: 'Meta Ads',
-    image: '/assets/work-5.jpg',
-    year: '2023',
-    client: 'Beauty Basket Sri Lanka',
-    metrics: '4.8x ROAS • Rs. 12M+ Revenue Tracked',
-    description: 'High-growth cosmetic brand scaling through scroll-stopping short-form UGC reels, influencer integration, and dynamic retargeting.',
-    deliverables: ['Viral Reels & TikTok Studio', 'Meta Ad Account Scaling', 'CAPI Server-Side Tracking', 'Abandon-Cart Recovery System'],
-    challenge: 'Rising acquisition costs and heavy competition in the South Asian personal care and cosmetics market.',
-    solution: 'Created continuous creative refreshes and tiered offer funnels, maintaining a profitable 4.8x blended ROAS across all seasons.'
-  },
-  {
-    id: 'holistica-herbal-wellness',
-    title: 'Holistica Herbal Wellness',
-    category: 'Full-Stack E-Commerce',
-    tag: 'Development',
+    id: 'the-menu-enterprise',
+    title: 'The Menu Enterprise',
+    category: 'Enterprise SaaS & WebSockets',
+    tag: 'Enterprise SaaS',
     image: '/assets/work-1.jpg',
     year: '2024',
-    client: 'Holistica Herbal Health',
-    metrics: '99+ Lighthouse Score • +210% Conversion',
-    description: 'Modern botanical wellness platform featuring frictionless 1-page checkout, localized currency routing, and certified organic storytelling.',
-    deliverables: ['Custom Web Architecture', 'Core Web Vitals 99+ Audit', 'Automated WhatsApp Cart Sync', 'SEO Knowledge Hub'],
-    challenge: 'A bloated legacy WooCommerce setup causing 6-second load times and severe mobile bounce rates.',
-    solution: 'Rebuilt ground-up with modern high-speed React engineering, reducing latency to 0.9s and boosting mobile conversion by 210%.'
+    client: 'The Menu Hospitality Group',
+    description: 'Multi-tenant contactless QR dining platform with zero-reload Alpine.js modals, Pusher/Laravel Echo WebSocket kitchen display system (KDS), and dynamic multi-tenant billing.',
+    deliverables: [
+      'Contactless QR Dine-in & Ordering UI',
+      'Zero-Reload Alpine.js Cart & Modals',
+      'Pusher / Laravel Echo WebSocket Kitchen Display',
+      'Multi-Tenant Tenant Isolation & RBAC',
+      'Dynamic Multi-Location Billing & POS Sync'
+    ],
+    challenge: 'Handling peak restaurant dinner rushes with dozens of diners ordering concurrently without page reloading or kitchen display synchronization delays.',
+    solution: 'Combined lightweight reactive Alpine.js DOM states with sub-50ms WebSocket broadcasts via Pusher and Laravel Echo.',
+    metrics: 'Real-time Pusher WS Engine • 0ms Dynamic Page Reload • Multi-Tenant RBAC Security',
+    stack: ['Laravel 11', 'Vite', 'Alpine.js', 'Pusher WebSockets', 'Laravel Echo', 'Tailwind CSS']
   },
   {
-    id: 'ceylon-retail-group',
-    title: 'Ceylon Retail Enterprise',
-    category: 'Brand Identity & Lead Engine',
-    tag: 'Growth System',
+    id: 'clinical-pharmacy-os',
+    title: 'Clinical Pharmacy OS',
+    category: 'Healthcare & Compliance',
+    tag: 'Healthcare',
     image: '/assets/work-3.jpg',
     year: '2024',
-    client: 'Ceylon Retail Conglomerate',
-    metrics: '15+ Retail Locations Synced',
-    description: 'A cohesive digital ecosystem unifying physical retail branches across Sri Lanka with an omnichannel customer inquiry and loyalty engine.',
-    deliverables: ['Brand Design System', 'Branch Locator & Inquiries', 'Targeted Local Meta Ads', 'Lead Distribution Pipeline'],
-    challenge: 'Inconsistent brand representation across regional stores and lost customer inquiries without centralized tracking.',
-    solution: 'Established a strict editorial design system paired with automated WhatsApp customer support routing.'
+    client: 'Healthcare & Clinical Centers',
+    description: 'Medical dispensary management system handling prescription auditing, real-time batch and expiry tracking, drug interaction guardrails, barcode scanning, and multi-tier pharmaceutical billing with zero ledger discrepancies.',
+    deliverables: [
+      'Prescription Auditing & Doctor Verification',
+      'Real-time Drug Batch & Expiry Tracker',
+      'Automated Drug Interaction Guardrails',
+      'Hardware Barcode Scanner Driver Bridge',
+      'Multi-Tier Pharmaceutical Billing & Ledger'
+    ],
+    challenge: 'Preventing lethal drug interactions, eliminating expired medication inventory losses, and meeting strict clinical compliance standards.',
+    solution: 'Built an ACID-compliant transaction pipeline with instant barcode hardware scanning, automatic batch FIFO rotation, and immutable audit logs.',
+    metrics: '100% Verified Audit Trail • 0.00% Expiry Waste • HIPAA-Grade Compliance',
+    stack: ['Laravel Core', 'MySQL ACID Transactions', 'Livewire / Alpine.js', 'Hardware Barcode Scanner', 'Audit Trail']
+  },
+  {
+    id: 'old-devans-legacy-platform',
+    title: 'Old Devans Legacy Platform & Museum',
+    category: 'Digital Heritage & Realtime CMS',
+    tag: 'Web Platform',
+    image: '/assets/work-2.jpg',
+    year: '2024',
+    client: 'Old Devans Basketball Club',
+    description: 'Living historical archive and alumni platform featuring interactive milestone timeline, 3D championship trophy room, yearbook Hall of Fame, memory wall, and authenticated CRUD studio.',
+    deliverables: [
+      'Historical Archival Timeline (1980s–Present)',
+      'Interactive 3D Championship Trophy Room',
+      'Alumni Hall of Fame & Yearbook Directory',
+      'Digital Memory Wall & Media Gallery',
+      'Authenticated Content Management Studio'
+    ],
+    challenge: 'Preserving 40+ years of high-resolution historical basketball media and trophies while maintaining sub-second load times on mobile devices.',
+    solution: 'Engineered fluid Framer Motion animations with Supabase PostgreSQL caching and Next/Vite optimized media pipelines.',
+    metrics: '1980s–2020s Archive Span • < 25ms P95 API Response • 100% Interactive Trophy Museum',
+    stack: ['React 18', 'Vite', 'Tailwind CSS', 'Framer Motion', 'Express.js REST API', 'Supabase PostgreSQL', 'JWT Auth']
+  },
+  {
+    id: 'engineering-os',
+    title: 'Engineering OS',
+    category: 'Developer Tooling & AI',
+    tag: 'AI & Systems',
+    image: '/assets/work-5.jpg',
+    year: '2025',
+    client: 'Personal Systems Architecture',
+    description: 'Command center for senior software and AI engineers. Computes 168-hour weekly capacity budgets across 7 tracks, protected client buffers, SM-2 spaced repetition active recall, and analytics.',
+    deliverables: [
+      '168-Hour Weekly Capacity Engine',
+      '7-Track Time & Focus Allocation Matrix',
+      'SM-2 Spaced Repetition Active Recall Core',
+      'Protected Client Buffer Scheduling System',
+      'Deep Cognitive Performance & Burnout Telemetry'
+    ],
+    challenge: 'Optimizing cognitive focus across multi-client software architectures, open-source AI research, and high-frequency delivery cycles.',
+    solution: 'Formulated an algorithmic scheduler with SuperMemo SM-2 spaced repetition, Recharts telemetry, and sub-10ms App Router transitions.',
+    metrics: '168h Weekly Engine • SM-2 Spaced Repetition • < 10ms P99 Transitions',
+    stack: ['Next.js 16 (App Router)', 'React 19', 'TypeScript', 'Tailwind CSS', 'Recharts', 'SM-2 Algorithm']
+  },
+  {
+    id: 'glaciar-water-logistics',
+    title: 'Glaciar Water Logistics & Enterprise ERP',
+    category: 'Supply Chain & Logistics ERP',
+    tag: 'Logistics & ERP',
+    image: '/assets/work-6.jpg',
+    year: '2024',
+    client: 'Glaciar Water Bottling & Distribution',
+    description: 'Resource management platform managing distribution fleets, customer deposit containers, dynamic route allocations, and automated DomPDF invoice dispatching.',
+    deliverables: [
+      'Fleet Distribution & Dynamic Route Matrix',
+      'Reusable Deposit Container Reconciliation',
+      'Automated DomPDF Quotation & Invoicing',
+      'Driver Dispatch & Mobile Delivery Confirmation',
+      'Commercial Credit Ledger & Depot Stock Balancing'
+    ],
+    challenge: 'Tracking tens of thousands of circulating 5-gallon water containers and preventing distribution fleet deadheads.',
+    solution: 'Architected a PostgreSQL-backed dispatch system with automatic container deposit reconciliation and programmatic PDF invoicing.',
+    metrics: 'Automated DomPDF Invoicing • Real-Time Route Dispatch • 100% Reconciled Container Parity',
+    stack: ['Laravel 11', 'Laravel Sanctum', 'DomPDF Engine', 'PostgreSQL', 'Tailwind UI']
+  },
+  {
+    id: 'harvard-centralized-inquiry',
+    title: 'Harvard Centralized Inquiry',
+    category: 'Distributed Ingestion',
+    tag: 'Distributed Systems',
+    image: '/assets/work-4.jpg',
+    year: '2024',
+    client: 'Academic & Higher Education',
+    description: 'Multi-channel academic admissions inquiry system with automated department routing, SLA tracking, prioritized escalation matrix, and queue worker pipelines.',
+    deliverables: [
+      'Multi-Channel Ingestion (Email, Web, SMS)',
+      'Algorithmic Department Routing Engine',
+      'Dynamic SLA Violation Escalation Matrix',
+      'Asynchronous Queue Worker Processing',
+      'Executive Admissions Throughput Telemetry'
+    ],
+    challenge: 'Preventing admissions inquiry dropouts during international enrolment deadlines with massive traffic spikes.',
+    solution: 'Constructed resilient asynchronous queue worker pipelines ensuring zero message loss and guaranteed sub-2h SLA response dispatching.',
+    metrics: '< 2h Response SLA • Zero Dropout Queue Engine • Automated Priority Triage',
+    stack: ['Laravel Architecture', 'Queue Workers', 'Relational DB', 'Tailwind UI']
+  },
+  {
+    id: 'thiraplus-thirai-shorts',
+    title: 'ThiraPlus & Thirai Shorts',
+    category: 'Media Streaming & CDN',
+    tag: 'Media & Video',
+    image: '/assets/work-2.jpg',
+    year: '2024',
+    client: 'Digital Media & Entertainment',
+    description: 'Distributed media delivery engine powering HD streaming and bite-sized vertical video feeds with edge caching, automated FFmpeg transcoding, and low-latency playback.',
+    deliverables: [
+      'Bite-Sized Vertical Video Feed Engine (Shorts)',
+      'Adaptive Bitrate HLS / DASH Streaming',
+      'Automated FFmpeg Video Transcoding Pipeline',
+      'Edge CDN Caching & Pre-buffering Strategy',
+      'Creator Monetization & Impression Analytics'
+    ],
+    challenge: 'Delivering instantaneous vertical short video transitions and HD video playback on variable mobile 4G networks.',
+    solution: 'Engineered an automated server-side FFmpeg transcoding pipeline with edge CDN multi-resolution caching.',
+    metrics: 'Sub-second Start Latency • Adaptive Bitrate Transcoding • Zero Buffering Playback',
+    stack: ['Laravel Backend', 'Next.js App', 'FFmpeg Transcoding', 'Cloud Storage CDN']
+  },
+  {
+    id: 'sagaki-supply-chain',
+    title: 'Sagaki Supply Chain Engine',
+    category: 'Supply Chain & ERP',
+    tag: 'Logistics & ERP',
+    image: '/assets/work-3.jpg',
+    year: '2024',
+    client: 'Sagaki Supply Chain Logistics',
+    description: 'Wholesale logistics engine tracking multi-depot stock movements, automated invoice dispatching, distributor credit control, and predictive restock thresholds.',
+    deliverables: [
+      'Multi-Depot Stock Movement & Rebalance',
+      'Distributor Credit Control & Aging Reports',
+      'Predictive Restocking Threshold System',
+      'Automated Invoicing & Tax Ledger Integration',
+      'Warehouse Inventory Scanner Interface'
+    ],
+    challenge: 'Real-time inventory synchronization across geographically distributed warehouses with fluctuating supplier lead times.',
+    solution: 'Deployed atomic database locks and automated distributor credit controls with predictive safety stock algorithms.',
+    metrics: 'Live Multi-Depot Rebalance • Automated Invoice Dispatch • Real-Time Stock Audits',
+    stack: ['Laravel Enterprise', 'PostgreSQL', 'Tailwind CSS', 'REST Services']
+  },
+  {
+    id: 'canadian-talent-scraper',
+    title: 'Canadian Talent Scraper',
+    category: 'Distributed Web Crawling',
+    tag: 'Data Engineering',
+    image: '/assets/work-5.jpg',
+    year: '2025',
+    client: 'Market Intelligence & Data Mining',
+    description: 'Distributed web scraping system indexing, deduplicating, and parsing job postings across top Canadian talent boards with heuristic salary normalization and anti-bot residential proxy rotation.',
+    deliverables: [
+      'Distributed Headless Browser Puppeteer Cluster',
+      'Residential Proxy Rotation & Anti-Bot Bypasses',
+      'Heuristic Salary & Location Normalization Engine',
+      'PostgreSQL Data Lake with Full-Text Ingestion',
+      'Automated Daily Deduplication Cron Pipelines'
+    ],
+    challenge: 'Overcoming sophisticated bot mitigation mechanisms (Cloudflare, PerimeterX) and deduplicating hundreds of thousands of cross-posted job listings.',
+    solution: 'Engineered a distributed Python/Puppeteer crawler swarm with dynamic fingerprint rotation and sub-second deduplication hashing.',
+    metrics: '100,000+ Daily Indexed Docs • 3,200 docs/min Pipeline Speed • 99.9% Validated Data Fidelity',
+    stack: ['Node.js / Puppeteer', 'Python Crawlers', 'PostgreSQL Data Lake', 'Anti-Bot Bypasses']
+  },
+  {
+    id: 'shopify-checkout-gateway',
+    title: 'Shopify Checkout & Webhook Gateway',
+    category: 'E-Commerce & Payment Consistency',
+    tag: 'Fintech',
+    image: '/assets/work-1.jpg',
+    year: '2024',
+    client: 'High-Volume E-Commerce',
+    description: 'Resilient webhook listeners and custom checkout synchronizations resolving state drift between Shopify Admin APIs, payment gateways, and custom inventory databases using cryptographic HMAC verification and database idempotency keys.',
+    deliverables: [
+      'Cryptographic HMAC SHA256 Webhook Verification',
+      'Database Idempotency Key Lock Engine',
+      'Shopify Liquid & Admin API Sync Gateway',
+      'Dead-Letter Queue with Exponential Backoff',
+      'Automated ERP Inventory Re-allocation'
+    ],
+    challenge: 'Preventing phantom stockouts and duplicate payment captures during flash sales with delayed or duplicated webhook deliveries.',
+    solution: 'Constructed an idempotent transactional middleware with cryptographic HMAC verification and atomic Redis locks.',
+    metrics: '100% Cryptographic Idempotency • 0.00% Zero-Loss Double Charges • < 250 ms Callback ACK',
+    stack: ['Shopify Admin API', 'Shopify Liquid', 'Laravel Middleware', 'HMAC Validation', 'MySQL']
   }
 ];
 

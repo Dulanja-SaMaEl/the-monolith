@@ -150,6 +150,11 @@ export const WorkPage: React.FC<WorkPageProps> = ({ navigate }) => {
                     <h3 className="font-oswald text-2xl font-bold uppercase text-black group-hover:text-median-taupe transition-colors">
                       {proj.title}
                     </h3>
+                    {proj.metrics && (
+                      <div className="mt-2 text-[10px] font-mono font-semibold text-median-taupe/90 bg-median-taupe/5 border border-median-taupe/20 px-2.5 py-1 rounded-md line-clamp-1">
+                        ⚡ {proj.metrics.split('•')[0]}
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-6 pt-4 border-t border-median-taupe/15 flex items-center justify-between text-xs text-median-taupe/80">

@@ -220,15 +220,15 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
                 data-cursor="pointer"
                 className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-black hover:text-median-taupe underline decoration-median-taupe"
               >
-                <span>Explore All Works</span>
+                <span>Explore All 12 Works</span>
                 <span>→</span>
               </button>
             </ScrollReveal>
           </div>
 
-          {/* 6 Projects Grid - Distinct Card & Inner Data Animations */}
+          {/* 6 Featured Flagships Grid - Distinct Card & Inner Data Animations */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {PROJECTS.map((proj, idx) => {
+            {PROJECTS.slice(0, 6).map((proj, idx) => {
               const projectVariants: RevealVariant[] = [
                 'curtain-expand',
                 'card-lift',
@@ -282,6 +282,11 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
                             {proj.title}
                           </h3>
                         </ScrollReveal>
+                        {proj.metrics && (
+                          <div className="mt-2 text-[10px] font-mono font-semibold text-median-taupe/90 bg-median-taupe/5 border border-median-taupe/20 px-2.5 py-1 rounded-md line-clamp-1">
+                            ⚡ {proj.metrics.split('•')[0]}
+                          </div>
+                        )}
                       </div>
 
                       <ScrollReveal variant="fade-up" delay={colDelay + 360} duration={750}>

@@ -93,20 +93,57 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
               <span className="font-oswald text-base text-black font-semibold">{project.tag}</span>
             </div>
             <div>
-              <span className="text-median-taupe/60 block font-semibold mb-1">LICENSE</span>
-              <span className="font-oswald text-base text-black font-semibold">Available</span>
+              <span className="text-median-taupe/60 block font-semibold mb-1">STATUS</span>
+              <span className="font-oswald text-base text-emerald-600 font-semibold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <span>Production Live</span>
+              </span>
             </div>
           </div>
+
+          {/* Performance Telemetry Banner */}
+          {project.metrics && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-black text-white flex flex-col sm:flex-row items-center justify-between gap-3 border border-median-taupe/30 shadow-lg">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-white/70">
+                  Performance Telemetry
+                </span>
+              </div>
+              <span className="font-mono text-xs sm:text-sm font-semibold text-white/90 text-center sm:text-right">
+                {project.metrics}
+              </span>
+            </div>
+          )}
 
           {/* Overview */}
           <div className="space-y-4">
             <h3 className="font-oswald text-2xl font-bold text-black uppercase">
-              Project Concept
+              Project Concept & Architecture
             </h3>
             <p className="text-sm sm:text-base leading-relaxed text-black/90 font-normal">
               {project.description}
             </p>
           </div>
+
+          {/* Architecture & Tech Stack */}
+          {project.stack && project.stack.length > 0 && (
+            <div>
+              <h4 className="text-xs font-bold tracking-widest text-median-taupe/70 uppercase mb-3">
+                Core Technology Stack & Protocols
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {project.stack.map((tech, idx) => (
+                  <span
+                    key={idx}
+                    className="px-3.5 py-1.5 rounded-full border border-median-taupe/30 text-xs font-semibold text-black bg-median-taupe/5 hover:border-median-taupe transition-colors shadow-sm"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Challenge & Solution Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
