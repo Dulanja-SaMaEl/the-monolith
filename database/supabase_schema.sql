@@ -153,6 +153,71 @@ CREATE TABLE IF NOT EXISTS public.contact_inquiries (
 );
 
 -- ====================================================================
+-- SAFE COLUMN MIGRATIONS (Upgrades pre-existing tables cleanly)
+-- ====================================================================
+
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS company_name TEXT,
+  ADD COLUMN IF NOT EXISTS phone TEXT,
+  ADD COLUMN IF NOT EXISTS avatar_url TEXT,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+ALTER TABLE public.partners
+  ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'Enterprise',
+  ADD COLUMN IF NOT EXISTS logo_url TEXT,
+  ADD COLUMN IF NOT EXISTS website_url TEXT,
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
+
+ALTER TABLE public.projects
+  ADD COLUMN IF NOT EXISTS code_name TEXT,
+  ADD COLUMN IF NOT EXISTS repository_or_demo_url TEXT,
+  ADD COLUMN IF NOT EXISTS staging_url TEXT,
+  ADD COLUMN IF NOT EXISTS target_launch_date DATE,
+  ADD COLUMN IF NOT EXISTS summary TEXT,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+ALTER TABLE public.project_milestones
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS due_date DATE,
+  ADD COLUMN IF NOT EXISTS is_completed BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS order_index INTEGER DEFAULT 0;
+
+ALTER TABLE public.documents_billing
+  ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'LKR',
+  ADD COLUMN IF NOT EXISTS tax NUMERIC(14, 2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS due_date DATE,
+  ADD COLUMN IF NOT EXISTS notes TEXT,
+  ADD COLUMN IF NOT EXISTS pdf_url TEXT,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+ALTER TABLE public.project_requests
+  ADD COLUMN IF NOT EXISTS estimated_budget TEXT,
+  ADD COLUMN IF NOT EXISTS target_timeline TEXT,
+  ADD COLUMN IF NOT EXISTS attachments JSONB DEFAULT '[]'::jsonb;
+
+ALTER TABLE public.meeting_requests
+  ADD COLUMN IF NOT EXISTS timezone TEXT DEFAULT 'Asia/Colombo (UTC+5:30)',
+  ADD COLUMN IF NOT EXISTS meeting_type TEXT DEFAULT 'Architecture Consultation',
+  ADD COLUMN IF NOT EXISTS meeting_link TEXT;
+
+ALTER TABLE public.customer_reviews
+  ADD COLUMN IF NOT EXISTS client_avatar_url TEXT,
+  ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT TRUE;
+
+ALTER TABLE public.blog_posts
+  ADD COLUMN IF NOT EXISTS author TEXT DEFAULT 'Monolith LK Editorial',
+  ADD COLUMN IF NOT EXISTS read_time TEXT DEFAULT '5 min read',
+  ADD COLUMN IF NOT EXISTS cover_image TEXT,
+  ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT TRUE;
+
+ALTER TABLE public.contact_inquiries
+  ADD COLUMN IF NOT EXISTS company TEXT,
+  ADD COLUMN IF NOT EXISTS budget_tier TEXT,
+  ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'new';
+
+-- ====================================================================
 -- SCHEMA & ROLE PERMISSIONS (Fixes 42501 permission denied errors)
 -- ====================================================================
 

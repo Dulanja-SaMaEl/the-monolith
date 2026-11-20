@@ -53,6 +53,16 @@ BEGIN
     )
   ON CONFLICT (id) DO NOTHING;
 
+  -- Ensure GoTrue email identities exist for SQL-seeded auth users
+  INSERT INTO auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+  SELECT
+    u.id, u.id, u.email,
+    jsonb_build_object('sub', u.id::text, 'email', u.email),
+    'email', NOW(), NOW(), NOW()
+  FROM auth.users u
+  WHERE u.id IN (v_admin_id, v_client_shadow_id, v_client_pharmacy_id, v_client_glaciar_id)
+  ON CONFLICT DO NOTHING;
+
   -- Profiles (updated cleanly in case trigger ran)
   INSERT INTO public.profiles (id, email, full_name, role, company_name, phone)
   VALUES
