@@ -336,7 +336,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                   {/* Milestones Checklist */}
                   <div className="pt-6">
                     <h3 className="font-oswald text-sm font-bold uppercase tracking-wider text-black mb-4">
-                      Architectural Milestones & Deliverables
+                      Project Milestones & Deliverables
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {proj.milestones.map((m) => (
@@ -391,7 +391,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
 
               {requestSubmitted && (
                 <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-mono">
-                  ✓ Project request successfully received! Assigned to Architectural Triage Queue. We will follow up via email and the portal.
+                  ✓ Project request successfully received! Assigned to Monolith LK Review Queue. We will follow up via email and the portal.
                 </div>
               )}
 
@@ -461,7 +461,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-black mb-1.5 font-mono">
-                    Detailed Scope & Architectural Objectives *
+                    Detailed Scope & Project Objectives *
                   </label>
                   <textarea
                     required
@@ -780,7 +780,11 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                   {selectedBillingDoc.type.toUpperCase()}: {selectedBillingDoc.document_number}
                 </h3>
                 <span className="text-xs font-mono text-median-taupe">
-                  Issued to: {selectedBillingDoc.client_name}
+                  Issued to: <strong className="text-black">{selectedBillingDoc.client_name}</strong>
+                  {selectedBillingDoc.client_contact_name &&
+                    selectedBillingDoc.client_contact_name !== selectedBillingDoc.client_name && (
+                      <> · Client: <strong className="text-black">{selectedBillingDoc.client_contact_name}</strong></>
+                    )}
                 </span>
               </div>
               <button

@@ -9,7 +9,7 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =>
   try {
     let query = supabaseAdmin
       .from('documents_billing')
-      .select('*, client:profiles!client_id(full_name, email, company_name), project:projects!project_id(title, code_name)');
+      .select('*, client:profiles!client_id(full_name, email, company_name, phone), project:projects!project_id(title, code_name)');
 
     if (req.user?.role !== 'admin') {
       query = query.eq('client_id', req.user?.id);
@@ -81,7 +81,7 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
         due_date: due_date || null,
         notes,
       })
-      .select('*, client:profiles!client_id(full_name, email, company_name), project:projects!project_id(title, code_name)')
+      .select('*, client:profiles!client_id(full_name, email, company_name, phone), project:projects!project_id(title, code_name)')
       .single();
 
     if (error) throw error;
@@ -106,11 +106,27 @@ router.patch('/:id/status', requireAuth, requireAdmin, async (req: Authenticated
       .from('documents_billing')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .select('*, client:profiles!client_id(full_name, email, company_name), project:projects!project_id(title, code_name)')
+      .select('*, client:profiles!client_id(full_name, email, company_name, phone), project:projects!project_id(title, code_name)')
       .single();
 
     if (error) throw error;
     res.json({ document: data });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/billing/:id - Admin deletes invoice or quotation
+router.delete('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabaseAdmin
+      .from('documents_billing')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    res.json({ deleted: true, id });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -130,7 +146,7 @@ router.get('/:id/download', requireAuth, async (req: AuthenticatedRequest, res: 
     const { id } = req.params;
     let query = supabaseAdmin
       .from('documents_billing')
-      .select('*, client:profiles!client_id(full_name, email, company_name)')
+      .select('*, client:profiles!client_id(full_name, email, company_name, phone)')
       .eq('id', id);
 
     if (req.user?.role !== 'admin') {
@@ -168,7 +184,7 @@ router.get('/:id/download', requireAuth, async (req: AuthenticatedRequest, res: 
 <body>
   <div class="card">
     <h1>MONOLITH LK · ${escapeHtml(doc.type).toUpperCase()}: ${escapeHtml(doc.document_number)}</h1>
-    <p>Issued to: <strong>${escapeHtml(doc.client?.company_name || doc.client?.full_name)}</strong> (${escapeHtml(doc.client?.email)})</p>
+    <p>Client Name: <strong>${escapeHtml(doc.client?.full_name || doc.client?.company_name || 'Client')}</strong>${doc.client?.company_name && doc.client?.full_name && doc.client.company_name !== doc.client.full_name ? ` · Company: <strong>${escapeHtml(doc.client.company_name)}</strong>` : ''} (${escapeHtml(doc.client?.email)})</p>
     <p>Due Date: <strong>${escapeHtml(doc.due_date || 'Upon Receipt')}</strong> · Status: <strong>${escapeHtml(doc.status).toUpperCase()}</strong></p>
     <table>
       <thead>

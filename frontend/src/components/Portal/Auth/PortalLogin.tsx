@@ -47,7 +47,7 @@ export const PortalLogin: React.FC<PortalLoginProps> = ({ navigate }) => {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-black relative flex flex-col justify-between pt-24 pb-12 px-6 sm:px-12 selection:bg-median-taupe selection:text-white">
-      {/* Background Architectural Grid Lines */}
+      {/* Background Grid Lines */}
       <div className="absolute inset-0 pointer-events-none flex justify-between px-6 md:px-16 overflow-hidden opacity-10">
         {[...Array(7)].map((_, i) => (
           <div key={i} className="w-[1px] h-full bg-median-taupe" />
@@ -87,7 +87,7 @@ export const PortalLogin: React.FC<PortalLoginProps> = ({ navigate }) => {
                 Unified Portal Access
               </h1>
               <p className="text-xs text-median-taupe/80 font-normal uppercase tracking-wider mt-1">
-                Client VIP Lounge & Executive Studio OS
+                Client & Executive Portal — Monolith LK
               </p>
             </div>
 

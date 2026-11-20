@@ -282,6 +282,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
     setLineItems((prev) => prev.filter((i) => i.id !== id));
   };
 
+  const enrichBillingDoc = (doc: BillingDocument): BillingDocument => {
+    const client = users.find((u) => u.id === doc.client_id);
+    if (!client) return doc;
+    return {
+      ...doc,
+      client_name: doc.client_name || client.company_name || client.full_name,
+      client_contact_name: doc.client_contact_name || client.full_name,
+      client_email: doc.client_email || client.email,
+      client_phone: doc.client_phone || client.phone,
+    };
+  };
+
   const createBillingRecord = async (): Promise<BillingDocument | null> => {
     if (!billClientId || lineItems.length === 0) return null;
 
@@ -293,6 +305,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
         type: billType,
         client_id: billClientId,
         client_name: selectedClient?.company_name || selectedClient?.full_name || 'Client',
+        client_contact_name: selectedClient?.full_name,
+        client_email: selectedClient?.email,
+        client_phone: selectedClient?.phone,
         project_title: billProjectTitle || 'Enterprise Architecture Sprints',
         status: 'sent',
         currency: 'LKR',
@@ -304,12 +319,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
         notes: billNotes || 'Settled in LKR via Sri Lanka CEFTS / Corporate Bank Wire.',
       });
 
-      setLastCreatedDoc(created);
+      const enriched = enrichBillingDoc(created);
+      setLastCreatedDoc(enriched);
       setBillProjectTitle('');
       setBillNotes('');
       await refreshData();
       showAlert(`✓ ${billType.toUpperCase()} (${created.document_number}) generated in LKR and ready to download.`);
-      return created;
+      return enriched;
     } catch (err: any) {
       showAlert(`✕ Error creating billing document: ${err.message}`);
       return null;
@@ -485,7 +501,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-median-taupe/20">
           <div>
             <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
-              Monolith LK / Studio OS / Admin Control Panel
+              Monolith LK / Admin Control Panel
             </span>
             <h1 className="font-oswald text-3xl sm:text-4xl font-bold uppercase text-black">
               {activeTab === 'overview' && 'Executive Telemetry HUD'}
@@ -595,7 +611,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               <div className="p-6 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
                 <h3 className="font-oswald text-lg font-bold uppercase text-black mb-2">Publish Editorial Post</h3>
                 <p className="text-xs text-median-taupe/80 mb-4">
-                  Publish architectural whitepapers or engineering logs directly to the live homepage.
+                  Publish technical whitepapers or engineering logs directly to the live homepage.
                 </p>
                 <button
                   onClick={() => setActiveTab('blog')}
@@ -1161,7 +1177,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                 Create Quotation / Invoice
               </h3>
               <p className="text-xs text-median-taupe/80 mb-6">
-                Issue a legally binding architectural quotation or payment invoice. Auto-dispatches to client portal.
+                Issue a formal quotation or payment invoice. Auto-dispatches to client portal.
               </p>
 
               <form onSubmit={handleCreateBilling} className="space-y-4 text-xs font-mono">
@@ -1355,7 +1371,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               </h3>
 
               <div className="space-y-3">
-                {billingDocs.map((doc) => (
+                {billingDocs.map((rawDoc) => {
+                  const doc = enrichBillingDoc(rawDoc);
+                  return (
                   <div
                     key={doc.id}
                     className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm flex flex-col justify-between"
@@ -1365,7 +1383,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                         <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
                           {doc.type.toUpperCase()} · {doc.document_number}
                         </span>
-                        <h4 className="font-oswald text-lg font-bold uppercase text-black">{doc.client_name}</h4>
+                        <h4 className="font-oswald text-lg font-bold uppercase text-black">
+                          {doc.client_name}
+                          {doc.client_contact_name && doc.client_contact_name !== doc.client_name && (
+                            <span className="text-sm font-normal text-median-taupe normal-case ml-2">
+                              ({doc.client_contact_name})
+                            </span>
+                          )}
+                        </h4>
                         <span className="text-xs font-mono text-median-taupe/80">
                           Total: <strong className="text-black font-semibold">{doc.currency || 'LKR'} {doc.total.toLocaleString()}</strong>
                         </span>
@@ -1382,7 +1407,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                       </span>
                     </div>
 
-                    {/* Status Toggle & Download Buttons */}
+                    {/* Status Toggle, Download & Delete Buttons */}
                     <div className="pt-3 border-t border-median-taupe/15 flex flex-wrap items-center justify-between gap-2">
                       <div className="flex gap-2">
                         <button
@@ -1432,10 +1457,30 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                         >
                           Save PDF ↗
                         </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!window.confirm(`Delete ${doc.type} ${doc.document_number}? This action cannot be undone.`)) return;
+                            try {
+                              await portalApi.deleteBillingDocument(doc.id);
+                              if (lastCreatedDoc?.id === doc.id) setLastCreatedDoc(null);
+                              if (selectedBillingDoc?.id === doc.id) setSelectedBillingDoc(null);
+                              await refreshData();
+                              showAlert(`Deleted ${doc.document_number}.`);
+                            } catch (err: any) {
+                              showAlert(`✕ Error deleting document: ${err.message}`);
+                            }
+                          }}
+                          title="Delete Invoice / Quotation"
+                          className="px-2.5 py-1 rounded border border-red-300 text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 text-[10px] font-semibold uppercase transition-colors"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1901,7 +1946,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   {selectedBillingDoc.type.toUpperCase()}: {selectedBillingDoc.document_number}
                 </h3>
                 <span className="text-xs text-median-taupe">
-                  Issued to: <strong className="text-black">{selectedBillingDoc.client_name}</strong> · Due: {selectedBillingDoc.due_date}
+                  Issued to: <strong className="text-black">{selectedBillingDoc.client_name}</strong>
+                  {selectedBillingDoc.client_contact_name &&
+                    selectedBillingDoc.client_contact_name !== selectedBillingDoc.client_name && (
+                      <> · Client: <strong className="text-black">{selectedBillingDoc.client_contact_name}</strong></>
+                    )}{' '}
+                  · Due: {selectedBillingDoc.due_date}
                 </span>
               </div>
               <button

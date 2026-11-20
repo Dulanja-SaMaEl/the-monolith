@@ -60,6 +60,9 @@ export interface BillingDocument {
   type: 'quotation' | 'invoice';
   client_id: string;
   client_name: string;
+  client_contact_name?: string;
+  client_email?: string;
+  client_phone?: string;
   project_title?: string;
   status: 'draft' | 'sent' | 'approved' | 'paid' | 'overdue';
   currency: string;
@@ -475,7 +478,18 @@ export const portalStore = {
 
   // Billing Documents (Invoices & Quotations)
   getBillingDocuments: (clientId?: string): BillingDocument[] => {
-    const list = getStored('billing', initialBilling);
+    const users = portalStore.getUsers();
+    const list = getStored('billing', initialBilling).map((d) => {
+      if (d.client_contact_name && d.client_email) return d;
+      const client = users.find((u) => u.id === d.client_id);
+      if (!client) return d;
+      return {
+        ...d,
+        client_contact_name: d.client_contact_name || client.full_name,
+        client_email: d.client_email || client.email,
+        client_phone: d.client_phone || client.phone,
+      };
+    });
     return clientId ? list.filter((d) => d.client_id === clientId) : list;
   },
   createBillingDocument: (
@@ -498,6 +512,10 @@ export const portalStore = {
     const list = portalStore.getBillingDocuments().map((d) =>
       d.id === id ? { ...d, status } : d
     );
+    setStored('billing', list);
+  },
+  deleteBillingDocument: (id: string): void => {
+    const list = portalStore.getBillingDocuments().filter((d) => d.id !== id);
     setStored('billing', list);
   },
 

@@ -77,6 +77,9 @@ const mapBillingRow = (row: any): BillingDocument => ({
   type: row.type,
   client_id: row.client_id,
   client_name: row.client?.company_name || row.client?.full_name || row.client_name || 'Client',
+  client_contact_name: row.client?.full_name || row.client_contact_name || undefined,
+  client_email: row.client?.email || row.client_email || undefined,
+  client_phone: row.client?.phone || row.client_phone || undefined,
   project_title: row.project?.title || row.project_title || undefined,
   status: row.status,
   currency: row.currency || 'LKR',
@@ -357,7 +360,7 @@ export const portalApi = {
       } catch {
         let q = supabase
           .from('documents_billing')
-          .select('*, client:profiles!client_id(full_name, email, company_name), project:projects!project_id(title, code_name)');
+          .select('*, client:profiles!client_id(full_name, email, company_name, phone), project:projects!project_id(title, code_name)');
         if (clientId) q = q.eq('client_id', clientId);
         const { data, error } = await q.order('created_at', { ascending: false });
         if (!error && data) return { data: data.map(mapBillingRow), live: true };
@@ -398,7 +401,18 @@ export const portalApi = {
           })
           .select()
           .single();
-        if (!error && data) return { document: mapBillingRow({ ...data, client_name: doc.client_name }), live: true };
+        if (!error && data) {
+          return {
+            document: mapBillingRow({
+              ...data,
+              client_name: doc.client_name,
+              client_contact_name: doc.client_contact_name,
+              client_email: doc.client_email,
+              client_phone: doc.client_phone,
+            }),
+            live: true,
+          };
+        }
       }
     }
     return { document: portalStore.createBillingDocument(doc), live: false };
@@ -416,6 +430,20 @@ export const portalApi = {
       }
     }
     portalStore.updateBillingStatus(id, status);
+  },
+
+  async deleteBillingDocument(id: string): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/billing/${id}`, { method: 'DELETE' }, token);
+        return;
+      } catch {
+        const { error } = await supabase.from('documents_billing').delete().eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.deleteBillingDocument(id);
   },
 
   // ================= PROJECT REQUESTS =================
