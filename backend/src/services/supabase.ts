@@ -4,15 +4,25 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabaseSecretKey =
+  process.env.SUPABASE_SECRET_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  '';
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.warn('⚠️ Monolith LK Server: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not defined. Server running in mock/demo fallback mode.');
+export const isBackendSupabaseConfigured = Boolean(
+  supabaseUrl &&
+  supabaseSecretKey &&
+  !supabaseUrl.includes('placeholder') &&
+  !supabaseUrl.includes('your-supabase-project')
+);
+
+if (!isBackendSupabaseConfigured) {
+  console.warn('⚠️ Monolith LK Server: SUPABASE_URL or SUPABASE_SECRET_KEY is not defined.');
 }
 
 export const supabaseAdmin = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseServiceKey || 'placeholder-key',
+  supabaseSecretKey || 'placeholder-key',
   {
     auth: {
       autoRefreshToken: false,

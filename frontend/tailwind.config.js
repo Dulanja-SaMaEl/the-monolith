@@ -8,14 +8,12 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        kanit: ['Kanit', 'sans-serif'],
-        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-        heading: ['Outfit', 'sans-serif'],
-        serif: ['"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
-        editorial: ['"Instrument Serif"', '"Playfair Display"', 'serif'],
-        'tt-norms': ['"TT Norms Pro"', 'system-ui', 'sans-serif'],
-        oswald: ['Oswald', 'sans-serif'],
+        sans: ['"Inter Tight"', 'sans-serif'],
         inter: ['"Inter Tight"', 'sans-serif'],
+        mono: ['"Inter Tight"', 'sans-serif'],
+        serif: ['"Inter Tight"', 'sans-serif'],
+        heading: ['Oswald', 'sans-serif'],
+        oswald: ['Oswald', 'sans-serif'],
       },
       colors: {
         median: {
@@ -29,31 +27,9 @@ export default {
           line: 'rgba(159, 129, 112, 0.25)',
           'line-dark': 'rgba(0, 0, 0, 0.1)',
         },
-        void: '#08090B',
-        deep: '#0D1117',
-        surface: {
-          DEFAULT: '#121820',
-          soft: '#18212B',
-          card: 'rgba(18, 24, 32, 0.7)',
-        },
-        cyan: {
-          400: '#7DE7FF',
-          500: '#22D3EE',
-          300: '#A5F3FC',
-        },
-        orange: {
-          400: '#FFB26B',
-          500: '#FF7A3D',
-          600: '#D96B27',
-          700: '#88300A',
-        },
-        ice: '#C9F3FF',
-        muted: '#AAB3BF',
       },
       boxShadow: {
-        'glow-cyan': '0 0 35px rgba(125, 231, 255, 0.25)',
-        'glow-orange': '0 0 35px rgba(255, 122, 61, 0.25)',
-        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.12)',
       },
       animation: {
         'marquee': 'marquee 25s linear infinite',

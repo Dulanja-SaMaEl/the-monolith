@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BLOG_POSTS, BlogPost } from './siteData';
+import { portalStore } from '../../lib/portalStore';
 import { ArticleReaderModal } from './ArticleReaderModal';
 import { RotatingRibbons } from './RotatingRibbons';
 import { ScrollReveal, StaggerContainer } from './ScrollReveal';
@@ -12,9 +13,41 @@ export const BlogPage: React.FC<BlogPageProps> = ({ navigate }) => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
 
-  const categories = ['ALL', ...Array.from(new Set(BLOG_POSTS.map((p) => p.category.toUpperCase())))];
+  const allPosts = useMemo<BlogPost[]>(() => {
+    const dynamicPosts: BlogPost[] = portalStore.getBlogPosts(true).map((p) => ({
+      id: p.id,
+      title: p.title,
+      category: p.category,
+      date: new Date(p.published_at).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+      image: p.cover_image || '/assets/blog-1.jpg',
+      readTime: p.read_time || '5 min read',
+      summary: p.excerpt,
+      author: {
+        name: p.author || 'Monolith LK Editorial',
+        role: 'Monolith LK Studio',
+        avatar: '/dulanja.webp',
+      },
+      content: p.content_markdown
+        .split(/\n\n+/)
+        .map((para) => para.trim())
+        .filter(Boolean),
+    }));
 
-  const filteredPosts = BLOG_POSTS.filter((post) => {
+    const seen = new Set(dynamicPosts.map((p) => p.title.toLowerCase()));
+    const merged = [
+      ...dynamicPosts,
+      ...BLOG_POSTS.filter((p) => !seen.has(p.title.toLowerCase())),
+    ];
+    return merged;
+  }, []);
+
+  const categories = ['ALL', ...Array.from(new Set(allPosts.map((p) => p.category.toUpperCase())))];
+
+  const filteredPosts = allPosts.filter((post) => {
     if (activeCategory === 'ALL') return true;
     return post.category.toUpperCase() === activeCategory.toUpperCase();
   });

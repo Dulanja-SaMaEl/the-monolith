@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AuthProvider } from '../../context/AuthContext';
+import { AuthProvider, useAuth } from '../../context/AuthContext';
 import { CartProvider, useCart } from './CartContext';
 import { Preloader } from './Preloader';
 import { CustomCursor } from './CustomCursor';
@@ -28,23 +28,31 @@ interface MedianStudioProps {
   onSwitchView?: (view: 'ncloud' | 'jack' | 'halo' | 'median') => void;
 }
 
-const MedianStudioContent: React.FC<MedianStudioProps> = ({ onSwitchView }) => {
-  const [currentRoute, setCurrentRoute] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const hash = window.location.hash;
-      if (hash.startsWith('#/')) {
-        return hash.replace('#', '');
-      } else if (hash.startsWith('#median/')) {
-        return '/' + hash.replace('#median/', '');
-      }
+const parseInitialRoute = (): string => {
+  if (typeof window !== 'undefined') {
+    const hash = window.location.hash;
+    if (hash.startsWith('#/')) {
+      return hash.replace('#', '');
+    } else if (hash.startsWith('#median/')) {
+      return '/' + hash.replace('#median/', '');
     }
-    return '/';
-  });
+    const pathname = window.location.pathname;
+    if (pathname && pathname !== '/' && pathname !== '/index.html') {
+      return pathname;
+    }
+  }
+  return '/';
+};
 
+const MedianStudioContent: React.FC<MedianStudioProps> = () => {
+  const [currentRoute, setCurrentRoute] = useState<string>(parseInitialRoute);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isCheckoutOpen, closeCheckout } = useCart();
+  const { isAuthenticated, role, isLoading } = useAuth();
 
-  const isPortalRoute = currentRoute.startsWith('/portal');
+  const [baseRoute, routeAnchor] = currentRoute.split('#');
+  const normalizedRoute = (baseRoute || '/').split('?')[0];
+  const isPortalRoute = normalizedRoute.startsWith('/portal');
 
   useEffect(() => {
     const handlePopState = () => {
@@ -59,33 +67,59 @@ const MedianStudioContent: React.FC<MedianStudioProps> = ({ onSwitchView }) => {
     };
 
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handlePopState);
+    };
   }, []);
 
   const navigate = (route: string) => {
     setCurrentRoute(route);
     if (route === '/') {
-      window.history.pushState({}, '', window.location.pathname);
+      window.history.pushState({}, '', '/');
     } else {
       window.history.pushState({}, '', `#${route}`);
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!route.includes('#')) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
+  // Route guard for protected portals
+  useEffect(() => {
+    if (isLoading) return;
+    if (normalizedRoute === '/portal/admin') {
+      if (!isAuthenticated) {
+        navigate('/portal/login');
+      } else if (role !== 'admin') {
+        navigate('/portal/client');
+      }
+    } else if (normalizedRoute === '/portal/client') {
+      if (!isAuthenticated) {
+        navigate('/portal/login');
+      }
+    }
+  }, [normalizedRoute, isAuthenticated, role, isLoading]);
+
   const renderPage = () => {
-    switch (currentRoute) {
+    switch (normalizedRoute) {
       case '/portal':
       case '/portal/login':
         return <PortalLogin navigate={navigate} />;
       case '/portal/client':
-        return <ClientPortal navigate={navigate} />;
+        return isAuthenticated ? <ClientPortal navigate={navigate} /> : <PortalLogin navigate={navigate} />;
       case '/portal/admin':
-        return <AdminPortal navigate={navigate} />;
+        return isAuthenticated && role === 'admin' ? (
+          <AdminPortal navigate={navigate} />
+        ) : (
+          <PortalLogin navigate={navigate} />
+        );
       case '/about':
         return <AboutPage navigate={navigate} />;
       case '/services':
       case '/service':
-        return <ServicesPage navigate={navigate} />;
+        return <ServicesPage navigate={navigate} initialSection={routeAnchor} />;
       case '/work':
       case '/works':
         return <WorkPage navigate={navigate} />;
@@ -125,7 +159,7 @@ const MedianStudioContent: React.FC<MedianStudioProps> = ({ onSwitchView }) => {
           <Navbar
             onOpenMenu={() => setIsMenuOpen(true)}
             isMenuOpen={isMenuOpen}
-            activeRoute={currentRoute}
+            activeRoute={normalizedRoute}
             navigate={navigate}
           />
 
@@ -133,7 +167,7 @@ const MedianStudioContent: React.FC<MedianStudioProps> = ({ onSwitchView }) => {
           <FullscreenMenu
             isOpen={isMenuOpen}
             onClose={() => setIsMenuOpen(false)}
-            activeRoute={currentRoute}
+            activeRoute={normalizedRoute}
             navigate={navigate}
           />
 

@@ -161,38 +161,68 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Auto-create profile row when a new Supabase Auth user signs up
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, company_name, role)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+    COALESCE(NEW.raw_user_meta_data->>'company_name', ''),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'client')
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
 -- Public Profiles: User can view their own profile, Admins can view all
+DROP POLICY IF EXISTS "Profiles are viewable by user and admins" ON public.profiles;
 CREATE POLICY "Profiles are viewable by user and admins"
   ON public.profiles FOR SELECT
   USING (auth.uid() = id OR public.is_admin());
 
+DROP POLICY IF EXISTS "Users can update their own profile; admins can update all" ON public.profiles;
 CREATE POLICY "Users can update their own profile; admins can update all"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id OR public.is_admin());
 
+DROP POLICY IF EXISTS "Admins can insert profiles" ON public.profiles;
 CREATE POLICY "Admins can insert profiles"
   ON public.profiles FOR INSERT
   WITH CHECK (auth.uid() = id OR public.is_admin());
 
 -- Partners: Publicly readable; Admins can modify
+DROP POLICY IF EXISTS "Partners are viewable by everyone" ON public.partners;
 CREATE POLICY "Partners are viewable by everyone"
   ON public.partners FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Admins have full access to partners" ON public.partners;
 CREATE POLICY "Admins have full access to partners"
   ON public.partners FOR ALL
   USING (public.is_admin());
 
 -- Projects: Clients can view their own projects; Admins can do everything
+DROP POLICY IF EXISTS "Clients can view their own projects" ON public.projects;
 CREATE POLICY "Clients can view their own projects"
   ON public.projects FOR SELECT
   USING (client_id = auth.uid() OR public.is_admin());
 
+DROP POLICY IF EXISTS "Admins have full access to projects" ON public.projects;
 CREATE POLICY "Admins have full access to projects"
   ON public.projects FOR ALL
   USING (public.is_admin());
 
 -- Project Milestones: Inherit view rights from projects
+DROP POLICY IF EXISTS "Milestones viewable by project client and admins" ON public.project_milestones;
 CREATE POLICY "Milestones viewable by project client and admins"
   ON public.project_milestones FOR SELECT
   USING (
@@ -203,59 +233,72 @@ CREATE POLICY "Milestones viewable by project client and admins"
     )
   );
 
+DROP POLICY IF EXISTS "Admins have full access to project milestones" ON public.project_milestones;
 CREATE POLICY "Admins have full access to project milestones"
   ON public.project_milestones FOR ALL
   USING (public.is_admin());
 
 -- Documents Billing: Clients view their own invoices/quotes; Admins manage all
+DROP POLICY IF EXISTS "Clients view own billing documents" ON public.documents_billing;
 CREATE POLICY "Clients view own billing documents"
   ON public.documents_billing FOR SELECT
   USING (client_id = auth.uid() OR public.is_admin());
 
+DROP POLICY IF EXISTS "Admins manage billing documents" ON public.documents_billing;
 CREATE POLICY "Admins manage billing documents"
   ON public.documents_billing FOR ALL
   USING (public.is_admin());
 
 -- Project Requests: Clients create and view their own; Admins manage all
+DROP POLICY IF EXISTS "Clients create project requests" ON public.project_requests;
 CREATE POLICY "Clients create project requests"
   ON public.project_requests FOR INSERT
   WITH CHECK (client_id = auth.uid() OR public.is_admin());
 
+DROP POLICY IF EXISTS "Clients view own project requests" ON public.project_requests;
 CREATE POLICY "Clients view own project requests"
   ON public.project_requests FOR SELECT
   USING (client_id = auth.uid() OR public.is_admin());
 
+DROP POLICY IF EXISTS "Admins manage all project requests" ON public.project_requests;
 CREATE POLICY "Admins manage all project requests"
   ON public.project_requests FOR ALL
   USING (public.is_admin());
 
 -- Meeting Requests: Clients book and view their own; Admins manage all
+DROP POLICY IF EXISTS "Clients create meeting requests" ON public.meeting_requests;
 CREATE POLICY "Clients create meeting requests"
   ON public.meeting_requests FOR INSERT
   WITH CHECK (client_id = auth.uid() OR public.is_admin());
 
+DROP POLICY IF EXISTS "Clients view own meeting requests" ON public.meeting_requests;
 CREATE POLICY "Clients view own meeting requests"
   ON public.meeting_requests FOR SELECT
   USING (client_id = auth.uid() OR public.is_admin());
 
+DROP POLICY IF EXISTS "Admins manage all meeting requests" ON public.meeting_requests;
 CREATE POLICY "Admins manage all meeting requests"
   ON public.meeting_requests FOR ALL
   USING (public.is_admin());
 
 -- Customer Reviews: Publicly readable if featured; Admins manage all
+DROP POLICY IF EXISTS "Featured reviews viewable by everyone" ON public.customer_reviews;
 CREATE POLICY "Featured reviews viewable by everyone"
   ON public.customer_reviews FOR SELECT
   USING (is_featured = true OR public.is_admin());
 
+DROP POLICY IF EXISTS "Admins manage all customer reviews" ON public.customer_reviews;
 CREATE POLICY "Admins manage all customer reviews"
   ON public.customer_reviews FOR ALL
   USING (public.is_admin());
 
 -- Blog Posts: Publicly readable if published; Admins manage all
+DROP POLICY IF EXISTS "Published blogs viewable by everyone" ON public.blog_posts;
 CREATE POLICY "Published blogs viewable by everyone"
   ON public.blog_posts FOR SELECT
   USING (is_published = true OR public.is_admin());
 
+DROP POLICY IF EXISTS "Admins manage all blog posts" ON public.blog_posts;
 CREATE POLICY "Admins manage all blog posts"
   ON public.blog_posts FOR ALL
   USING (public.is_admin());

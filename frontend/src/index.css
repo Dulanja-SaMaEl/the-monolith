@@ -13,13 +13,27 @@
     scroll-behavior: smooth;
     color-scheme: light;
     background-color: #ffffff;
+    font-family: 'Inter Tight', sans-serif;
   }
 
   body, #root {
     background-color: #ffffff;
     color: #9F8170;
-    font-family: 'Inter Tight', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 500;
+    line-height: 1.6;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+  }
+
+  input, textarea, select, button, code, pre {
+    font-family: 'Inter Tight', sans-serif;
   }
 
   html.median-mode, body.median-mode {
@@ -59,71 +73,6 @@
 }
 
 @layer components {
-  /* Tactical Glassmorphism */
-  .glass-surface {
-    background: rgba(18, 24, 32, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-  }
-
-  .glass-surface-hover {
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .glass-surface-hover:hover {
-    background: rgba(24, 33, 43, 0.8);
-    border-color: rgba(125, 231, 255, 0.25);
-    transform: translateY(-2px);
-  }
-
-  .glass-badge {
-    background: rgba(125, 231, 255, 0.08);
-    border: 1px solid rgba(125, 231, 255, 0.2);
-    backdrop-filter: blur(8px);
-  }
-
-  .glass-input {
-    background: rgba(13, 17, 23, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.2s ease;
-  }
-  .glass-input:focus {
-    border-color: #7DE7FF;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(125, 231, 255, 0.2);
-  }
-
-  /* Text gradient utility */
-  .text-gradient-cyan {
-    background: linear-gradient(135deg, #FFFFFF 20%, #7DE7FF 80%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .text-gradient-warm {
-    background: linear-gradient(135deg, #FFB26B 0%, #FF7A3D 50%, #D96B27 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .text-gradient-hybrid {
-    background: linear-gradient(135deg, #FFFFFF 0%, #C9F3FF 40%, #7DE7FF 70%, #FF7A3D 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  /* Ultra-Clear High-Contrast Luminous Editorial Gradient */
-  .hero-heading, .hero-title {
-    background: linear-gradient(180deg, #FFFFFF 10%, #E8F1F8 55%, #A1B6C7 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 4px 30px rgba(255, 255, 255, 0.15));
-  }
-
-  .hero-heading-glow {
-    text-shadow: 0 0 35px rgba(125, 231, 255, 0.25);
-  }
-
   /* Median Editorial Architectural Lines */
   .line-full {
     background-color: #9F8170;
@@ -132,6 +81,14 @@
     mix-blend-mode: luminosity;
     width: 1px;
     height: 100%;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   @keyframes fadeInModal {
@@ -149,18 +106,15 @@
     animation: fadeInModal 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  /* Scoped Haute Editorial Styles - Monolith LK */
+  /* Scoped Haute Editorial Styles - Monolith LK (Strictly Oswald + Inter Tight) */
   .median-root {
     --color: #9F8170;
     --black: #ffffff;
     --black-2: #000000;
     font-family: 'Inter Tight', sans-serif !important;
-    text-transform: uppercase !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    line-height: 20px !important;
-    color: #9F8170 !important;
-    background-color: #ffffff !important;
+    font-weight: 500;
+    color: #9F8170;
+    background-color: #ffffff;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -176,12 +130,10 @@
     text-transform: uppercase !important;
   }
 
-  .median-root .font-inter {
-    font-family: 'Inter Tight', sans-serif !important;
-  }
-
+  .median-root .font-inter,
+  .median-root .font-sans,
   .median-root .font-mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+    font-family: 'Inter Tight', sans-serif !important;
   }
 
   .median-root ::selection {

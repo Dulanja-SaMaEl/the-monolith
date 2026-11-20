@@ -4,6 +4,7 @@ import { ScrollReveal, StaggerContainer } from './ScrollReveal';
 
 interface ServicesPageProps {
   navigate: (route: string) => void;
+  initialSection?: string;
 }
 
 // Stack & Technical Arsenal tags mapped to each practice
@@ -118,19 +119,22 @@ const PRACTICE_ENGAGEMENT_MODELS: Record<string, { model: string; leadTime: stri
   },
 };
 
-export const ServicesPage: React.FC<ServicesPageProps> = ({ navigate }) => {
+export const ServicesPage: React.FC<ServicesPageProps> = ({ navigate, initialSection }) => {
   useEffect(() => {
-    // If a hash is provided, scroll to that section
-    if (typeof window !== 'undefined' && window.location.hash) {
-      const targetId = window.location.hash.replace('#', '').replace('/services#', '');
+    const targetId =
+      initialSection ||
+      (typeof window !== 'undefined' && window.location.hash.includes('#/services#')
+        ? window.location.hash.split('#/services#')[1]
+        : '');
+    if (targetId) {
       const el = document.getElementById(targetId);
       if (el) {
         setTimeout(() => {
           el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 300);
+        }, 250);
       }
     }
-  }, []);
+  }, [initialSection]);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);

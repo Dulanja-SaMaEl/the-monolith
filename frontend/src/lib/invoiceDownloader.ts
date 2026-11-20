@@ -17,7 +17,7 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
   <title>${doc.document_number} — Monolith LK ${typeLabel}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after {
       box-sizing: border-box;
@@ -25,11 +25,11 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
       padding: 0;
     }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter Tight', sans-serif;
       background-color: #FAF8F5;
       color: #141414;
       padding: 40px 20px;
-      line-height: 1.5;
+      line-height: 1.6;
       -webkit-font-smoothing: antialiased;
     }
     .invoice-wrapper {
@@ -80,7 +80,7 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
       margin-left: 3px;
     }
     .studio-meta {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter Tight', sans-serif;
       font-size: 11px;
       color: rgba(159, 129, 112, 0.9);
       line-height: 1.6;
@@ -90,7 +90,7 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
     }
     .doc-type-pill {
       display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter Tight', sans-serif;
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.15em;
@@ -111,7 +111,7 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
     }
     .status-badge {
       display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter Tight', sans-serif;
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
@@ -143,7 +143,7 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
       padding: 18px 20px;
     }
     .info-label {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter Tight', sans-serif;
       font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
@@ -161,14 +161,14 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
     .info-text {
       font-size: 12px;
       color: #4b5563;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter Tight', sans-serif;
       line-height: 1.5;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 32px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter Tight', sans-serif;
       font-size: 12px;
     }
     thead th {
@@ -210,7 +210,7 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
     }
     .totals-table {
       width: 320px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter Tight', sans-serif;
       font-size: 12px;
     }
     .totals-row {
@@ -237,7 +237,7 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
       border: 1px solid rgba(159, 129, 112, 0.2);
       border-radius: 10px;
       padding: 18px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter Tight', sans-serif;
       font-size: 11px;
       color: #4b5563;
       margin-bottom: 36px;
@@ -253,7 +253,7 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
       padding-top: 28px;
     }
     .sign-box {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter Tight', sans-serif;
       font-size: 11px;
     }
     .sign-line {
@@ -278,7 +278,7 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
     .footer-watermark {
       margin-top: 32px;
       text-align: center;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter Tight', sans-serif;
       font-size: 10px;
       color: rgba(159, 129, 112, 0.6);
       text-transform: uppercase;

@@ -902,11 +902,64 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                       </div>
                     </div>
 
-                    <div className="w-full h-2.5 rounded-full bg-median-taupe/20 overflow-hidden">
+                    <div className="w-full h-2.5 rounded-full bg-median-taupe/20 overflow-hidden mb-3">
                       <div
                         className="h-full bg-median-taupe transition-all duration-300"
                         style={{ width: `${proj.progress_percentage}%` }}
                       />
+                    </div>
+
+                    {/* Status Selector & Milestones Toggle */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-median-taupe/15">
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="font-semibold text-black uppercase">Stage:</span>
+                        <select
+                          value={proj.status}
+                          onChange={(e) => {
+                            portalStore.updateProjectProgress(proj.id, {
+                              status: e.target.value as PortalProject['status'],
+                            });
+                            refreshData();
+                            showAlert(`Updated ${proj.code_name} stage to ${e.target.value.replace('_', ' ').toUpperCase()}.`);
+                          }}
+                          className="px-2.5 py-1 rounded-lg border border-median-taupe/30 bg-white text-xs text-black uppercase font-semibold"
+                        >
+                          <option value="discovery">Discovery</option>
+                          <option value="architecture">Architecture</option>
+                          <option value="in_progress">In Progress</option>
+                          <option value="qa_testing">QA Testing</option>
+                          <option value="deployed">Deployed</option>
+                          <option value="maintenance">Maintenance</option>
+                        </select>
+                      </div>
+
+                      {proj.milestones && proj.milestones.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {proj.milestones.map((ms) => (
+                            <button
+                              key={ms.id}
+                              type="button"
+                              onClick={() => {
+                                const updatedMilestones = proj.milestones.map((item) =>
+                                  item.id === ms.id ? { ...item, is_completed: !item.is_completed } : item
+                                );
+                                portalStore.updateProjectProgress(proj.id, {
+                                  milestones: updatedMilestones,
+                                });
+                                refreshData();
+                              }}
+                              className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-colors ${
+                                ms.is_completed
+                                  ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                                  : 'bg-white border-median-taupe/30 text-median-taupe hover:border-black hover:text-black'
+                              }`}
+                            >
+                              {ms.is_completed ? '✓ ' : '○ '}
+                              {ms.title}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1161,7 +1214,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                     type="text"
                     required
                     value={revName}
-                    onChange={(e) => setNewCustName(e.target.value)}
+                    onChange={(e) => setRevName(e.target.value)}
                     placeholder="e.g. Marcus Vance"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-sm text-black focus:outline-none focus:border-black"
                   />

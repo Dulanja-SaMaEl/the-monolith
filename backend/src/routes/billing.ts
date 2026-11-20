@@ -109,6 +109,14 @@ router.patch('/:id/status', requireAuth, requireAdmin, async (req: Authenticated
   }
 });
 
+const escapeHtml = (str: unknown): string =>
+  String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 // GET /api/billing/:id/download - Download voucher file
 router.get('/:id/download', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -129,36 +137,40 @@ router.get('/:id/download', requireAuth, async (req: AuthenticatedRequest, res: 
     }
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="${doc.document_number}.html"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${escapeHtml(doc.document_number)}.html"`);
     res.send(`<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>${doc.document_number} — Monolith LK</title>
+  <title>${escapeHtml(doc.document_number)} — Monolith LK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; padding: 40px; background: #faf8f5; color: #141414; }
-    .card { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 12px; border: 1px solid #9f8170; }
-    h1 { margin: 0 0 10px; font-size: 24px; text-transform: uppercase; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-    th { color: #9f8170; }
-    .total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 20px; color: #9f8170; }
+    body { font-family: 'Inter Tight', sans-serif; padding: 40px; background: #FAF8F5; color: #141414; line-height: 1.6; }
+    .card { max-width: 820px; margin: 0 auto; background: #fff; padding: 48px; border-radius: 16px; border: 1px solid rgba(159, 129, 112, 0.3); }
+    h1 { font-family: 'Oswald', sans-serif; margin: 0 0 10px; font-size: 28px; text-transform: uppercase; letter-spacing: 0.04em; color: #000; }
+    table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+    th, td { padding: 14px 12px; border-bottom: 1px solid rgba(159, 129, 112, 0.2); text-align: left; }
+    th { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.08em; color: #9F8170; font-size: 13px; }
+    .total { font-family: 'Oswald', sans-serif; text-align: right; font-size: 22px; font-weight: 700; margin-top: 24px; color: #9F8170; text-transform: uppercase; }
+    @media print { body { background: #fff; padding: 0; } .card { border: none; padding: 20px; } }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>MONOLITH LK · ${doc.type.toUpperCase()}: ${doc.document_number}</h1>
-    <p>Issued to: <strong>${doc.client?.company_name || doc.client?.full_name}</strong> (${doc.client?.email})</p>
-    <p>Due Date: <strong>${doc.due_date}</strong> · Status: <strong>${doc.status.toUpperCase()}</strong></p>
+    <h1>MONOLITH LK · ${escapeHtml(doc.type).toUpperCase()}: ${escapeHtml(doc.document_number)}</h1>
+    <p>Issued to: <strong>${escapeHtml(doc.client?.company_name || doc.client?.full_name)}</strong> (${escapeHtml(doc.client?.email)})</p>
+    <p>Due Date: <strong>${escapeHtml(doc.due_date)}</strong> · Status: <strong>${escapeHtml(doc.status).toUpperCase()}</strong></p>
     <table>
       <thead>
         <tr><th>Deliverable Item</th><th>Qty</th><th>Unit Rate</th><th>Total</th></tr>
       </thead>
       <tbody>
-        ${(doc.line_items || []).map((i: any) => `<tr><td>${i.description}</td><td>${i.quantity}</td><td>$${i.unit_price}</td><td>$${i.total}</td></tr>`).join('')}
+        ${(doc.line_items || []).map((i: any) => `<tr><td>${escapeHtml(i.description)}</td><td>${escapeHtml(i.quantity)}</td><td>$${Number(i.unit_price || 0).toLocaleString()}</td><td>$${Number(i.total || 0).toLocaleString()}</td></tr>`).join('')}
       </tbody>
     </table>
-    <div class="total">Total Due: $${doc.total} ${doc.currency}</div>
+    <div class="total">Total Due: $${Number(doc.total || 0).toLocaleString()} ${escapeHtml(doc.currency)}</div>
   </div>
 </body>
 </html>`);
