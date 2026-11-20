@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PROJECTS, CLIENT_LOGOS, TEAM_MEMBERS, BLOG_POSTS, Project, BlogPost } from './siteData';
+import { PROJECTS, CLIENT_LOGOS, TEAM_MEMBERS, BLOG_POSTS, SERVICES, Project, BlogPost, ServiceItem } from './siteData';
 import { RotatingRibbons } from './RotatingRibbons';
 import { ProjectDetailModal } from './ProjectDetailModal';
 import { ArticleReaderModal } from './ArticleReaderModal';
@@ -77,22 +77,6 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
             </ScrollReveal>
           </div>
         </ScrollReveal>
-
-        {/* Mouse Scroll Indicator */}
-        <ScrollReveal variant="fade-up" delay={620} duration={800}>
-          <div
-            onClick={scrollToServices}
-            data-cursor="pointer"
-            className="mt-12 flex flex-col items-center gap-2 cursor-pointer group opacity-75 hover:opacity-100 transition-opacity"
-          >
-            <div className="w-5 h-8 rounded-full border-2 border-median-taupe flex items-start justify-center p-1">
-              <span className="w-1 h-2 rounded-full bg-median-taupe animate-bounce" />
-            </div>
-            <span className="text-[10px] font-bold tracking-widest uppercase text-median-taupe">
-              Scroll
-            </span>
-          </div>
-        </ScrollReveal>
       </section>
 
       {/* ================= SECTION 1: SERVICES ================= */}
@@ -103,102 +87,104 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
             <div>
               <ScrollReveal variant="badge-drop" duration={750}>
                 <span className="text-xs font-bold tracking-widest uppercase text-median-taupe/70 block mb-2">
-                  Capabilities & Practices
+                  Capabilities & Architectural Practices
                 </span>
               </ScrollReveal>
               <ScrollReveal variant="split-mask" delay={100} duration={850}>
                 <h2 className="font-oswald text-4xl sm:text-6xl font-bold uppercase tracking-tight text-black">
-                  Thorough top quality solutions
+                  Our Services & Practices
                 </h2>
               </ScrollReveal>
             </div>
             <ScrollReveal variant="horizontal-slide-right" delay={180} duration={850}>
               <p className="text-xs sm:text-sm text-median-taupe/80 max-w-md font-normal leading-relaxed">
-                We engineer bespoke digital identities, robust technical architectures, and high-conversion e-commerce systems with obsessive attention to craftsmanship.
+                From bespoke enterprise transactional applications and custom generative AI/RAG models to zero-downtime cloud infrastructure, low-level security mimicry, and high-impact editorial brand marketing.
               </p>
             </ScrollReveal>
           </div>
 
-          {/* 3 Service Columns - Outer 3D Cards + Inner Staggered Data Loading */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                num: '01',
-                title: 'Product Design',
-                variant: 'card-flip-left' as RevealVariant,
-                icon: '/assets/ico-1.png',
-                description: 'End-to-end design thinking from preliminary discovery and research to high-fidelity design systems and interactive prototypes.',
-                bullets: ['Branding and Identity', 'Logo Design', 'User Interface Design', 'UX Architecture & Wireframing'],
-              },
-              {
-                num: '02',
-                title: 'Website Design',
-                variant: 'card-lift' as RevealVariant,
-                icon: '/assets/ico-2.png',
-                description: 'Bespoke web platforms engineered with modern frameworks, silky smooth animations, fluid responsiveness, and high speed.',
-                bullets: ['Responsive Web Design', 'Webflow & React Engineering', 'Creative GSAP Interactions', 'CMS & Store Integration'],
-              },
-              {
-                num: '03',
-                title: 'Marketing',
-                variant: 'card-flip-right' as RevealVariant,
-                icon: '/assets/ico-3.png',
-                description: 'Strategic market positioning and campaign architecture designed to capture attention and convert audiences organically.',
-                bullets: ['Brand Strategy', 'Digital Launch Campaigns', 'Content Direction', 'Organic Growth Engineering'],
-              },
-            ].map((srv, idx) => {
-              const baseDelay = idx * 140;
+          {/* 7 Comprehensive Practice Columns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {SERVICES.map((srv, idx) => {
+              const baseDelay = (idx % 3) * 120;
+              const isFullSpan = idx === 6; // 7th service spans full row on large screens for editorial balance
+
               return (
                 <ScrollReveal
-                  key={srv.num}
-                  variant={srv.variant}
+                  key={srv.id}
+                  variant="fade-up"
                   delay={baseDelay}
-                  duration={950}
-                  className="h-full"
+                  duration={900}
+                  className={isFullSpan ? 'md:col-span-2 lg:col-span-3' : 'h-full'}
                 >
-                  <div className="group p-8 md:p-10 rounded-2xl border border-median-taupe/20 bg-white hover:border-median-taupe hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-full">
+                  <div className="group p-8 md:p-10 rounded-3xl border border-median-taupe/20 bg-white hover:border-median-taupe hover:shadow-2xl transition-all duration-300 flex flex-col justify-between h-full relative">
+                    {/* Architectural Corner Accents */}
+                    <span className="absolute -top-2 -left-2 w-3.5 h-3.5 border-2 border-median-taupe bg-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="absolute -top-2 -right-2 w-3.5 h-3.5 border-2 border-median-taupe bg-white opacity-0 group-hover:opacity-100 transition-opacity" />
+
                     <div>
-                      <ScrollReveal variant="counter-pop" delay={baseDelay + 120} duration={800}>
-                        <div className="flex items-center justify-between mb-8 pb-4 border-b border-median-taupe/15">
-                          <span className="w-10 h-10 rounded-full border border-median-taupe text-xs font-bold flex items-center justify-center text-black group-hover:bg-median-taupe group-hover:text-white transition-colors">
-                            {srv.num}
-                          </span>
-                          <img
-                            src={srv.icon}
-                            alt={srv.title}
-                            className="w-10 h-10 object-contain opacity-70 group-hover:opacity-100 transition-opacity"
-                          />
+                      {/* Top Header Pill */}
+                      <div className="flex items-center justify-between mb-6 pb-4 border-b border-median-taupe/15">
+                        <span className="w-10 h-10 rounded-full border border-median-taupe text-xs font-bold flex items-center justify-center text-black group-hover:bg-median-taupe group-hover:text-white transition-colors">
+                          {srv.num}
+                        </span>
+                        <span className="text-[10px] font-mono font-bold tracking-widest uppercase text-median-taupe/70 bg-median-taupe/5 border border-median-taupe/20 px-3 py-1 rounded-full">
+                          Practice {srv.num}
+                        </span>
+                      </div>
+
+                      {/* Title & Tagline */}
+                      <h3 className="font-oswald text-2xl sm:text-3xl font-bold uppercase text-black group-hover:text-median-taupe transition-colors mb-2">
+                        {srv.title}
+                      </h3>
+                      <span className="text-[11px] font-mono font-semibold text-median-taupe uppercase tracking-wider block mb-4">
+                        {srv.tagline}
+                      </span>
+
+                      {/* Overview Paragraph */}
+                      <p className="text-xs sm:text-sm text-median-taupe/85 font-normal leading-relaxed mb-6">
+                        {srv.description}
+                      </p>
+
+                      {/* Sub-Capabilities List */}
+                      <div className="pt-6 border-t border-median-taupe/15">
+                        <span className="text-[10px] font-bold tracking-widest uppercase text-median-taupe/70 block mb-3">
+                          Specialized Practice Modules:
+                        </span>
+                        <div className={isFullSpan ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3' : 'space-y-3'}>
+                          {srv.capabilities.map((cap, cIdx) => (
+                            <div
+                              key={cIdx}
+                              className="p-3.5 rounded-xl bg-median-taupe/5 border border-median-taupe/15 hover:border-median-taupe/40 transition-colors"
+                            >
+                              <h4 className="font-oswald text-sm font-bold uppercase text-black mb-1">
+                                {cap.title}
+                              </h4>
+                              <p className="text-[11px] text-black/75 font-normal leading-relaxed">
+                                {cap.description}
+                              </p>
+                            </div>
+                          ))}
                         </div>
-                      </ScrollReveal>
-
-                      <ScrollReveal variant="skew-up" delay={baseDelay + 200} duration={800}>
-                        <h3 className="font-oswald text-2xl sm:text-3xl font-bold uppercase text-black mb-3">
-                          {srv.title}
-                        </h3>
-                      </ScrollReveal>
-
-                      <ScrollReveal variant="blur-focus" delay={baseDelay + 280} duration={850}>
-                        <p className="text-xs sm:text-sm text-median-taupe/80 font-normal leading-relaxed mb-6">
-                          {srv.description}
-                        </p>
-                      </ScrollReveal>
+                      </div>
                     </div>
 
-                    <ul className="space-y-2 border-t border-median-taupe/15 pt-6 text-xs text-black font-semibold uppercase">
-                      {srv.bullets.map((b, bIdx) => (
-                        <ScrollReveal
-                          key={bIdx}
-                          variant="horizontal-slide-left"
-                          delay={baseDelay + 340 + bIdx * 70}
-                          duration={750}
-                        >
-                          <li className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-median-taupe" />
-                            <span>{b}</span>
-                          </li>
-                        </ScrollReveal>
-                      ))}
-                    </ul>
+                    {/* Card Footer Actions */}
+                    <div className="mt-8 pt-5 border-t border-median-taupe/15 flex items-center justify-between">
+                      <button
+                        onClick={() => {
+                          navigate('/contact');
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="text-xs font-bold uppercase text-black hover:text-median-taupe underline decoration-median-taupe flex items-center gap-1.5 transition-colors"
+                      >
+                        <span>Scope Practice Inquiries</span>
+                        <span>→</span>
+                      </button>
+                      <span className="font-mono text-[11px] text-median-taupe/60 font-semibold">
+                        {srv.num} / 07
+                      </span>
+                    </div>
                   </div>
                 </ScrollReveal>
               );

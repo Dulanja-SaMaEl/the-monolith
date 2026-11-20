@@ -20,10 +20,13 @@ export const ContactPage: React.FC<ContactPageProps> = ({ navigate }) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const services = [
-    'Product Design',
-    'Website Design',
-    'Marketing',
-    'Custom System',
+    'Custom Software Engineering',
+    'AI, Data & Machine Learning',
+    'Cloud Infrastructure & DevOps',
+    'Cybersecurity & Risk Management',
+    'Managed IT & Post-Launch Support',
+    'Strategy, UI/UX & Consulting',
+    'Brand Growth & Creative Studio',
   ];
 
   const budgetTiers = [

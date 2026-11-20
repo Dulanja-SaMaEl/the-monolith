@@ -43,6 +43,20 @@ export interface BlogPost {
   content: string[];
 }
 
+export interface ServiceCapability {
+  title: string;
+  description: string;
+}
+
+export interface ServiceItem {
+  id: string;
+  num: string;
+  title: string;
+  tagline: string;
+  description: string;
+  capabilities: ServiceCapability[];
+}
+
 export interface TeamMember {
   id: string;
   name: string;
@@ -208,6 +222,184 @@ export const PRICING_PLANS: PricingPlan[] = [
   }
 ];
 
+export const SERVICES: ServiceItem[] = [
+  {
+    id: 'custom-software-engineering',
+    num: '01',
+    title: 'Custom Software Engineering',
+    tagline: 'High-Concurrency Enterprise Multi-Tier Systems & ACID Reliability',
+    description: 'Bespoke enterprise applications, scalable multi-tenant SaaS platforms, and modern zero-reload web & mobile architectures built for massive corporate workloads.',
+    capabilities: [
+      {
+        title: 'Enterprise Application Development',
+        description: 'Bespoke ERPs, CRMs, multi-station dispatch, and ACID transactional databases for massive corporate workflows.'
+      },
+      {
+        title: 'SaaS Product Architecture',
+        description: 'Subscription-based multi-tenant cloud platforms, dynamic billing, role-based access control (RBAC), and tenant isolation.'
+      },
+      {
+        title: 'Web & Mobile Application Development',
+        description: 'High-performance Progressive Web Apps (PWAs), Next.js 16 / React 19 web interfaces, zero-reload state updates.'
+      },
+      {
+        title: 'Legacy System Modernization',
+        description: 'Deconstructing outdated monolithic codebases into decoupled, high-throughput microservices and API gateways.'
+      }
+    ]
+  },
+  {
+    id: 'ai-data-machine-learning',
+    num: '02',
+    title: 'AI, Data, & Machine Learning',
+    tagline: 'Deterministic Predictive Models, Custom Vector RAG & Computer Vision',
+    description: 'Harnessing predictive statistical models, private knowledge retrieval pipelines, and high-volume data engineering to automate mission-critical enterprise workflows.',
+    capabilities: [
+      {
+        title: 'Predictive Analytics & Forecasting',
+        description: 'Regression and classification models trained on historical data to predict market trends and inventory demand.'
+      },
+      {
+        title: 'Generative AI & Custom RAG Pipelines',
+        description: 'Custom vector embeddings, private knowledge bases, and LLM agent orchestration for automated workflow triage.'
+      },
+      {
+        title: 'Data Engineering & Mass Pipelines',
+        description: 'High-volume ETL/ELT pipelines, distributed web crawling, and relational data lakes.'
+      },
+      {
+        title: 'Computer Vision & Real-Time NLP',
+        description: 'Edge video stream parsing, OCR/barcode ingestion, and real-time semantic sentiment analysis.'
+      }
+    ]
+  },
+  {
+    id: 'cloud-infrastructure-devops',
+    num: '03',
+    title: 'Cloud Infrastructure & DevOps',
+    tagline: 'Zero-Downtime Migration, Self-Healing Kubernetes & Event Topology',
+    description: 'Hardened infrastructure engineered for 99.99% availability, automated CI/CD deployment pipelines, and micro-functions that scale on demand.',
+    capabilities: [
+      {
+        title: 'Cloud Architecture & Zero-Downtime Migration',
+        description: 'Moving on-premise hardware to AWS/GCP/Azure with deterministic parity and zero cutover downtime.'
+      },
+      {
+        title: 'DevOps & Automated CI/CD',
+        description: 'Automated regression testing, GitHub Actions/GitLab CI, Docker containerization, and instant rollback protocols.'
+      },
+      {
+        title: 'Kubernetes & Container Orchestration',
+        description: 'Self-healing worker pods, automatic horizontal auto-scaling, and cluster load balancing.'
+      },
+      {
+        title: 'Serverless & Event-Driven Topology',
+        description: 'Zero-idle cost micro-functions that scale instantly to tens of thousands of concurrent requests.'
+      }
+    ]
+  },
+  {
+    id: 'cybersecurity-risk-management',
+    num: '04',
+    title: 'Cybersecurity & Risk Management',
+    tagline: 'Zero-Trust Perimeters, Low-Level Security Mimicry & Red Teaming',
+    description: 'Proactive penetration testing, immutable audit trails, and distributed mutex security mechanisms defending mission-critical endpoints against sophisticated exploits.',
+    capabilities: [
+      {
+        title: 'Zero-Trust Network Architecture',
+        description: 'Null-field perimeters, hardware token verification, and strict boundary controls.'
+      },
+      {
+        title: 'Penetration Testing (Red Teaming)',
+        description: 'Probing application layers, API endpoints, and race conditions before exploitation.'
+      },
+      {
+        title: 'Compliance & Regulatory Auditing',
+        description: 'HIPAA clinical compliance, immutable audit trails, and SOC2/GDPR readiness.'
+      },
+      {
+        title: 'Anti-WAF & Low-Level Security Mimicry',
+        description: 'JA3/JA4 TLS fingerprint spoofing and Redis Redlock distributed mutexes to prevent bot blocking and duplicate execution.'
+      }
+    ]
+  },
+  {
+    id: 'managed-it-post-launch',
+    num: '05',
+    title: 'Managed IT & Post-Launch Support',
+    tagline: '24/7 SLA Telemetry, Embedded Sprints & Multi-Region Disaster Recovery',
+    description: 'Continuous operational vigilance, around-the-clock cluster telemetry, sub-hour emergency response, and proactive zero-downtime kernel patching.',
+    capabilities: [
+      {
+        title: '24/7 SLA Telemetry & Emergency Triage',
+        description: 'Around-the-clock cluster monitoring, automated anomaly alerts, sub-hour critical response.'
+      },
+      {
+        title: 'Continuous Feature Iteration',
+        description: 'Embedded engineering sprints for performance improvements and rapid feature rollouts.'
+      },
+      {
+        title: 'Database Maintenance & Offsite Snapshots',
+        description: 'Zero-downtime maintenance, automated table vacuuming, and encrypted offsite multi-region disaster backups.'
+      },
+      {
+        title: 'Security Patching & Kernel Upgrades',
+        description: 'Proactive CVE patching and dependency hardening without service interruption.'
+      }
+    ]
+  },
+  {
+    id: 'strategy-ui-ux-consulting',
+    num: '06',
+    title: 'Strategy, UI/UX, & Consulting',
+    tagline: 'Human-Centered Research, Tactile Spatial Depth & P99 Profiling',
+    description: 'Uniting human-centered research with Swiss typographic restraint, rapid interactive prototyping, and deep architectural performance audits.',
+    capabilities: [
+      {
+        title: 'Digital Transformation Consulting',
+        description: 'Guiding legacy leadership on eliminating manual operational bottlenecks and digitizing workflows.'
+      },
+      {
+        title: 'Product Discovery & Prototyping',
+        description: 'Clickable prototypes, user journey mapping, and technical feasibility stress-testing.'
+      },
+      {
+        title: 'Bespoke UI/UX Design Systems',
+        description: 'Brutalist, high-craft editorial interfaces, tactile glassmorphism, 8pt spatial grid, WCAG AA compliance.'
+      },
+      {
+        title: 'Systems & Performance Auditing',
+        description: 'P99 latency profiling, database query optimization, and structural refactoring roadmaps.'
+      }
+    ]
+  },
+  {
+    id: 'brand-growth-marketing-creative',
+    num: '07',
+    title: 'Brand Growth, Social Media Marketing & Creative Studio',
+    tagline: 'Tactical Editorial Collateral, High-Yield Paid Acquisition & Identity',
+    description: 'Crafting scroll-stopping multi-channel visual campaigns, high-impact editorial print collateral, and precision Meta/Google paid acquisition funnels.',
+    capabilities: [
+      {
+        title: 'Social Media Marketing & Brand Strategy',
+        description: 'Multi-platform growth campaigns, content calendars, and brand voice guidelines.'
+      },
+      {
+        title: 'Tactical Flyer & Collateral Design',
+        description: 'High-impact editorial event flyers, product launch banners, pitch decks, and commercial brochures.'
+      },
+      {
+        title: 'Paid Ad Campaign Orchestration',
+        description: 'Data-driven conversion funnels on Meta (Facebook/Instagram Ads), Google Ads, and LinkedIn Ads with continuous ROAS tracking.'
+      },
+      {
+        title: 'Brand Identity & Visual Positioning',
+        description: 'Monochromatic and luxury vector logos, typography systems, and comprehensive brand guidelines.'
+      }
+    ]
+  }
+];
+
 export const TEAM_MEMBERS: TeamMember[] = [
   {
     id: 'dulanja-abeysinghe',
@@ -367,7 +559,7 @@ export const BLOG_POSTS: BlogPost[] = [
 export const FAQS = [
   {
     question: 'What core services does Monolith LK provide?',
-    answer: 'Monolith LK provides full-spectrum digital growth systems: High-Performance Web & E-Commerce Engineering (React, Next.js, Headless Shopify), Performance Meta Advertising, Cinematic Video Production, and Haute Editorial Brand Design.'
+    answer: 'Monolith LK operates across 7 core practices: (1) Custom Software Engineering (ERPs, SaaS, Next.js/React 19 PWAs, legacy modernization), (2) AI, Data & Machine Learning (Predictive models, custom RAG LLMs, ETL pipelines, computer vision), (3) Cloud Infrastructure & DevOps (Zero-downtime migration, CI/CD, Kubernetes, serverless), (4) Cybersecurity & Risk Management (Zero-trust, penetration testing, clinical HIPAA compliance, anti-WAF/Redis Redlock), (5) Managed IT & Post-Launch Support (24/7 SLA telemetry, continuous sprints, disaster recovery), (6) Strategy, UI/UX & Consulting (Design systems, P99 profiling, prototyping), and (7) Brand Growth, Marketing & Creative Studio (Social campaigns, tactical editorial flyers, paid acquisition, luxury brand identity).'
   },
   {
     question: 'How long does a website take to build and launch?',
