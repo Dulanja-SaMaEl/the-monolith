@@ -382,11 +382,11 @@ Haute Editorial rejects the noise. By applying an 8pt architectural grid, warm m
   },
 ];
 
-// Local Storage Helper
+// Local Storage Helper (v2 key namespace clears pre-LKR cached items cleanly)
 const getStored = <T>(key: string, fallback: T): T => {
   if (typeof window === 'undefined') return fallback;
   try {
-    const item = localStorage.getItem(`monolith_${key}`);
+    const item = localStorage.getItem(`monolith_v2_${key}`);
     return item ? JSON.parse(item) : fallback;
   } catch (e) {
     console.error(`Failed to load ${key} from storage:`, e);
@@ -397,7 +397,7 @@ const getStored = <T>(key: string, fallback: T): T => {
 const setStored = <T>(key: string, data: T): void => {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(`monolith_${key}`, JSON.stringify(data));
+    localStorage.setItem(`monolith_v2_${key}`, JSON.stringify(data));
   } catch (e) {
     console.error(`Failed to save ${key} to storage:`, e);
   }

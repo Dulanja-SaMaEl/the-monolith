@@ -513,7 +513,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
           </div>
         </div>
 
-        {/* Global Feedback Banner */}
+        {/* Global Feedback & Live DB Mode Notice */}
+        {!isLiveDb && !isSyncing && (
+          <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <strong>Running in Offline Demo Sandbox Mode:</strong> You entered via the Sandbox button or a cached local session, so edits stay in your browser only. Sign out and log in with <code>admin@monolith.lk</code> via the Supabase Sign-In form to read/write live Supabase data.
+            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="px-4 py-2 rounded-lg bg-black text-white font-bold uppercase text-[10px] tracking-wider hover:bg-median-taupe transition-colors shrink-0"
+            >
+              Sign In to Live DB →
+            </button>
+          </div>
+        )}
+
         {alertMsg && (
           <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-mono font-semibold animate-fade-in">
             {alertMsg}

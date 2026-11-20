@@ -17,41 +17,64 @@ DECLARE
   v_proj_pharmacy UUID := '33333333-3333-4333-8333-333333333302';
   v_proj_glaciar UUID := '33333333-3333-4333-8333-333333333303';
 BEGIN
-  -- Create Auth Users if they do not exist
+  -- Create Auth Users if they do not exist (explicit empty strings prevent GoTrue NULL scan errors)
   INSERT INTO auth.users (
     id, instance_id, aud, role, email, encrypted_password,
-    email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+    email_confirmed_at, confirmation_token, recovery_token,
+    email_change_token_new, email_change, email_change_token_current,
+    phone_change, phone_change_token, reauthentication_token,
+    is_sso_user, is_anonymous,
+    raw_app_meta_data, raw_user_meta_data, created_at, updated_at
   )
   VALUES
     (
       v_admin_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
       'admin@monolith.lk', crypt('MonolithAdmin2026!', gen_salt('bf')),
-      NOW(), '{"provider":"email","providers":["email"]}',
+      NOW(), '', '', '', '', '', '', '', '', FALSE, FALSE,
+      '{"provider":"email","providers":["email"]}',
       '{"full_name":"Dulanja Abeysinghe","company_name":"Monolith LK","role":"admin"}',
       NOW(), NOW()
     ),
     (
       v_client_shadow_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
       'client@shadowtopup.com', crypt('ShadowClient2026!', gen_salt('bf')),
-      NOW(), '{"provider":"email","providers":["email"]}',
+      NOW(), '', '', '', '', '', '', '', '', FALSE, FALSE,
+      '{"provider":"email","providers":["email"]}',
       '{"full_name":"Marcus Vance","company_name":"ShadowTopup Global","role":"client"}',
       NOW(), NOW()
     ),
     (
       v_client_pharmacy_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
       'director@pharmacyos.lk', crypt('PharmacyClient2026!', gen_salt('bf')),
-      NOW(), '{"provider":"email","providers":["email"]}',
+      NOW(), '', '', '', '', '', '', '', '', FALSE, FALSE,
+      '{"provider":"email","providers":["email"]}',
       '{"full_name":"Dr. H. Jayasuriya","company_name":"Teaching Hospitals Pharmacy OS","role":"client"}',
       NOW(), NOW()
     ),
     (
       v_client_glaciar_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
       'ops@glaciarwater.lk', crypt('GlaciarClient2026!', gen_salt('bf')),
-      NOW(), '{"provider":"email","providers":["email"]}',
+      NOW(), '', '', '', '', '', '', '', '', FALSE, FALSE,
+      '{"provider":"email","providers":["email"]}',
       '{"full_name":"Kasun Perera","company_name":"Glaciar Water Bottling & Distribution","role":"client"}',
       NOW(), NOW()
     )
   ON CONFLICT (id) DO NOTHING;
+
+  -- Repair any existing SQL-inserted auth.users rows that had NULL token columns
+  UPDATE auth.users
+  SET
+    confirmation_token = COALESCE(confirmation_token, ''),
+    recovery_token = COALESCE(recovery_token, ''),
+    email_change_token_new = COALESCE(email_change_token_new, ''),
+    email_change = COALESCE(email_change, ''),
+    email_change_token_current = COALESCE(email_change_token_current, ''),
+    phone_change = COALESCE(phone_change, ''),
+    phone_change_token = COALESCE(phone_change_token, ''),
+    reauthentication_token = COALESCE(reauthentication_token, ''),
+    is_sso_user = COALESCE(is_sso_user, FALSE),
+    is_anonymous = COALESCE(is_anonymous, FALSE)
+  WHERE email IN ('admin@monolith.lk', 'client@shadowtopup.com', 'director@pharmacyos.lk', 'ops@glaciarwater.lk');
 
   -- Ensure GoTrue email identities exist for SQL-seeded auth users
   INSERT INTO auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
