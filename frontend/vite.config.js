@@ -7,6 +7,9 @@ export default defineConfig({
   build: {
     target: 'es2020',
     sourcemap: false,
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 1000,
+    assetsInlineLimit: 4096,
     rollupOptions: {
       output: {
         manualChunks(id) {

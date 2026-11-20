@@ -30,7 +30,7 @@ export const WorkPage: React.FC<WorkPageProps> = ({ navigate }) => {
   return (
     <div className="pt-32 pb-16 bg-white text-median-taupe">
       {/* Header */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-16">
         <ScrollReveal variant="scale-up" duration={900}>
           <div className="border border-median-taupe/20 rounded-2xl p-8 sm:p-16 relative bg-median-taupe/5">
             <span className="absolute -top-2.5 -left-2.5 w-5 h-5 border-2 border-median-taupe bg-white shadow-sm" />
@@ -52,7 +52,7 @@ export const WorkPage: React.FC<WorkPageProps> = ({ navigate }) => {
       </section>
 
       {/* Filter and Search Bar */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-12">
         <ScrollReveal variant="fade-up" duration={700}>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 border-b border-median-taupe/20">
             {/* Category Filter Pills */}
@@ -96,7 +96,7 @@ export const WorkPage: React.FC<WorkPageProps> = ({ navigate }) => {
       </section>
 
       {/* Projects Grid */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-28">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-28">
         {filteredProjects.length === 0 ? (
           <div className="py-20 text-center">
             <h3 className="font-oswald text-2xl font-bold uppercase text-black mb-2">

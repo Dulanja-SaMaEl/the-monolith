@@ -57,7 +57,7 @@ export const FullscreenMenu: React.FC<FullscreenMenuProps> = ({
       </div>
 
       {/* Top Header inside modal */}
-      <div className="relative z-10 max-w-7xl w-full mx-auto px-6 md:px-12 py-6 md:py-8 flex items-center justify-between border-b border-median-taupe/15">
+      <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-12 py-6 md:py-8 flex items-center justify-between border-b border-median-taupe/15">
         <button
           onClick={() => handleLinkClick('/')}
           className="flex items-center gap-2 focus:outline-none group"
@@ -84,7 +84,7 @@ export const FullscreenMenu: React.FC<FullscreenMenuProps> = ({
       </div>
 
       {/* Center Nav Items & Info Split */}
-      <div className="relative z-10 max-w-7xl w-full mx-auto px-6 md:px-12 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center overflow-y-auto">
+      <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-12 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center overflow-y-auto">
         {/* Main Nav Links (Left 8 cols) */}
         <nav className="lg:col-span-8 flex flex-col gap-2 md:gap-4">
           {navLinks.map((link, idx) => {
@@ -197,7 +197,7 @@ export const FullscreenMenu: React.FC<FullscreenMenuProps> = ({
       </div>
 
       {/* Bottom Footer inside modal */}
-      <div className="relative z-10 max-w-7xl w-full mx-auto px-6 md:px-12 py-4 border-t border-median-taupe/15 flex flex-col sm:flex-row justify-between text-xs text-median-taupe/70 gap-2">
+      <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-12 py-4 border-t border-median-taupe/15 flex flex-col sm:flex-row justify-between text-xs text-median-taupe/70 gap-2">
         <div>© 2026 MONOLITH LK STUDIO. ALL RIGHTS RESERVED.</div>
         <div className="flex gap-4">
           <button onClick={() => handleLinkClick('/style-guide')} className="hover:underline">

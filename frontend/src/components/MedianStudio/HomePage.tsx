@@ -129,7 +129,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
       {/* ================= SECTION 1: SERVICES ================= */}
       <section id="services-section" className="py-24 md:py-32 border-t border-median-taupe/20">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
           {/* Header with Distinct Eyebrow, Split-Mask Title, and Opposing Slide Intro */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
             <div>
@@ -250,7 +250,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
       {/* ================= SECTION 2: FEATURED WORK ================= */}
       <section className="py-24 md:py-32 bg-median-taupe/5 border-t border-median-taupe/20">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-16 gap-4">
             <div>
@@ -363,7 +363,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
       {/* ================= SECTION 3: FEATURED CLIENTS ================= */}
       <section className="py-20 border-y border-median-taupe/20 bg-white">
-        <ScrollReveal variant="split-mask" duration={850} className="max-w-7xl mx-auto px-6 md:px-12 text-center mb-10">
+        <ScrollReveal variant="split-mask" duration={850} className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 text-center mb-10">
           <h2 className="font-oswald text-2xl font-bold uppercase tracking-widest text-median-taupe">
             Featured Clients & Partners
           </h2>
@@ -390,7 +390,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
       {/* ================= SECTION 4: PHILOSOPHY & TESTIMONIAL ================= */}
       <section className="py-24 md:py-32">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Text */}
           <div className="lg:col-span-7 space-y-6">
             <ScrollReveal variant="badge-drop" duration={750}>
@@ -470,7 +470,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
       {/* ================= TEAM SECTION ================= */}
       <section className="py-24 border-t border-median-taupe/20 bg-median-taupe/5">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-16 gap-4">
             <div>
               <ScrollReveal variant="badge-drop" duration={750}>
@@ -594,7 +594,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
       {/* ================= SECTION: OUR RESULTS WITH ANIMATED COUNTERS ================= */}
       <section className="py-24 border-t border-median-taupe/20 bg-white">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <ScrollReveal variant="badge-drop" duration={750}>
               <span className="text-xs font-bold tracking-widest uppercase text-median-taupe/70 block mb-2">
@@ -714,7 +714,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
       {/* ================= LATEST NEWS (BLOG) ================= */}
       <section className="py-24 border-t border-median-taupe/20 bg-median-taupe/5">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-16 gap-4">
             <div>
               <ScrollReveal variant="badge-drop" duration={750}>

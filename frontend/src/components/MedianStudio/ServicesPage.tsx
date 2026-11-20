@@ -146,7 +146,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ navigate, initialSec
   return (
     <div className="pt-32 pb-24 bg-white text-median-taupe font-inter selection:bg-median-taupe selection:text-white">
       {/* ================= HERO HEADER ================= */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-16">
         <ScrollReveal variant="scale-up" duration={900}>
           <div className="border border-median-taupe/20 rounded-3xl p-8 sm:p-16 relative bg-median-taupe/5">
             {/* Architectural Corner Accents */}
@@ -187,7 +187,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ navigate, initialSec
       </section>
 
       {/* ================= PRACTICE JUMP BAR (FAST-NAVIGATION) ================= */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-20 sticky top-20 z-30 pointer-events-auto">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-20 sticky top-20 z-30 pointer-events-auto">
         <div className="p-3 rounded-2xl bg-white/90 backdrop-blur-md border border-median-taupe/20 shadow-lg shadow-median-taupe/5 flex items-center gap-2 overflow-x-auto no-scrollbar">
           <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-median-taupe px-3 shrink-0 hidden md:block">
             Jump to Practice:
@@ -206,7 +206,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ navigate, initialSec
       </section>
 
       {/* ================= DETAILED SERVICES BREAKDOWN ================= */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 space-y-24">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 space-y-24">
         {SERVICES.map((srv) => {
           const stack = PRACTICE_TECH_STACK[srv.id] || [];
           const engagement = PRACTICE_ENGAGEMENT_MODELS[srv.id] || {
@@ -354,7 +354,7 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ navigate, initialSec
       </section>
 
       {/* ================= FINAL ARCHITECTURAL CONVERSION BANNER ================= */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mt-24">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mt-24">
         <ScrollReveal variant="badge-drop" duration={800}>
           <div className="rounded-3xl border border-median-taupe/30 bg-[#FAF8F5] p-10 sm:p-16 text-center shadow-lg relative overflow-hidden">
             <span className="text-xs font-bold tracking-widest uppercase text-median-taupe block mb-4">

@@ -84,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsLoading(false);
           return {
             success: false,
-            error: `${error.message}. If you have not seeded Supabase Auth yet, use Demo Sandbox below.`,
+            error: `${error.message}. Please verify your credentials or contact administrator.`,
           };
         }
 

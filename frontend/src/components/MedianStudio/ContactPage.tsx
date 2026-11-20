@@ -58,7 +58,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ navigate }) => {
   return (
     <div className="pt-32 pb-16 bg-white text-median-taupe">
       {/* Header */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-16">
         <ScrollReveal variant="scale-up" duration={900}>
           <div className="border border-median-taupe/20 rounded-2xl p-8 sm:p-16 relative bg-median-taupe/5">
             <span className="absolute -top-2.5 -left-2.5 w-5 h-5 border-2 border-median-taupe bg-white shadow-sm" />
@@ -80,7 +80,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ navigate }) => {
       </section>
 
       {/* Main Grid: Form + Office Contacts */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-28 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-28 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
         {/* Form Container (7 cols) */}
         <ScrollReveal variant="fade-up" duration={850} className="lg:col-span-7">
           <div className="bg-white p-8 sm:p-12 rounded-2xl border border-median-taupe/20 shadow-sm">

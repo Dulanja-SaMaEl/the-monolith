@@ -409,13 +409,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-black font-inter selection:bg-median-taupe selection:text-white flex flex-col md:flex-row">
       {/* ================= LEFT HAUTE EDITORIAL ADMIN SIDEBAR ================= */}
-      <aside className="w-full md:w-64 bg-white border-r border-median-taupe/20 p-6 flex flex-col justify-between shrink-0">
+      <aside className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-median-taupe/20 p-4 sm:p-6 flex flex-col justify-between shrink-0">
         <div>
           {/* Logo & Cluster Badge */}
-          <div className="mb-8">
+          <div className="flex md:block items-center justify-between mb-4 md:mb-8">
             <button
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 mb-2 focus:outline-none group"
+              className="flex items-center gap-2 focus:outline-none group"
             >
               <span className="w-4 h-4 bg-black flex items-center justify-center text-white text-[9px] font-bold">
                 ■
@@ -426,12 +426,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
             </button>
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase text-median-taupe/80">
               <span className={`w-2 h-2 rounded-full animate-pulse ${isLiveDb ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-              <span>{isLiveDb ? 'Live Supabase DB' : 'Demo Sandbox Mode'}</span>
+              <span>{isLiveDb ? 'Live Supabase DB' : 'Offline Mode'}</span>
             </div>
           </div>
 
-          {/* Nav List */}
-          <nav className="space-y-1 font-oswald text-xs sm:text-sm uppercase tracking-wider">
+          {/* Nav List - Horizontal scroll on mobile / vertical stack on desktop */}
+          <nav className="flex md:flex-col gap-1.5 md:space-y-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 no-scrollbar font-oswald text-xs sm:text-sm uppercase tracking-wider">
             {[
               { id: 'overview', label: 'Telemetry & HUD', count: null },
               { id: 'customers', label: 'Customers Registry', count: users.filter((u) => u.role === 'client').length },
@@ -445,10 +445,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full py-2.5 px-3 rounded-xl flex items-center justify-between transition-all ${
+                className={`py-2 px-3 md:py-2.5 md:px-3 rounded-xl flex items-center gap-2 md:justify-between transition-all shrink-0 md:shrink whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'bg-black text-white font-bold'
-                    : 'text-median-taupe hover:text-black hover:bg-median-taupe/10'
+                    ? 'bg-black text-white font-bold shadow-sm'
+                    : 'text-median-taupe hover:text-black hover:bg-median-taupe/10 bg-white md:bg-transparent border border-median-taupe/20 md:border-0'
                 }`}
               >
                 <span>{tab.label}</span>
@@ -466,8 +466,33 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
           </nav>
         </div>
 
-        {/* Admin Footer Actions */}
-        <div className="pt-6 border-t border-median-taupe/15 mt-6 space-y-2 text-xs font-mono">
+        {/* Admin Mobile Quick Actions (visible only on mobile) */}
+        <div className="flex md:hidden items-center justify-between gap-2 pt-3 border-t border-median-taupe/15 text-[11px] font-mono">
+          <button
+            onClick={() => {
+              switchDemoRole('client');
+              navigate('/portal/client');
+            }}
+            className="px-2.5 py-1.5 rounded-lg border border-median-taupe/30 hover:border-black text-black"
+          >
+            Client View ↗
+          </button>
+          <button
+            onClick={() => navigate('/')}
+            className="px-2.5 py-1.5 rounded-lg border border-median-taupe/30 hover:border-black text-black"
+          >
+            Public Site
+          </button>
+          <button
+            onClick={handleLogout}
+            className="px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 font-bold"
+          >
+            Sign Out
+          </button>
+        </div>
+
+        {/* Admin Desktop Sidebar Footer Actions (visible md and up) */}
+        <div className="hidden md:block pt-6 border-t border-median-taupe/15 mt-6 space-y-2 text-xs font-mono">
           <div className="text-median-taupe/80 text-[10px] truncate">
             Architect: <strong>{user?.full_name || 'Dulanja Abeysinghe'}</strong>
           </div>
@@ -496,7 +521,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       </aside>
 
       {/* ================= MAIN EXECUTIVE CONTENT PANE ================= */}
-      <main className="flex-1 p-6 sm:p-10 max-h-screen overflow-y-auto">
+      <main className="flex-1 p-4 sm:p-6 md:p-10 max-h-screen overflow-y-auto w-full min-w-0">
         {/* Top Breadcrumb & Notification Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-median-taupe/20">
           <div>
@@ -517,7 +542,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
 
           <div className="flex items-center gap-3">
             <span className="px-3 py-1 rounded-full border border-median-taupe/30 bg-median-taupe/5 text-[10px] font-mono text-median-taupe">
-              {isSyncing ? 'Syncing DB...' : isLiveDb ? 'Connected: Supabase + Render' : 'Local Demo Sandbox'}
+              {isSyncing ? 'Syncing DB...' : isLiveDb ? 'Connected: Supabase + Render' : 'Offline Mode'}
             </span>
             <button
               type="button"
@@ -533,7 +558,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
         {!isLiveDb && !isSyncing && (
           <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <strong>Running in Offline Demo Sandbox Mode:</strong> You entered via the Sandbox button or a cached local session, so edits stay in your browser only. Sign out and log in with <code>admin@monolith.lk</code> via the Supabase Sign-In form to read/write live Supabase data.
+              <strong>Offline Cached Session:</strong> Edits are currently saving to local cache. Please verify your network connection or sign in with your admin credentials to sync directly with Supabase.
             </div>
             <button
               type="button"
@@ -1931,7 +1956,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       {/* Haute Editorial Admin Voucher Preview & Download Modal */}
       {selectedBillingDoc && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#FAF8F5] max-w-2xl w-full rounded-2xl border border-median-taupe/30 shadow-2xl p-8 sm:p-10 max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#FAF8F5] max-w-2xl w-full rounded-2xl border border-median-taupe/30 shadow-2xl p-5 sm:p-8 md:p-10 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-start border-b border-median-taupe/20 pb-6 mb-6">
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -1957,37 +1982,39 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               <button
                 type="button"
                 onClick={() => setSelectedBillingDoc(null)}
-                className="w-9 h-9 rounded-full border border-median-taupe/40 flex items-center justify-center text-sm font-bold text-median-taupe hover:text-black hover:border-black transition-colors"
+                className="w-9 h-9 rounded-full border border-median-taupe/40 flex items-center justify-center text-sm font-bold text-median-taupe hover:text-black hover:border-black transition-colors shrink-0"
               >
                 ✕
               </button>
             </div>
 
             <div className="space-y-4 mb-6">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-median-taupe/20 text-median-taupe uppercase text-left">
-                    <th className="py-2 font-oswald tracking-wider">Deliverable Item</th>
-                    <th className="py-2 text-center font-oswald tracking-wider">Qty</th>
-                    <th className="py-2 text-right font-oswald tracking-wider">Unit Price</th>
-                    <th className="py-2 text-right font-oswald tracking-wider">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-median-taupe/15">
-                  {selectedBillingDoc.line_items.map((item) => (
-                    <tr key={item.id}>
-                      <td className="py-3 text-black font-semibold">{item.description}</td>
-                      <td className="py-3 text-center text-black/80">{item.quantity}</td>
-                      <td className="py-3 text-right text-black/80">
-                        {selectedBillingDoc.currency || 'LKR'} {item.unit_price.toLocaleString()}
-                      </td>
-                      <td className="py-3 text-right font-bold text-black">
-                        {selectedBillingDoc.currency || 'LKR'} {item.total.toLocaleString()}
-                      </td>
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-[460px] text-xs">
+                  <thead>
+                    <tr className="border-b border-median-taupe/20 text-median-taupe uppercase text-left">
+                      <th className="py-2 font-oswald tracking-wider">Deliverable Item</th>
+                      <th className="py-2 text-center font-oswald tracking-wider">Qty</th>
+                      <th className="py-2 text-right font-oswald tracking-wider">Unit Price</th>
+                      <th className="py-2 text-right font-oswald tracking-wider">Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-median-taupe/15">
+                    {selectedBillingDoc.line_items.map((item) => (
+                      <tr key={item.id}>
+                        <td className="py-3 text-black font-semibold">{item.description}</td>
+                        <td className="py-3 text-center text-black/80">{item.quantity}</td>
+                        <td className="py-3 text-right text-black/80">
+                          {selectedBillingDoc.currency || 'LKR'} {item.unit_price.toLocaleString()}
+                        </td>
+                        <td className="py-3 text-right font-bold text-black">
+                          {selectedBillingDoc.currency || 'LKR'} {item.total.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               <div className="border-t border-median-taupe/20 pt-4 flex flex-col items-end gap-1 text-xs">
                 <div className="flex justify-between w-56 text-median-taupe">

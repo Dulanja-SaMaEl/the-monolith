@@ -11,7 +11,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
   return (
     <div className="pt-32 pb-16 bg-white text-median-taupe">
       {/* Hero Header */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-20">
         <ScrollReveal variant="scale-up" duration={900}>
           <div className="border border-median-taupe/20 rounded-2xl p-8 sm:p-16 relative bg-median-taupe/5">
             {/* Corner markers */}
@@ -34,7 +34,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
       </section>
 
       {/* Metrics Grid with Animated Counters */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-24">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-24">
         <StaggerContainer
           staggerDelay={140}
           variant="scale-up"
@@ -63,7 +63,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
       </section>
 
       {/* Story & Philosophy */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-28 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-28 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         <div className="lg:col-span-6 space-y-6">
           <ScrollReveal variant="fade-down" duration={700}>
             <span className="px-4 py-1.5 rounded-full border border-median-taupe text-xs font-bold tracking-widest uppercase inline-block">
@@ -120,7 +120,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
 
       {/* Pillars with Staggered Entrance */}
       <section className="bg-median-taupe/5 py-24 border-y border-median-taupe/20 mb-28">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
           <ScrollReveal variant="fade-up" duration={800} className="text-center max-w-xl mx-auto mb-16">
             <span className="text-xs font-bold tracking-widest uppercase text-median-taupe/70 block mb-2">
               Our Methodology
@@ -175,7 +175,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
       </section>
 
       {/* Full Team Directory & Founding Dossier */}
-      <section className="max-w-7xl mx-auto px-6 md:px-12 mb-28">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mb-28">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-16 gap-4">
           <ScrollReveal variant="fade-up" duration={800}>
             <span className="text-xs font-bold tracking-widest uppercase text-median-taupe/70 block mb-2">

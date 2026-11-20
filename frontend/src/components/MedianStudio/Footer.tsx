@@ -8,7 +8,7 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ navigate }) => {
   return (
     <footer className="bg-white text-median-taupe border-t border-median-taupe/20 pt-20 pb-12 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
         {/* Main Footer Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-median-taupe/15">
           {/* Visit Us Column (8 cols) */}

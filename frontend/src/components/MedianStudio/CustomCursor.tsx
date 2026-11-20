@@ -11,8 +11,9 @@ export const CustomCursor: React.FC = () => {
   const requestRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Detect touch device
-    if (window.matchMedia('(pointer: coarse)').matches) {
+    // Disable custom cursor on touch screens, mobile and tablet devices
+    const isTouchOrMobile = window.matchMedia('(pointer: coarse), (hover: none), (max-width: 1023px)').matches;
+    if (isTouchOrMobile) {
       setIsTouch(true);
       return;
     }

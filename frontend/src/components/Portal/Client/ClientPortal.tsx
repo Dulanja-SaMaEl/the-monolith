@@ -765,7 +765,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
       {/* Haute Editorial Invoice / Quotation Modal */}
       {selectedBillingDoc && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#FAF8F5] max-w-2xl w-full rounded-2xl border border-median-taupe/30 shadow-2xl p-8 sm:p-10 max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#FAF8F5] max-w-2xl w-full rounded-2xl border border-median-taupe/30 shadow-2xl p-5 sm:p-8 md:p-10 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-start border-b border-median-taupe/20 pb-6 mb-6">
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -789,7 +789,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
               </div>
               <button
                 onClick={() => setSelectedBillingDoc(null)}
-                className="w-9 h-9 rounded-full border border-median-taupe/40 flex items-center justify-center text-sm font-bold text-median-taupe hover:text-black hover:border-black transition-colors"
+                className="w-9 h-9 rounded-full border border-median-taupe/40 flex items-center justify-center text-sm font-bold text-median-taupe hover:text-black hover:border-black transition-colors shrink-0"
               >
                 ✕
               </button>
@@ -797,30 +797,32 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
 
             {/* Line items table */}
             <div className="space-y-4 mb-6">
-              <table className="w-full text-xs font-mono">
-                <thead>
-                  <tr className="border-b border-median-taupe/20 text-median-taupe uppercase text-left">
-                    <th className="py-2">Deliverable Item</th>
-                    <th className="py-2 text-center">Qty</th>
-                    <th className="py-2 text-right">Unit Price</th>
-                    <th className="py-2 text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-median-taupe/15">
-                  {selectedBillingDoc.line_items.map((item) => (
-                    <tr key={item.id}>
-                      <td className="py-3 text-black font-semibold">{item.description}</td>
-                      <td className="py-3 text-center">{item.quantity}</td>
-                      <td className="py-3 text-right">
-                        {selectedBillingDoc.currency || 'LKR'} {item.unit_price.toLocaleString()}
-                      </td>
-                      <td className="py-3 text-right font-bold text-black">
-                        {selectedBillingDoc.currency || 'LKR'} {item.total.toLocaleString()}
-                      </td>
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-[460px] text-xs font-mono">
+                  <thead>
+                    <tr className="border-b border-median-taupe/20 text-median-taupe uppercase text-left">
+                      <th className="py-2">Deliverable Item</th>
+                      <th className="py-2 text-center">Qty</th>
+                      <th className="py-2 text-right">Unit Price</th>
+                      <th className="py-2 text-right">Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-median-taupe/15">
+                    {selectedBillingDoc.line_items.map((item) => (
+                      <tr key={item.id}>
+                        <td className="py-3 text-black font-semibold">{item.description}</td>
+                        <td className="py-3 text-center">{item.quantity}</td>
+                        <td className="py-3 text-right">
+                          {selectedBillingDoc.currency || 'LKR'} {item.unit_price.toLocaleString()}
+                        </td>
+                        <td className="py-3 text-right font-bold text-black">
+                          {selectedBillingDoc.currency || 'LKR'} {item.total.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               <div className="border-t border-median-taupe/20 pt-4 flex flex-col items-end gap-1 font-mono text-xs">
                 <div className="flex justify-between w-56 text-median-taupe">

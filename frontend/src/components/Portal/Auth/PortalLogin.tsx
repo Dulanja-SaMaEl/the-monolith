@@ -8,7 +8,7 @@ interface PortalLoginProps {
 }
 
 export const PortalLogin: React.FC<PortalLoginProps> = ({ navigate }) => {
-  const { login, loginDemo, isAuthenticated, role } = useAuth();
+  const { login, isAuthenticated, role } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -40,13 +40,8 @@ export const PortalLogin: React.FC<PortalLoginProps> = ({ navigate }) => {
     }
   };
 
-  const handleDemoSandbox = (targetRole: 'admin' | 'client') => {
-    const res = loginDemo(targetRole);
-    navigate(res.role === 'admin' ? '/portal/admin' : '/portal/client');
-  };
-
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-black relative flex flex-col justify-between pt-24 pb-12 px-6 sm:px-12 selection:bg-median-taupe selection:text-white">
+    <div className="min-h-screen bg-[#FAF8F5] text-black relative flex flex-col justify-between pt-20 sm:pt-24 pb-12 px-4 sm:px-8 md:px-12 selection:bg-median-taupe selection:text-white">
       {/* Background Grid Lines */}
       <div className="absolute inset-0 pointer-events-none flex justify-between px-6 md:px-16 overflow-hidden opacity-10">
         {[...Array(7)].map((_, i) => (
@@ -65,14 +60,14 @@ export const PortalLogin: React.FC<PortalLoginProps> = ({ navigate }) => {
         </button>
         <div className="flex items-center gap-2 font-semibold">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>{isSupabaseConfigured ? 'Supabase Auth: Ready' : 'Sandbox Mode'}</span>
+          <span>{isSupabaseConfigured ? 'Supabase Auth: Ready' : 'Secure Auth'}</span>
         </div>
       </div>
 
       {/* Login Card */}
       <div className="max-w-md w-full mx-auto relative z-10">
         <ScrollReveal variant="badge-drop" duration={800}>
-          <div className="p-8 sm:p-10 rounded-2xl bg-white border border-median-taupe/20 shadow-xl shadow-median-taupe/5">
+          <div className="p-6 sm:p-8 md:p-10 rounded-2xl bg-white border border-median-taupe/20 shadow-xl shadow-median-taupe/5">
             {/* Monolith Header */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center gap-2 mb-3">
@@ -89,29 +84,6 @@ export const PortalLogin: React.FC<PortalLoginProps> = ({ navigate }) => {
               <p className="text-xs text-median-taupe/80 font-normal uppercase tracking-wider mt-1">
                 Client & Executive Portal — Monolith LK
               </p>
-            </div>
-
-            {/* Quick Demo Sandbox Pills */}
-            <div className="mb-6 p-4 rounded-xl bg-median-taupe/5 border border-median-taupe/20">
-              <span className="text-[10px] uppercase tracking-widest text-median-taupe/80 block mb-2 font-bold">
-                Offline Preview Sandbox (Local Storage)
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleDemoSandbox('admin')}
-                  className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-black bg-black text-white hover:bg-median-taupe hover:border-median-taupe transition-colors text-center"
-                >
-                  Admin Sandbox
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDemoSandbox('client')}
-                  className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-median-taupe text-black hover:bg-median-taupe hover:text-white transition-colors text-center"
-                >
-                  Client Sandbox
-                </button>
-              </div>
             </div>
 
             {/* Error Message Alert */}
