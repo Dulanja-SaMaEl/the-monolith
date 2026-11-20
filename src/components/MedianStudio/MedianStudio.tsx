@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AuthProvider } from '../../context/AuthContext';
 import { CartProvider, useCart } from './CartContext';
 import { Preloader } from './Preloader';
 import { CustomCursor } from './CustomCursor';
@@ -16,6 +17,11 @@ import { PricingPage } from './PricingPage';
 import { BlogPage } from './BlogPage';
 import { ContactPage } from './ContactPage';
 import { StyleGuidePage } from './StyleGuidePage';
+
+// Portal Experiences
+import { PortalLogin } from '../Portal/Auth/PortalLogin';
+import { ClientPortal } from '../Portal/Client/ClientPortal';
+import { AdminPortal } from '../Portal/Admin/AdminPortal';
 
 interface MedianStudioProps {
   onSwitchView?: (view: 'ncloud' | 'jack' | 'halo' | 'median') => void;
@@ -36,6 +42,8 @@ const MedianStudioContent: React.FC<MedianStudioProps> = ({ onSwitchView }) => {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isCheckoutOpen, closeCheckout } = useCart();
+
+  const isPortalRoute = currentRoute.startsWith('/portal');
 
   useEffect(() => {
     const handlePopState = () => {
@@ -65,6 +73,13 @@ const MedianStudioContent: React.FC<MedianStudioProps> = ({ onSwitchView }) => {
 
   const renderPage = () => {
     switch (currentRoute) {
+      case '/portal':
+      case '/portal/login':
+        return <PortalLogin navigate={navigate} />;
+      case '/portal/client':
+        return <ClientPortal navigate={navigate} />;
+      case '/portal/admin':
+        return <AdminPortal navigate={navigate} />;
       case '/about':
         return <AboutPage navigate={navigate} />;
       case '/work':
@@ -96,44 +111,54 @@ const MedianStudioContent: React.FC<MedianStudioProps> = ({ onSwitchView }) => {
       {/* Smooth Magnetic Custom Cursor */}
       <CustomCursor />
 
-      {/* Global Navigation Bar */}
-      <Navbar
-        onOpenMenu={() => setIsMenuOpen(true)}
-        isMenuOpen={isMenuOpen}
-        activeRoute={currentRoute}
-        navigate={navigate}
-      />
+      {isPortalRoute ? (
+        <main className="flex-1">
+          {renderPage()}
+        </main>
+      ) : (
+        <>
+          {/* Global Navigation Bar */}
+          <Navbar
+            onOpenMenu={() => setIsMenuOpen(true)}
+            isMenuOpen={isMenuOpen}
+            activeRoute={currentRoute}
+            navigate={navigate}
+          />
 
-      {/* Fullscreen Sliding Menu */}
-      <FullscreenMenu
-        isOpen={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
-        activeRoute={currentRoute}
-        navigate={navigate}
-      />
+          {/* Fullscreen Sliding Menu */}
+          <FullscreenMenu
+            isOpen={isMenuOpen}
+            onClose={() => setIsMenuOpen(false)}
+            activeRoute={currentRoute}
+            navigate={navigate}
+          />
 
-      {/* Slide-out Cart Drawer */}
-      <CartDrawer navigate={navigate} />
+          {/* Slide-out Cart Drawer */}
+          <CartDrawer navigate={navigate} />
 
-      {/* Secure Checkout Modal */}
-      <CheckoutModal isOpen={isCheckoutOpen} onClose={closeCheckout} />
+          {/* Secure Checkout Modal */}
+          <CheckoutModal isOpen={isCheckoutOpen} onClose={closeCheckout} />
 
-      {/* Main Page View */}
-      <main className="flex-1">
-        {renderPage()}
-      </main>
+          {/* Main Page View */}
+          <main className="flex-1">
+            {renderPage()}
+          </main>
 
-      {/* Global Persistent Footer */}
-      <Footer navigate={navigate} />
+          {/* Global Persistent Footer */}
+          <Footer navigate={navigate} />
+        </>
+      )}
     </div>
   );
 };
 
 export const MedianStudio: React.FC<MedianStudioProps> = (props) => {
   return (
-    <CartProvider>
-      <MedianStudioContent {...props} />
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <MedianStudioContent {...props} />
+      </CartProvider>
+    </AuthProvider>
   );
 };
 

@@ -32,6 +32,7 @@ export const FullscreenMenu: React.FC<FullscreenMenuProps> = ({
     { label: 'Blog', path: '/blog', number: '05' },
     { label: 'Contact', path: '/contact', number: '06' },
     { label: 'Style Guide', path: '/style-guide', number: '07' },
+    { label: 'Client & Studio Portal', path: '/portal/login', number: '08' },
   ];
 
   const handleLinkClick = (path: string) => {

@@ -75,8 +75,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </button>
 
-        {/* Right Actions: Cart & Menu Hamburger */}
+        {/* Right Actions: Portal Button, Cart & Menu Hamburger */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Portal Access Button */}
+          <button
+            onClick={() => navigate('/portal/login')}
+            data-cursor="pointer"
+            aria-label="Open Client & Studio Portal"
+            className="flex items-center gap-1.5 h-9 sm:h-10 px-3 sm:px-4 rounded-full border border-black bg-black text-white hover:bg-median-taupe hover:border-median-taupe text-[10px] sm:text-[11px] font-mono uppercase tracking-wider font-semibold transition-all duration-300"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Portal</span>
+          </button>
+
           {/* Cart Trigger */}
           <button
             onClick={openCart}
