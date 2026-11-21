@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PROJECTS, CLIENT_LOGOS, TEAM_MEMBERS, BLOG_POSTS, SERVICES, Project, BlogPost } from './siteData';
 import { portalApi } from '../../lib/portalApi';
-import { CustomerReview } from '../../lib/portalStore';
+import { portalStore, CustomerReview } from '../../lib/portalStore';
 import { RotatingRibbons } from './RotatingRibbons';
 import { ProjectDetailModal } from './ProjectDetailModal';
 import { ArticleReaderModal } from './ArticleReaderModal';
@@ -15,7 +15,13 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [, setActiveTeamId] = useState<string>(TEAM_MEMBERS[0].id);
-  const [liveReviews, setLiveReviews] = useState<CustomerReview[]>(() => portalStore.getReviews(true));
+  const [liveReviews, setLiveReviews] = useState<CustomerReview[]>(() => {
+    try {
+      return portalStore.getReviews(true);
+    } catch {
+      return [];
+    }
+  });
   const [livePosts, setLivePosts] = useState<BlogPost[]>(BLOG_POSTS);
   const [livePartners, setLivePartners] = useState<{ name: string; image: string }[]>(CLIENT_LOGOS);
 
@@ -87,7 +93,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
       </div>
 
       {/* ================= HERO SECTION ================= */}
-      <section className="relative min-h-[92vh] flex flex-col justify-center items-center text-center px-6 pt-32 pb-20">
+      <section id="hero" className="relative min-h-[92vh] flex flex-col justify-center items-center text-center px-6 pt-32 pb-20">
         <ScrollReveal variant="blur-focus" duration={950} className="relative max-w-5xl w-full mx-auto">
           {/* Outer framing box with corner geometric markers */}
           <div className="relative py-12 md:py-20 px-6 sm:px-12 border border-median-taupe/20 rounded-2xl bg-white/50 backdrop-blur-[2px]">
