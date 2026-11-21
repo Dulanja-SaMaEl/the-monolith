@@ -96,6 +96,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .eq('id', data.user.id)
             .single();
 
+          if (profile?.is_blocked || profile?.status === 'blocked') {
+            await supabase.auth.signOut();
+            setIsLoading(false);
+            return {
+              success: false,
+              error: 'This enterprise account has been suspended by administration. Please contact contact@monolith.lk',
+            };
+          }
+
           const metaRole = data.user.user_metadata?.role as 'admin' | 'client' | undefined;
           const activeProfile: UserProfile = {
             id: data.user.id,
@@ -104,6 +113,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             role: (profile?.role || metaRole || 'client') as 'admin' | 'client',
             company_name: profile?.company_name || data.user.user_metadata?.company_name || 'Client Enterprise',
             phone: profile?.phone,
+            is_blocked: profile?.is_blocked || false,
+            status: profile?.status || 'active',
           };
 
           setUser(activeProfile);
@@ -121,6 +132,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const users = portalStore.getUsers();
     const matched = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
     if (matched) {
+      if (matched.is_blocked || matched.status === 'blocked') {
+        setIsLoading(false);
+        return {
+          success: false,
+          error: 'This enterprise account has been suspended by administration. Please contact contact@monolith.lk',
+        };
+      }
       setIsLiveAuth(false);
       setUser(matched);
       localStorage.setItem('monolith_active_user', JSON.stringify(matched));

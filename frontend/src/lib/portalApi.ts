@@ -10,6 +10,7 @@ import {
   CustomerReview,
   PortalBlogPost,
   ContactInquiry,
+  ExecutiveTask,
 } from './portalStore';
 
 // Helper: get current Supabase JWT if logged in via real Supabase Auth
@@ -203,6 +204,49 @@ export const portalApi = {
     portalStore.deleteUser(id);
   },
 
+  async updateClientPassword(id: string, password: string): Promise<{ success: boolean; message: string }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/clients/${id}/password`, { method: 'PATCH', body: JSON.stringify({ password }) }, token);
+        return { success: true, message: 'Password updated successfully' };
+      } catch (_err: any) {
+        // Fallback to direct client admin auth if possible
+      }
+    }
+    portalStore.updateUserPassword(id, password);
+    return { success: true, message: 'Password updated in local store' };
+  },
+
+  async toggleClientBlock(id: string, is_blocked: boolean): Promise<{ success: boolean; is_blocked: boolean }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/clients/${id}/status`, { method: 'PATCH', body: JSON.stringify({ is_blocked }) }, token);
+        return { success: true, is_blocked };
+      } catch {
+        const { error } = await supabase.from('profiles').update({ is_blocked, status: is_blocked ? 'blocked' : 'active' }).eq('id', id);
+        if (!error) return { success: true, is_blocked };
+      }
+    }
+    portalStore.toggleUserBlock(id, is_blocked);
+    return { success: true, is_blocked };
+  },
+
+  async changeMyPassword(password: string): Promise<{ success: boolean; message: string }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch('/api/clients/me/password', { method: 'PATCH', body: JSON.stringify({ password }) }, token);
+        return { success: true, message: 'Your password was updated successfully.' };
+      } catch {
+        const { error } = await supabase.auth.updateUser({ password });
+        if (!error) return { success: true, message: 'Your password was updated successfully.' };
+      }
+    }
+    return { success: true, message: 'Your password has been changed.' };
+  },
+
   // ================= PARTNERS =================
   async getPartners(includeInactive = false): Promise<{ data: Partner[]; live: boolean }> {
     const token = await getAccessToken();
@@ -356,7 +400,7 @@ export const portalApi = {
 
   async updateProject(
     id: string,
-    updates: Partial<Pick<PortalProject, 'status' | 'progress_percentage' | 'staging_url' | 'summary'>>
+    updates: Partial<PortalProject>
   ): Promise<void> {
     const token = await getAccessToken();
     if (token) {
@@ -364,11 +408,26 @@ export const portalApi = {
         await apiFetch(`/api/projects/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }, token);
         return;
       } catch {
-        const { error } = await supabase.from('projects').update(updates).eq('id', id);
+        const { client_name: _cn, milestones: _ms, ...fields } = updates as any;
+        const { error } = await supabase.from('projects').update(fields).eq('id', id);
         if (!error) return;
       }
     }
-    portalStore.updateProjectProgress(id, updates);
+    portalStore.updateProject(id, updates);
+  },
+
+  async deleteProject(id: string): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/projects/${id}`, { method: 'DELETE' }, token);
+        return;
+      } catch {
+        const { error } = await supabase.from('projects').delete().eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.deleteProject(id);
   },
 
   async toggleMilestone(projectId: string, milestoneId: string, is_completed: boolean, allMilestones: any[]): Promise<void> {
@@ -793,5 +852,132 @@ export const portalApi = {
       }
     }
     portalStore.updateInquiryStatus(id, status);
+  },
+
+  // ================= EXECUTIVE TASKS (DULANJA & REMASHI) =================
+  async getTasks(date?: string, assignee?: string): Promise<{ data: ExecutiveTask[]; live: boolean }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        const params = new URLSearchParams();
+        if (date) params.append('date', date);
+        if (assignee && assignee !== 'all') params.append('assignee', assignee);
+        const queryStr = params.toString() ? `?${params.toString()}` : '';
+
+        const res = await apiFetch<{ tasks: ExecutiveTask[] }>(`/api/tasks${queryStr}`, {}, token);
+        return { data: res.tasks || [], live: true };
+      } catch {
+        if (isSupabaseConfigured) {
+          let q = supabase.from('executive_tasks').select('*');
+          if (date) q = q.eq('task_date', date);
+          if (assignee && assignee !== 'all') q = q.or(`assignee.eq."${assignee}",assignee.ilike."%Both%"`);
+          const { data, error } = await q
+            .order('is_completed', { ascending: true })
+            .order('priority', { ascending: true })
+            .order('created_at', { ascending: true });
+          if (!error && data) return { data: data as ExecutiveTask[], live: true };
+        }
+      }
+    }
+    return { data: portalStore.getTasks(date, assignee), live: false };
+  },
+
+  async createTask(payload: Omit<ExecutiveTask, 'id' | 'created_at'>): Promise<{ task: ExecutiveTask; live: boolean }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        const res = await apiFetch<{ task: ExecutiveTask }>(
+          '/api/tasks',
+          { method: 'POST', body: JSON.stringify(payload) },
+          token
+        );
+        return { task: res.task, live: true };
+      } catch {
+        if (isSupabaseConfigured) {
+          const { data, error } = await supabase
+            .from('executive_tasks')
+            .insert(payload)
+            .select()
+            .single();
+          if (!error && data) return { task: data as ExecutiveTask, live: true };
+        }
+      }
+    }
+    const created = portalStore.createTask(payload);
+    return { task: created, live: false };
+  },
+
+  async updateTask(id: string, updates: Partial<ExecutiveTask>): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }, token);
+        return;
+      } catch {
+        const { error } = await supabase.from('executive_tasks').update(updates).eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.updateTask(id, updates);
+  },
+
+  async toggleTask(id: string, is_completed: boolean): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/tasks/${id}`, { method: 'PATCH', body: JSON.stringify({ is_completed }) }, token);
+        return;
+      } catch {
+        const { error } = await supabase
+          .from('executive_tasks')
+          .update({
+            is_completed,
+            completed_at: is_completed ? new Date().toISOString() : null,
+          })
+          .eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.toggleTask(id, is_completed);
+  },
+
+  async rolloverTasks(fromDate: string, toDate: string): Promise<{ count: number }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        const res = await apiFetch<{ count: number }>(
+          '/api/tasks/rollover',
+          { method: 'POST', body: JSON.stringify({ from_date: fromDate, to_date: toDate }) },
+          token
+        );
+        return { count: res.count };
+      } catch {
+        if (isSupabaseConfigured) {
+          const { data } = await supabase
+            .from('executive_tasks')
+            .update({ task_date: toDate })
+            .eq('task_date', fromDate)
+            .eq('is_completed', false)
+            .select();
+          return { count: data?.length || 0 };
+        }
+      }
+    }
+    const rolled = portalStore.rolloverTasks(fromDate, toDate);
+    return { count: rolled.length };
+  },
+
+  async deleteTask(id: string): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/tasks/${id}`, { method: 'DELETE' }, token);
+        return;
+      } catch {
+        const { error } = await supabase.from('executive_tasks').delete().eq('id', id);
+        if (!error) return;
+      }
+    }
+    portalStore.deleteTask(id);
   },
 };

@@ -31,12 +31,17 @@ export const requireAuth = async (
       return;
     }
 
-    // Query user profile to get their role
+    // Query user profile to get their role and account status
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('role')
+      .select('role, is_blocked, status')
       .eq('id', user.id)
       .single();
+
+    if (profile?.is_blocked || profile?.status === 'blocked') {
+      res.status(403).json({ error: 'This enterprise account has been suspended by administration. Please contact contact@monolith.lk' });
+      return;
+    }
 
     req.user = {
       id: user.id,

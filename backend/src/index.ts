@@ -11,6 +11,7 @@ import meetingsRouter from './routes/meetings';
 import reviewsRouter from './routes/reviews';
 import postsRouter from './routes/posts';
 import inquiriesRouter from './routes/inquiries';
+import tasksRouter from './routes/tasks';
 
 dotenv.config();
 
@@ -81,6 +82,7 @@ app.use('/api/meetings', meetingsRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/inquiries', inquiriesRouter);
+app.use('/api/tasks', tasksRouter);
 
 // 404 Handler
 app.use((_req: Request, res: Response) => {

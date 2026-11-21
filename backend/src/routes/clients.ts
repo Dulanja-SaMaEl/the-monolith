@@ -88,6 +88,74 @@ router.patch('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest
   }
 });
 
+// PATCH /api/clients/me/password - Authenticated client changes their own password
+router.patch('/me/password', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    const { password } = req.body;
+    if (!password || String(password).length < 6) {
+      res.status(400).json({ error: 'Password must be at least 6 characters long' });
+      return;
+    }
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, { password: String(password) });
+    if (error) throw error;
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/clients/:id/password - Admin sets a new password for customer
+router.patch('/:id/password', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    if (!password || String(password).length < 6) {
+      res.status(400).json({ error: 'Password must be at least 6 characters long' });
+      return;
+    }
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(id, { password: String(password) });
+    if (error) throw error;
+
+    res.json({ success: true, message: 'Customer password updated successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/clients/:id/status - Admin blocks or unblocks a customer
+router.patch('/:id/status', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { is_blocked, status } = req.body;
+    const blocked = is_blocked !== undefined ? Boolean(is_blocked) : status === 'blocked';
+
+    const { data, error } = await supabaseAdmin
+      .from('profiles')
+      .update({
+        is_blocked: blocked,
+        status: blocked ? 'blocked' : 'active',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ client: data, is_blocked: blocked });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // DELETE /api/clients/:id - Admin deletes customer
 router.delete('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {

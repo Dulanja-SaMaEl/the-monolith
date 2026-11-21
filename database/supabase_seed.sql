@@ -7,6 +7,8 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Defensive Schema Upgrades: ensure any missing columns exist on existing tables
+ALTER TABLE IF EXISTS public.partners ADD COLUMN IF NOT EXISTS name TEXT;
+ALTER TABLE IF EXISTS public.partners ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'Enterprise';
 ALTER TABLE IF EXISTS public.partners ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE IF EXISTS public.partners ADD COLUMN IF NOT EXISTS logo_url TEXT;
 ALTER TABLE IF EXISTS public.partners ADD COLUMN IF NOT EXISTS website_url TEXT;
@@ -25,6 +27,23 @@ ALTER TABLE IF EXISTS public.blog_posts ADD COLUMN IF NOT EXISTS is_published BO
 
 ALTER TABLE IF EXISTS public.invoices ADD COLUMN IF NOT EXISTS client_name TEXT;
 ALTER TABLE IF EXISTS public.quotations ADD COLUMN IF NOT EXISTS client_name TEXT;
+
+ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN DEFAULT FALSE;
+ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+
+CREATE TABLE IF NOT EXISTS public.executive_tasks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  assignee TEXT NOT NULL DEFAULT 'Dulanja Abeysinghe',
+  category TEXT DEFAULT 'Architecture',
+  priority TEXT CHECK (priority IN ('urgent', 'high', 'normal')) DEFAULT 'normal',
+  task_date DATE DEFAULT CURRENT_DATE,
+  is_completed BOOLEAN DEFAULT FALSE,
+  completed_at TIMESTAMPTZ,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
 
 -- 1. Seed Auth Accounts & Profiles (Founder Admin + 3 Enterprise Clients)
 DO $$
@@ -295,4 +314,14 @@ VALUES
     'Looking to modernize our legacy dispatch portal into a real-time multi-station web platform with automated LKR invoicing.',
     'new'
   )
+ON CONFLICT DO NOTHING;
+
+-- 11. Initial Executive Tasks (Dulanja Abeysinghe & Remashi Diyana)
+INSERT INTO public.executive_tasks (title, assignee, category, priority, task_date, is_completed, notes)
+VALUES
+  ('Review ShadowTopup high-concurrency Redis mutex stress tests', 'Dulanja Abeysinghe', 'Architecture', 'urgent', CURRENT_DATE, false, 'Verify zero double-claim locks during 50,000 throughput test.'),
+  ('Audit Haute Editorial component tokens & responsive breakpoints', 'Remashi Diyana', 'UI/UX Design', 'high', CURRENT_DATE, false, 'Verify mobile 8pt spatial grid adherence on all viewport widths.'),
+  ('Finalize Teaching Hospitals Pharmacy OS cold-storage deployment brief', 'Both (Dulanja & Remashi)', 'Operations', 'high', CURRENT_DATE, false, 'Coordinate with Dr. Jayasuriya on regional hardware cutover schedule.'),
+  ('Verify LKR VAT invoice calculation engine with CEFTS narrative routing', 'Dulanja Abeysinghe', 'Infrastructure', 'normal', CURRENT_DATE, false, 'Check automatic invoice PDF generator formatting.'),
+  ('Review new inbound project commission inquiries from Ceylon Logistics', 'Remashi Diyana', 'Operations', 'normal', CURRENT_DATE, false, 'Prepare formal quotation scope document.')
 ON CONFLICT DO NOTHING;

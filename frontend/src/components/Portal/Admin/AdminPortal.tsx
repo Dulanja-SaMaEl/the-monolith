@@ -11,6 +11,7 @@ import {
   MeetingRequest,
   BillingLineItem,
   ContactInquiry,
+  ExecutiveTask,
 } from '../../../lib/portalStore';
 import { portalApi } from '../../../lib/portalApi';
 import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
@@ -96,7 +97,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
 
   // Active Admin View
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'customers' | 'partners' | 'projects' | 'billing' | 'reviews' | 'blog' | 'requests'
+    'overview' | 'tasks' | 'customers' | 'partners' | 'projects' | 'billing' | 'reviews' | 'blog' | 'requests'
   >('overview');
   const [isLiveDb, setIsLiveDb] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -111,6 +112,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const [requests, setRequests] = useState<ProjectRequest[]>([]);
   const [meetings, setMeetings] = useState<MeetingRequest[]>([]);
   const [inquiries, setInquiries] = useState<ContactInquiry[]>([]);
+  const [tasks, setTasks] = useState<ExecutiveTask[]>([]);
 
   // Feedback Notification
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
@@ -118,6 +120,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
     setAlertMsg(msg);
     setTimeout(() => setAlertMsg(null), 4000);
   };
+
+  // Executive Tasks Daily Sprint State
+  const [taskFilterDate, setTaskFilterDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [taskFilterAssignee, setTaskFilterAssignee] = useState<string>('All');
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskAssignee, setNewTaskAssignee] = useState('Dulanja Abeysinghe');
+  const [newTaskCategory, setNewTaskCategory] = useState('Architecture');
+  const [newTaskPriority, setNewTaskPriority] = useState<'normal' | 'high' | 'urgent'>('normal');
+  const [newTaskNotes, setNewTaskNotes] = useState('');
+  const [editingTask, setEditingTask] = useState<ExecutiveTask | null>(null);
+
+  // Customer Security State
+  const [customerPasswordInputs, setCustomerPasswordInputs] = useState<Record<string, string>>({});
+
+  // Project Edit State
+  const [editingProject, setEditingProject] = useState<PortalProject | null>(null);
 
   // Form States
   // 1. New / Edit Customer
@@ -188,7 +206,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const refreshData = useCallback(async () => {
     setIsSyncing(true);
     try {
-      const [clientsRes, partRes, projRes, billRes, revRes, blogRes, reqRes, meetRes, inqRes] =
+      const [clientsRes, partRes, projRes, billRes, revRes, blogRes, reqRes, meetRes, inqRes, taskRes] =
         await Promise.all([
           portalApi.getClients(),
           portalApi.getPartners(true),
@@ -199,6 +217,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
           portalApi.getProjectRequests(),
           portalApi.getMeetings(),
           portalApi.getContactInquiries(),
+          portalApi.getTasks(),
         ]);
 
       setUsers(clientsRes.data);
@@ -210,6 +229,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       setRequests(reqRes.data);
       setMeetings(meetRes.data);
       setInquiries(inqRes.data);
+      setTasks(taskRes.data);
       setIsLiveDb(clientsRes.live || isLiveAuth);
     } catch (err: any) {
       showAlert(`⚠ Sync notice: ${err?.message || 'Using cached state'}`);
@@ -278,6 +298,36 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       showAlert(`✓ Deleted customer account for "${name}".`);
     } catch (err: any) {
       showAlert(`✕ Error deleting customer: ${err.message}`);
+    }
+  };
+
+  const handleUpdateCustomerPassword = async (clientId: string, clientName: string) => {
+    const newPass = customerPasswordInputs[clientId];
+    if (!newPass || newPass.length < 6) {
+      showAlert('✕ Password must be at least 6 characters long.');
+      return;
+    }
+    try {
+      await portalApi.updateClientPassword(clientId, newPass);
+      setCustomerPasswordInputs((prev) => ({ ...prev, [clientId]: '' }));
+      showAlert(`✓ Password updated for ${clientName}. Client can log in immediately.`);
+    } catch (err: any) {
+      showAlert(`✕ Error updating password: ${err.message}`);
+    }
+  };
+
+  const handleToggleCustomerBlock = async (c: UserProfile) => {
+    const nextBlocked = !c.is_blocked;
+    const actionLabel = nextBlocked ? 'block & suspend' : 'unblock';
+    if (!window.confirm(`Are you sure you want to ${actionLabel} client "${c.company_name || c.full_name}"?`)) return;
+    try {
+      await portalApi.toggleClientBlock(c.id, nextBlocked);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === c.id ? { ...u, is_blocked: nextBlocked, status: nextBlocked ? 'suspended' : 'active' } : u))
+      );
+      showAlert(`✓ Client account "${c.company_name || c.full_name}" ${nextBlocked ? 'suspended & blocked' : 're-activated'}.`);
+    } catch (err: any) {
+      showAlert(`✕ Error toggling client status: ${err.message}`);
     }
   };
 
@@ -450,6 +500,149 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       status: nextStatus,
     });
     await refreshData();
+  };
+
+  const handleSaveProjectEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProject) return;
+    try {
+      await portalApi.updateProject(editingProject.id, {
+        title: editingProject.title,
+        code_name: editingProject.code_name,
+        category: editingProject.category,
+        status: editingProject.status,
+        progress_percentage: editingProject.progress_percentage,
+        target_launch_date: editingProject.target_launch_date,
+        staging_url: editingProject.staging_url,
+        summary: editingProject.summary,
+      });
+      setProjects((prev) => prev.map((p) => (p.id === editingProject.id ? editingProject : p)));
+      setEditingProject(null);
+      await refreshData();
+      showAlert(`✓ Project "${editingProject.title}" updated successfully.`);
+    } catch (err: any) {
+      showAlert(`✕ Error updating project: ${err.message}`);
+    }
+  };
+
+  const handleDeleteProject = async (id: string, title: string) => {
+    if (!window.confirm(`Permanently delete project "${title}"? This will also remove all associated milestones.`)) return;
+    try {
+      await portalApi.deleteProject(id);
+      if (editingProject?.id === id) setEditingProject(null);
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+      showAlert(`✓ Project "${title}" deleted.`);
+    } catch (err: any) {
+      showAlert(`✕ Error deleting project: ${err.message}`);
+    }
+  };
+
+  // Executive Daily Tasks Handlers
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskTitle) return;
+    try {
+      const { task } = await portalApi.createTask({
+        title: newTaskTitle,
+        assignee: newTaskAssignee,
+        category: newTaskCategory,
+        priority: newTaskPriority,
+        task_date: taskFilterDate,
+        is_completed: false,
+        notes: newTaskNotes || undefined,
+      });
+      setTasks((prev) => [task, ...prev]);
+      setNewTaskTitle('');
+      setNewTaskNotes('');
+      showAlert(`✓ Task added for ${newTaskAssignee} on ${taskFilterDate}.`);
+    } catch (err: any) {
+      showAlert(`✕ Error adding task: ${err.message}`);
+    }
+  };
+
+  const handleToggleTask = async (t: ExecutiveTask) => {
+    const nextCompleted = !t.is_completed;
+    try {
+      await portalApi.toggleTask(t.id, nextCompleted);
+      setTasks((prev) =>
+        prev.map((item) =>
+          item.id === t.id
+            ? {
+                ...item,
+                is_completed: nextCompleted,
+                completed_at: nextCompleted ? new Date().toISOString() : undefined,
+              }
+            : item
+        )
+      );
+      showAlert(
+        nextCompleted
+          ? `✓ Marked complete: "${t.title}". Remaining tasks shifted up.`
+          : `↺ Restored "${t.title}" to active sprint.`
+      );
+    } catch (err: any) {
+      showAlert(`✕ Error toggling task: ${err.message}`);
+    }
+  };
+
+  const handleRolloverTask = async (t: ExecutiveTask) => {
+    const d = new Date(t.task_date || taskFilterDate);
+    d.setDate(d.getDate() + 1);
+    const nextDate = d.toISOString().split('T')[0];
+    try {
+      await portalApi.updateTask(t.id, { task_date: nextDate });
+      setTasks((prev) =>
+        prev.map((item) => (item.id === t.id ? { ...item, task_date: nextDate } : item))
+      );
+      showAlert(`✓ Shifted "${t.title}" to tomorrow (${nextDate}).`);
+    } catch (err: any) {
+      showAlert(`✕ Error rolling over task: ${err.message}`);
+    }
+  };
+
+  const handleBulkRollover = async () => {
+    const d = new Date(taskFilterDate);
+    d.setDate(d.getDate() + 1);
+    const nextDate = d.toISOString().split('T')[0];
+    try {
+      const res = await portalApi.rolloverTasks(taskFilterDate, nextDate);
+      await refreshData();
+      showAlert(`✓ Rolled over ${res.count} incomplete tasks from ${taskFilterDate} to ${nextDate}.`);
+    } catch (err: any) {
+      showAlert(`✕ Error during rollover: ${err.message}`);
+    }
+  };
+
+  const handleDeleteTask = async (id: string, title: string) => {
+    if (!window.confirm(`Delete executive task "${title}"?`)) return;
+    try {
+      await portalApi.deleteTask(id);
+      if (editingTask?.id === id) setEditingTask(null);
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+      showAlert(`✓ Task "${title}" deleted.`);
+    } catch (err: any) {
+      showAlert(`✕ Error deleting task: ${err.message}`);
+    }
+  };
+
+  const handleSaveTaskEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTask) return;
+    try {
+      await portalApi.updateTask(editingTask.id, {
+        title: editingTask.title,
+        assignee: editingTask.assignee,
+        category: editingTask.category,
+        priority: editingTask.priority,
+        notes: editingTask.notes,
+        task_date: editingTask.task_date,
+      });
+      setTasks((prev) => prev.map((t) => (t.id === editingTask.id ? editingTask : t)));
+      setEditingTask(null);
+      showAlert(`✓ Task "${editingTask.title}" updated.`);
+    } catch (err: any) {
+      showAlert(`✕ Error saving task: ${err.message}`);
+    }
   };
 
   // 4. Invoicing Line Items Handlers
@@ -630,6 +823,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
           <nav className="flex md:flex-col gap-1.5 md:space-y-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 no-scrollbar font-oswald text-xs sm:text-sm uppercase tracking-wider">
             {[
               { id: 'overview', label: 'Telemetry & HUD', count: null },
+              { id: 'tasks', label: 'Executive Tasks', count: tasks.filter((t) => !t.is_completed).length },
               { id: 'customers', label: 'Customers Registry', count: users.filter((u) => u.role === 'client').length },
               { id: 'partners', label: 'Strategic Partners', count: partners.length },
               { id: 'projects', label: 'Projects & Progress', count: projects.length },
@@ -726,6 +920,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
             </span>
             <h1 className="font-oswald text-3xl sm:text-4xl font-bold uppercase text-black">
               {activeTab === 'overview' && 'Executive Telemetry HUD'}
+              {activeTab === 'tasks' && 'Daily Executive Sprints & Tasks'}
               {activeTab === 'customers' && 'Customer & Enterprise Registry'}
               {activeTab === 'partners' && 'Strategic Academic & Tech Partners'}
               {activeTab === 'projects' && 'Projects & Engineering Progress'}
@@ -874,10 +1069,543 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                 ))}
               </div>
             </div>
+
+            {/* Executive Daily Sprints Widget */}
+            <div className="p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-median-taupe/15">
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
+                    Founders' Daily Execution
+                  </span>
+                  <h3 className="font-oswald text-xl font-bold uppercase text-black">
+                    Today's Executive Tasks ({tasks.filter((t) => !t.is_completed).length} Remaining)
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setActiveTab('tasks')}
+                  className="px-4 py-2 rounded-xl bg-black text-white text-xs font-oswald uppercase tracking-wider hover:bg-median-taupe transition-colors shrink-0"
+                >
+                  Manage Sprint Board →
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {tasks
+                  .filter((t) => !t.is_completed)
+                  .slice(0, 4)
+                  .map((t) => (
+                    <div
+                      key={t.id}
+                      onClick={() => handleToggleTask(t)}
+                      className="p-3.5 rounded-xl border border-median-taupe/15 bg-median-taupe/5 hover:bg-white hover:border-black cursor-pointer transition-all flex items-start gap-3 group"
+                    >
+                      <span className="w-5 h-5 rounded-full border border-median-taupe flex items-center justify-center text-xs group-hover:border-black group-hover:bg-black group-hover:text-white shrink-0 mt-0.5">
+                        ○
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[9px] font-mono uppercase px-2 py-0.5 rounded bg-median-taupe/15 text-black font-semibold">
+                            {t.assignee}
+                          </span>
+                          <span
+                            className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded font-bold ${
+                              t.priority === 'urgent'
+                                ? 'bg-red-100 text-red-800'
+                                : t.priority === 'high'
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-median-taupe/10 text-median-taupe'
+                            }`}
+                          >
+                            {t.priority}
+                          </span>
+                        </div>
+                        <p className="text-xs font-semibold text-black truncate">{t.title}</p>
+                      </div>
+                    </div>
+                  ))}
+                {tasks.filter((t) => !t.is_completed).length === 0 && (
+                  <div className="col-span-2 p-6 text-center text-xs font-mono text-median-taupe">
+                    ✓ All executive sprint tasks completed today.
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* ================= TAB 2: CUSTOMERS REGISTRY ================= */}
+        {/* ================= TAB 2: DAILY EXECUTIVE TASKS & SPRINTS ================= */}
+        {activeTab === 'tasks' && (
+          <div className="space-y-8">
+            {/* Date Navigation & Assignee Filter Bar */}
+            <div className="p-6 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-4">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                {/* Quick Date Selectors */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-mono uppercase font-bold text-median-taupe mr-1">Sprint Date:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const d = new Date(taskFilterDate);
+                      d.setDate(d.getDate() - 1);
+                      setTaskFilterDate(d.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-median-taupe/30 hover:border-black text-xs font-mono font-semibold transition-colors"
+                  >
+                    ← Yesterday
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTaskFilterDate(new Date().toISOString().split('T')[0])}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-colors ${
+                      taskFilterDate === new Date().toISOString().split('T')[0]
+                        ? 'bg-black text-white'
+                        : 'border border-median-taupe/30 hover:border-black text-black'
+                    }`}
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const d = new Date(taskFilterDate);
+                      d.setDate(d.getDate() + 1);
+                      setTaskFilterDate(d.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-median-taupe/30 hover:border-black text-xs font-mono font-semibold transition-colors"
+                  >
+                    Tomorrow →
+                  </button>
+                  <input
+                    type="date"
+                    value={taskFilterDate}
+                    onChange={(e) => setTaskFilterDate(e.target.value)}
+                    className="px-3 py-1.5 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-xs font-mono text-black focus:outline-none focus:border-black"
+                  />
+                </div>
+
+                {/* Assignee Filter Tabs */}
+                <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+                  <span className="uppercase font-bold text-median-taupe mr-1">Assignee:</span>
+                  {['All', 'Dulanja Abeysinghe', 'Remashi Diyana'].map((person) => {
+                    const count = tasks.filter(
+                      (t) =>
+                        (t.task_date || taskFilterDate) === taskFilterDate &&
+                        (person === 'All' ? true : t.assignee.includes(person.split(' ')[0]))
+                    ).length;
+                    return (
+                      <button
+                        key={person}
+                        type="button"
+                        onClick={() => setTaskFilterAssignee(person)}
+                        className={`px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 ${
+                          taskFilterAssignee === person
+                            ? 'bg-black text-white'
+                            : 'border border-median-taupe/30 hover:border-black text-black bg-white'
+                        }`}
+                      >
+                        <span>{person}</span>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                            taskFilterAssignee === person
+                              ? 'bg-white/20 text-white'
+                              : 'bg-median-taupe/15 text-median-taupe'
+                          }`}
+                        >
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Grid: Add Task (Left) + Active Tasks & Completed Tasks (Right) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Add Daily Task Form */}
+              <div className="lg:col-span-5 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-4">
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
+                    Add Daily Sprint Task
+                  </span>
+                  <h3 className="font-oswald text-xl font-bold uppercase text-black">
+                    New Executive Task
+                  </h3>
+                  <p className="text-xs text-median-taupe/80 mt-1">
+                    Assign a priority objective for {taskFilterDate}. Once ticked, it shifts to completed and remaining tasks automatically move up.
+                  </p>
+                </div>
+
+                <form onSubmit={handleCreateTask} className="space-y-4 text-xs font-mono">
+                  <div>
+                    <label className="block font-bold uppercase text-black mb-1">Task Title *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newTaskTitle}
+                      onChange={(e) => setNewTaskTitle(e.target.value)}
+                      placeholder="e.g. Verify Redis Redlock mutex failover"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-sm text-black focus:outline-none focus:border-black"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold uppercase text-black mb-1">Assignee *</label>
+                      <select
+                        value={newTaskAssignee}
+                        onChange={(e) => setNewTaskAssignee(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-xs text-black"
+                      >
+                        <option value="Dulanja Abeysinghe">Dulanja Abeysinghe (Founder)</option>
+                        <option value="Remashi Diyana">Remashi Diyana (Co-Founder)</option>
+                        <option value="Both (Dulanja & Remashi)">Both (Dulanja & Remashi)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold uppercase text-black mb-1">Priority *</label>
+                      <select
+                        value={newTaskPriority}
+                        onChange={(e) => setNewTaskPriority(e.target.value as any)}
+                        className="w-full px-3 py-2 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-xs text-black"
+                      >
+                        <option value="normal">Normal Priority</option>
+                        <option value="high">High Priority</option>
+                        <option value="urgent">Urgent / Blocker</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold uppercase text-black mb-1">Category</label>
+                    <select
+                      value={newTaskCategory}
+                      onChange={(e) => setNewTaskCategory(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-xs text-black"
+                    >
+                      <option value="Architecture">Architecture</option>
+                      <option value="UI/UX Design">UI/UX Design</option>
+                      <option value="Infrastructure">Infrastructure</option>
+                      <option value="Operations">Operations</option>
+                      <option value="Fintech & Security">Fintech & Security</option>
+                      <option value="Client Delivery">Client Delivery</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold uppercase text-black mb-1">Execution Notes (Optional)</label>
+                    <textarea
+                      rows={3}
+                      value={newTaskNotes}
+                      onChange={(e) => setNewTaskNotes(e.target.value)}
+                      placeholder="Technical context, checklist points, or validation criteria..."
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-xs text-black focus:outline-none focus:border-black"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 rounded-xl bg-black text-white font-oswald text-xs uppercase tracking-widest hover:bg-median-taupe transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    <span>Add Daily Task to Sprint</span>
+                    <span>+</span>
+                  </button>
+                </form>
+              </div>
+
+              {/* Task Lists: Active Sprints & Completed Tasks */}
+              <div className="lg:col-span-7 space-y-6">
+                {/* 1. Remaining Active Tasks */}
+                <div className="p-6 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-median-taupe/15">
+                    <div>
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
+                        Active Execution
+                      </span>
+                      <h4 className="font-oswald text-xl font-bold uppercase text-black">
+                        Remaining Tasks (
+                        {
+                          tasks.filter(
+                            (t) =>
+                              !t.is_completed &&
+                              (t.task_date || taskFilterDate) === taskFilterDate &&
+                              (taskFilterAssignee === 'All' ? true : t.assignee.includes(taskFilterAssignee.split(' ')[0]))
+                          ).length
+                        }
+                        )
+                      </h4>
+                    </div>
+
+                    {tasks.filter(
+                      (t) =>
+                        !t.is_completed &&
+                        (t.task_date || taskFilterDate) === taskFilterDate &&
+                        (taskFilterAssignee === 'All' ? true : t.assignee.includes(taskFilterAssignee.split(' ')[0]))
+                    ).length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleBulkRollover}
+                        className="px-3 py-1.5 rounded-lg border border-median-taupe/30 text-median-taupe hover:text-black hover:border-black text-xs font-mono uppercase font-semibold transition-colors"
+                        title="Shift all remaining tasks for this date to tomorrow"
+                      >
+                        Roll Over Incomplete to Tomorrow ➔
+                      </button>
+                    )}
+                  </div>
+
+                  {/* List of Incomplete Tasks */}
+                  {(() => {
+                    const activeTasks = tasks.filter(
+                      (t) =>
+                        !t.is_completed &&
+                        (t.task_date || taskFilterDate) === taskFilterDate &&
+                        (taskFilterAssignee === 'All' ? true : t.assignee.includes(taskFilterAssignee.split(' ')[0]))
+                    );
+
+                    if (activeTasks.length === 0) {
+                      return (
+                        <div className="p-8 text-center text-xs font-mono text-median-taupe rounded-xl bg-median-taupe/5 border border-median-taupe/10">
+                          <p className="font-oswald text-base uppercase text-black mb-1">
+                            All Tasks Completed For This Date
+                          </p>
+                          <span>Zero pending blockers. Outstanding execution.</span>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-3">
+                        {activeTasks.map((t, idx) => (
+                          <div
+                            key={t.id}
+                            className="p-4 rounded-xl border border-median-taupe/15 bg-white shadow-sm hover:border-black/40 transition-all space-y-2"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              {/* Checkbox Tick Button */}
+                              <div className="flex items-start gap-3 min-w-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleTask(t)}
+                                  className="w-5 h-5 rounded-full border-2 border-median-taupe flex items-center justify-center text-transparent hover:text-white hover:bg-black hover:border-black shrink-0 mt-0.5 transition-all text-xs font-bold"
+                                  title="Tick to mark complete (will automatically move to Completed section)"
+                                >
+                                  ✓
+                                </button>
+                                <div className="min-w-0">
+                                  <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                                    <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-black text-white">
+                                      #{idx + 1}
+                                    </span>
+                                    <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-median-taupe/15 text-black">
+                                      {t.assignee}
+                                    </span>
+                                    <span
+                                      className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded ${
+                                        t.priority === 'urgent'
+                                          ? 'bg-red-100 text-red-800'
+                                          : t.priority === 'high'
+                                          ? 'bg-amber-100 text-amber-800'
+                                          : 'bg-median-taupe/10 text-median-taupe'
+                                      }`}
+                                    >
+                                      {t.priority}
+                                    </span>
+                                    {t.category && (
+                                      <span className="text-[9px] font-mono uppercase text-median-taupe/80">
+                                        · {t.category}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <h5 className="font-oswald text-base font-bold text-black leading-snug">
+                                    {t.title}
+                                  </h5>
+                                  {t.notes && (
+                                    <p className="text-xs font-mono text-median-taupe/80 mt-1">
+                                      {t.notes}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Task Actions */}
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRolloverTask(t)}
+                                  className="px-2.5 py-1 rounded border border-median-taupe/30 hover:border-black text-[10px] font-mono uppercase text-median-taupe hover:text-black transition-colors"
+                                  title="Shift this task to tomorrow"
+                                >
+                                  Tomorrow →
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingTask(editingTask?.id === t.id ? null : t)}
+                                  className="px-2.5 py-1 rounded border border-black text-black hover:bg-black hover:text-white text-[10px] font-bold uppercase transition-colors"
+                                >
+                                  {editingTask?.id === t.id ? 'Cancel' : 'Edit'}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteTask(t.id, t.title)}
+                                  className="px-2.5 py-1 rounded border border-red-300 text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 text-[10px] font-bold uppercase transition-colors"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Inline Task Editor */}
+                            {editingTask?.id === t.id && (
+                              <form
+                                onSubmit={handleSaveTaskEdit}
+                                className="pt-3 border-t border-median-taupe/15 space-y-2 text-xs font-mono"
+                              >
+                                <input
+                                  type="text"
+                                  required
+                                  value={editingTask.title}
+                                  onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                                  className="w-full px-3 py-1.5 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                />
+                                <div className="grid grid-cols-2 gap-2">
+                                  <select
+                                    value={editingTask.assignee}
+                                    onChange={(e) => setEditingTask({ ...editingTask, assignee: e.target.value })}
+                                    className="px-3 py-1.5 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                  >
+                                    <option value="Dulanja Abeysinghe">Dulanja Abeysinghe</option>
+                                    <option value="Remashi Diyana">Remashi Diyana</option>
+                                    <option value="Both (Dulanja & Remashi)">Both</option>
+                                  </select>
+                                  <select
+                                    value={editingTask.priority}
+                                    onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as any })}
+                                    className="px-3 py-1.5 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                                  >
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                  </select>
+                                </div>
+                                <div className="flex justify-end gap-2 pt-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingTask(null)}
+                                    className="px-3 py-1 rounded border border-median-taupe/30 text-median-taupe text-[10px] uppercase font-bold"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="submit"
+                                    className="px-3 py-1 rounded bg-black text-white text-[10px] uppercase font-bold hover:bg-median-taupe"
+                                  >
+                                    Save Task
+                                  </button>
+                                </div>
+                              </form>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* 2. Completed Tasks List */}
+                <div className="p-6 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-median-taupe/15">
+                    <div>
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-700 font-bold block">
+                        Verified Completion
+                      </span>
+                      <h4 className="font-oswald text-xl font-bold uppercase text-black">
+                        Completed Tasks (
+                        {
+                          tasks.filter(
+                            (t) =>
+                              t.is_completed &&
+                              (t.task_date || taskFilterDate) === taskFilterDate &&
+                              (taskFilterAssignee === 'All' ? true : t.assignee.includes(taskFilterAssignee.split(' ')[0]))
+                          ).length
+                        }
+                        )
+                      </h4>
+                    </div>
+                  </div>
+
+                  {(() => {
+                    const completedTasks = tasks.filter(
+                      (t) =>
+                        t.is_completed &&
+                        (t.task_date || taskFilterDate) === taskFilterDate &&
+                        (taskFilterAssignee === 'All' ? true : t.assignee.includes(taskFilterAssignee.split(' ')[0]))
+                    );
+
+                    if (completedTasks.length === 0) {
+                      return (
+                        <div className="p-6 text-center text-xs font-mono text-median-taupe/60">
+                          No completed tasks logged yet for this date.
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-2.5">
+                        {completedTasks.map((t) => (
+                          <div
+                            key={t.id}
+                            className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40 flex items-center justify-between gap-3 text-xs font-mono"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                ✓
+                              </span>
+                              <div className="min-w-0">
+                                <span className="line-through text-black font-semibold block truncate">
+                                  {t.title}
+                                </span>
+                                <span className="text-[10px] text-median-taupe/80">
+                                  {t.assignee} · {t.category}
+                                  {t.completed_at &&
+                                    ` · Completed ${new Date(t.completed_at).toLocaleTimeString([], {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}`}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleTask(t)}
+                                className="px-2.5 py-1 rounded border border-median-taupe/30 hover:border-black text-[10px] uppercase font-bold text-median-taupe hover:text-black transition-colors"
+                                title="Restore back to active sprint"
+                              >
+                                Restore
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteTask(t.id, t.title)}
+                                className="px-2 py-1 text-red-600 hover:text-red-900 text-xs"
+                                title="Delete"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================= TAB 3: CUSTOMERS REGISTRY ================= */}
         {activeTab === 'customers' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Add Customer Form */}
@@ -986,9 +1714,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="px-3 py-1 rounded-full border border-median-taupe/30 bg-median-taupe/5 text-[10px] font-mono text-median-taupe font-bold uppercase">
-                              VIP Active
+                            <span
+                              className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase ${
+                                c.is_blocked
+                                  ? 'border border-red-300 bg-red-100 text-red-800'
+                                  : 'border border-median-taupe/30 bg-median-taupe/5 text-median-taupe'
+                              }`}
+                            >
+                              {c.is_blocked ? 'Blocked' : 'VIP Active'}
                             </span>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleCustomerBlock(c)}
+                              className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase transition-colors ${
+                                c.is_blocked
+                                  ? 'border-emerald-400 text-emerald-800 hover:bg-emerald-600 hover:text-white'
+                                  : 'border-amber-400 text-amber-800 hover:bg-amber-600 hover:text-white'
+                              }`}
+                            >
+                              {c.is_blocked ? 'Unblock' : 'Block'}
+                            </button>
                             <button
                               type="button"
                               onClick={() => setEditingCustomer(editingCustomer?.id === c.id ? null : c)}
@@ -1002,6 +1747,31 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                               className="px-3 py-1 rounded-full border border-red-300 text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 text-[10px] font-bold uppercase transition-colors"
                             >
                               Delete
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Customer Password Reset Control */}
+                        <div className="pt-2 border-t border-median-taupe/15 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+                          <span className="text-[10px] uppercase font-bold text-median-taupe">
+                            Admin Passkey Reset:
+                          </span>
+                          <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <input
+                              type="password"
+                              placeholder="New passkey (min 6 chars)"
+                              value={customerPasswordInputs[c.id] || ''}
+                              onChange={(e) =>
+                                setCustomerPasswordInputs({ ...customerPasswordInputs, [c.id]: e.target.value })
+                              }
+                              className="px-3 py-1.5 text-xs rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black w-full sm:w-48 focus:outline-none focus:border-black"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateCustomerPassword(c.id, c.company_name || c.full_name)}
+                              className="px-3 py-1.5 rounded-lg bg-black text-white text-[10px] font-bold uppercase hover:bg-median-taupe transition-colors shrink-0"
+                            >
+                              Set Password
                             </button>
                           </div>
                         </div>
@@ -1448,8 +2218,142 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                       >
                         {proj.status.replace('_', ' ')}
                       </span>
+                      <button
+                        type="button"
+                        onClick={() => setEditingProject(editingProject?.id === proj.id ? null : proj)}
+                        className="px-3 py-1 rounded-full border border-black text-black hover:bg-black hover:text-white text-[10px] font-bold uppercase transition-colors"
+                      >
+                        {editingProject?.id === proj.id ? 'Cancel' : 'Edit'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteProject(proj.id, proj.title)}
+                        className="px-3 py-1 rounded-full border border-red-300 text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 text-[10px] font-bold uppercase transition-colors"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
+
+                  {/* Inline Project Editor */}
+                  {editingProject?.id === proj.id && (
+                    <form
+                      onSubmit={handleSaveProjectEdit}
+                      className="p-5 rounded-xl bg-median-taupe/5 border border-median-taupe/20 space-y-3 text-xs font-mono"
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                            Project Title
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={editingProject.title}
+                            onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
+                            className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                            Code Name
+                          </label>
+                          <input
+                            type="text"
+                            value={editingProject.code_name || ''}
+                            onChange={(e) => setEditingProject({ ...editingProject, code_name: e.target.value })}
+                            className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                            Category
+                          </label>
+                          <input
+                            type="text"
+                            value={editingProject.category}
+                            onChange={(e) => setEditingProject({ ...editingProject, category: e.target.value })}
+                            className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                            Target Launch Date
+                          </label>
+                          <input
+                            type="date"
+                            value={editingProject.target_launch_date || ''}
+                            onChange={(e) =>
+                              setEditingProject({ ...editingProject, target_launch_date: e.target.value })
+                            }
+                            className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                            Progress Percentage (0–100)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={editingProject.progress_percentage}
+                            onChange={(e) =>
+                              setEditingProject({
+                                ...editingProject,
+                                progress_percentage: Number(e.target.value),
+                              })
+                            }
+                            className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                          Executive Summary / Scope
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={editingProject.summary || ''}
+                          onChange={(e) => setEditingProject({ ...editingProject, summary: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                          Staging / Demo URL
+                        </label>
+                        <input
+                          type="url"
+                          value={editingProject.staging_url || ''}
+                          onChange={(e) => setEditingProject({ ...editingProject, staging_url: e.target.value })}
+                          placeholder="https://staging.monolith.lk/..."
+                          className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditingProject(null)}
+                          className="px-3 py-1.5 rounded-lg border border-median-taupe/30 text-median-taupe hover:text-black font-mono uppercase text-xs"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-1.5 rounded-lg bg-black text-white font-bold uppercase hover:bg-median-taupe transition-colors font-mono text-xs"
+                        >
+                          Save Project Changes
+                        </button>
+                      </div>
+                    </form>
+                  )}
 
                   {/* Progress Controls */}
                   <div className="p-4 rounded-xl bg-median-taupe/5 border border-median-taupe/15">

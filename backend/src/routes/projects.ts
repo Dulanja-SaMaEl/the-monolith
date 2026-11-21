@@ -95,15 +95,31 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
   }
 });
 
-// PATCH /api/projects/:id - Admin updates project progress and status
+// PATCH /api/projects/:id - Admin updates project details, progress and status
 router.patch('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { status, progress_percentage, staging_url, repository_or_demo_url, summary } = req.body;
+    const {
+      title,
+      code_name,
+      category,
+      client_id,
+      target_launch_date,
+      status,
+      progress_percentage,
+      staging_url,
+      repository_or_demo_url,
+      summary,
+    } = req.body;
 
     const { data, error } = await supabaseAdmin
       .from('projects')
       .update({
+        ...(title !== undefined ? { title } : {}),
+        ...(code_name !== undefined ? { code_name } : {}),
+        ...(category !== undefined ? { category } : {}),
+        ...(client_id !== undefined ? { client_id } : {}),
+        ...(target_launch_date !== undefined ? { target_launch_date: target_launch_date || null } : {}),
         ...(status !== undefined ? { status } : {}),
         ...(progress_percentage !== undefined ? { progress_percentage } : {}),
         ...(staging_url !== undefined ? { staging_url } : {}),
@@ -117,6 +133,22 @@ router.patch('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest
 
     if (error) throw error;
     res.json({ project: data });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/projects/:id - Admin deletes a project
+router.delete('/:id', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabaseAdmin
+      .from('projects')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    res.json({ success: true, deleted: true, id });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

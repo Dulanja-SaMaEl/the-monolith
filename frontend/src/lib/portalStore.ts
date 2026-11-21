@@ -10,6 +10,22 @@ export interface UserProfile {
   company_name?: string;
   phone?: string;
   avatar_url?: string;
+  is_blocked?: boolean;
+  status?: 'active' | 'blocked';
+  password?: string;
+}
+
+export interface ExecutiveTask {
+  id: string;
+  title: string;
+  assignee: string; // 'Dulanja Abeysinghe' | 'Remashi Diyana' | 'Both'
+  category: string;
+  priority: 'urgent' | 'high' | 'normal';
+  task_date: string; // YYYY-MM-DD
+  is_completed: boolean;
+  completed_at?: string;
+  notes?: string;
+  created_at: string;
 }
 
 export interface Partner {
@@ -437,6 +453,66 @@ const setStored = <T>(key: string, data: T): void => {
   }
 };
 
+const todayDate = new Date().toISOString().split('T')[0];
+
+const initialTasks: ExecutiveTask[] = [
+  {
+    id: 'task-01',
+    title: 'Review ShadowTopup high-concurrency Redis mutex stress tests',
+    assignee: 'Dulanja Abeysinghe',
+    category: 'Architecture',
+    priority: 'urgent',
+    task_date: todayDate,
+    is_completed: false,
+    notes: 'Verify zero double-claim locks during 50,000 throughput test.',
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'task-02',
+    title: 'Audit Haute Editorial component tokens & responsive breakpoints',
+    assignee: 'Remashi Diyana',
+    category: 'UI/UX Design',
+    priority: 'high',
+    task_date: todayDate,
+    is_completed: false,
+    notes: 'Verify mobile 8pt spatial grid adherence on all viewport widths.',
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'task-03',
+    title: 'Finalize Teaching Hospitals Pharmacy OS cold-storage deployment brief',
+    assignee: 'Both',
+    category: 'Operations',
+    priority: 'high',
+    task_date: todayDate,
+    is_completed: false,
+    notes: 'Coordinate with Dr. Jayasuriya on regional hardware cutover schedule.',
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'task-04',
+    title: 'Verify LKR VAT invoice calculation engine with CEFTS narrative routing',
+    assignee: 'Dulanja Abeysinghe',
+    category: 'Infrastructure',
+    priority: 'normal',
+    task_date: todayDate,
+    is_completed: false,
+    notes: 'Check automatic invoice PDF generator formatting.',
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'task-05',
+    title: 'Review new inbound project commission inquiries from Ceylon Logistics',
+    assignee: 'Remashi Diyana',
+    category: 'Operations',
+    priority: 'normal',
+    task_date: todayDate,
+    is_completed: false,
+    notes: 'Prepare formal quotation scope document.',
+    created_at: new Date().toISOString(),
+  },
+];
+
 // Data Store API
 export const portalStore = {
   // Users & Profiles
@@ -447,11 +523,37 @@ export const portalStore = {
     setStored('users', [newUser, ...users]);
     return newUser;
   },
-  updateUser: (id: string, updates: Partial<Pick<UserProfile, 'full_name' | 'company_name' | 'phone'>>): UserProfile | null => {
+  updateUser: (id: string, updates: Partial<Pick<UserProfile, 'full_name' | 'company_name' | 'phone' | 'is_blocked' | 'status'>>): UserProfile | null => {
     let updated: UserProfile | null = null;
     const list = portalStore.getUsers().map((u) => {
       if (u.id === id) {
         updated = { ...u, ...updates };
+        return updated;
+      }
+      return u;
+    });
+    setStored('users', list);
+    return updated;
+  },
+  updateUserPassword: (id: string, newPassword: string): boolean => {
+    const list = portalStore.getUsers().map((u) => {
+      if (u.id === id) {
+        return { ...u, password: newPassword };
+      }
+      return u;
+    });
+    setStored('users', list);
+    return true;
+  },
+  toggleUserBlock: (id: string, is_blocked: boolean): UserProfile | null => {
+    let updated: UserProfile | null = null;
+    const list = portalStore.getUsers().map((u) => {
+      if (u.id === id) {
+        updated = {
+          ...u,
+          is_blocked,
+          status: is_blocked ? 'blocked' : 'active',
+        };
         return updated;
       }
       return u;
@@ -525,6 +627,23 @@ export const portalStore = {
     });
     setStored('projects', newList);
     return updated;
+  },
+  updateProject: (id: string, updates: Partial<PortalProject>): PortalProject | null => {
+    const list = portalStore.getProjects();
+    let updated: PortalProject | null = null;
+    const newList = list.map((p) => {
+      if (p.id === id) {
+        updated = { ...p, ...updates };
+        return updated;
+      }
+      return p;
+    });
+    setStored('projects', newList);
+    return updated;
+  },
+  deleteProject: (id: string): void => {
+    const list = portalStore.getProjects().filter((p) => p.id !== id);
+    setStored('projects', list);
   },
 
   // Billing Documents (Invoices & Quotations)
@@ -702,5 +821,75 @@ export const portalStore = {
       i.id === id ? { ...i, status } : i
     );
     setStored('inquiries', list);
+  },
+
+  // Executive Daily Tasks (Dulanja Abeysinghe & Remashi Diyana)
+  getTasks: (date?: string, assignee?: string): ExecutiveTask[] => {
+    let list = getStored('tasks', initialTasks);
+    if (date) {
+      list = list.filter((t) => t.task_date === date);
+    }
+    if (assignee && assignee !== 'all') {
+      list = list.filter((t) => t.assignee === assignee || t.assignee.includes('Both'));
+    }
+    return list;
+  },
+  createTask: (task: Omit<ExecutiveTask, 'id' | 'created_at'>): ExecutiveTask => {
+    const list = getStored('tasks', initialTasks);
+    const newTask: ExecutiveTask = {
+      ...task,
+      id: `task-${Date.now()}`,
+      created_at: new Date().toISOString(),
+    };
+    setStored('tasks', [newTask, ...list]);
+    return newTask;
+  },
+  updateTask: (id: string, updates: Partial<ExecutiveTask>): ExecutiveTask | null => {
+    const list = getStored('tasks', initialTasks);
+    let updated: ExecutiveTask | null = null;
+    const newList = list.map((t) => {
+      if (t.id === id) {
+        updated = { ...t, ...updates };
+        return updated;
+      }
+      return t;
+    });
+    setStored('tasks', newList);
+    return updated;
+  },
+  toggleTask: (id: string, is_completed: boolean): ExecutiveTask | null => {
+    const list = getStored('tasks', initialTasks);
+    let updated: ExecutiveTask | null = null;
+    const newList = list.map((t) => {
+      if (t.id === id) {
+        updated = {
+          ...t,
+          is_completed,
+          completed_at: is_completed ? new Date().toISOString() : undefined,
+        };
+        return updated;
+      }
+      return t;
+    });
+    setStored('tasks', newList);
+    return updated;
+  },
+  rolloverTasks: (fromDate: string, toDate: string): ExecutiveTask[] => {
+    const list = getStored('tasks', initialTasks);
+    const rolledOver: ExecutiveTask[] = [];
+    const newList = list.map((t) => {
+      if (t.task_date === fromDate && !t.is_completed) {
+        const u = { ...t, task_date: toDate };
+        rolledOver.push(u);
+        return u;
+      }
+      return t;
+    });
+    setStored('tasks', newList);
+    return rolledOver;
+  },
+  deleteTask: (id: string): void => {
+    const list = getStored('tasks', initialTasks).filter((t) => t.id !== id);
+    setStored('tasks', list);
   },
 };

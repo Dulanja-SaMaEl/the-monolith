@@ -21,13 +21,13 @@ export const AboutPage: React.FC<AboutPageProps> = ({ navigate }) => {
             <span className="absolute -bottom-2.5 -right-2.5 w-5 h-5 border-2 border-median-taupe bg-white shadow-sm" />
 
             <span className="text-xs font-bold tracking-widest uppercase text-median-taupe block mb-4">
-              Studio Identity & Manifesto
+              Identity & Engineering Manifesto
             </span>
             <h1 className="font-oswald text-5xl sm:text-7xl md:text-8xl font-bold uppercase tracking-tight text-black leading-none mb-6">
               About Monolith LK
             </h1>
             <p className="text-sm sm:text-lg text-black/85 max-w-2xl font-normal leading-relaxed">
-              We are an independent creative agency and digital innovation studio dedicated to high-craft typography, spatial UI hierarchy, and performance-first web development.
+              We are Monolith LK — an engineering consultancy and digital innovation practice dedicated to high-craft typography, spatial UI hierarchy, and performance-first web systems, headquartered in Kurunegala, Sri Lanka.
             </p>
           </div>
         </ScrollReveal>

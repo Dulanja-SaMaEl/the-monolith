@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { PortalProject, MeetingRequest, ProjectRequest, BillingDocument } from '../../../lib/portalStore';
+import { PortalProject, MeetingRequest, ProjectRequest, BillingDocument, CustomerReview } from '../../../lib/portalStore';
 import { portalApi } from '../../../lib/portalApi';
 import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
 
@@ -10,7 +10,7 @@ interface ClientPortalProps {
 
 export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
   const { user, logout, isLiveAuth } = useAuth();
-  const [activeTab, setActiveTab] = useState<'projects' | 'request' | 'meetings' | 'billing'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'request' | 'meetings' | 'billing' | 'reviews' | 'security'>('projects');
   const [isLiveDb, setIsLiveDb] = useState<boolean>(false);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
 
@@ -19,6 +19,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
   const [requests, setRequests] = useState<ProjectRequest[]>([]);
   const [meetings, setMeetings] = useState<MeetingRequest[]>([]);
   const [billingDocs, setBillingDocs] = useState<BillingDocument[]>([]);
+  const [reviews, setReviews] = useState<CustomerReview[]>([]);
   const [selectedBillingDoc, setSelectedBillingDoc] = useState<BillingDocument | null>(null);
 
   // New Project Request Form State
@@ -36,20 +37,40 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
   const [meetAgenda, setMeetAgenda] = useState('');
   const [meetingBooked, setMeetingBooked] = useState(false);
 
+  // Client Review Form State
+  const [revRating, setRevRating] = useState(5);
+  const [revTitle, setRevTitle] = useState('');
+  const [revText, setRevText] = useState('');
+  const [revSubmitted, setRevSubmitted] = useState(false);
+
+  // Security / Password Change State
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordMsg, setPasswordMsg] = useState<string | null>(null);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
   const loadClientData = useCallback(async () => {
     if (!user?.id) return;
     setIsLoadingData(true);
     try {
-      const [projRes, reqRes, meetRes, billRes] = await Promise.all([
+      const [projRes, reqRes, meetRes, billRes, revRes] = await Promise.all([
         portalApi.getProjects(user.id),
         portalApi.getProjectRequests(user.id),
         portalApi.getMeetings(user.id),
         portalApi.getBillingDocuments(user.id),
+        portalApi.getReviews(true),
       ]);
       setProjects(projRes.data);
       setRequests(reqRes.data);
       setMeetings(meetRes.data);
       setBillingDocs(billRes.data);
+      // Filter reviews relevant to this client
+      const myReviews = revRes.data.filter(
+        (r) =>
+          (user.company_name && r.company_name?.toLowerCase().includes(user.company_name.toLowerCase())) ||
+          r.client_name?.toLowerCase() === user.full_name?.toLowerCase()
+      );
+      setReviews(myReviews);
       setIsLiveDb(projRes.live || isLiveAuth);
     } finally {
       setIsLoadingData(false);
@@ -104,6 +125,52 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
     setMeetingBooked(true);
     setMeetAgenda('');
     setTimeout(() => setMeetingBooked(false), 5000);
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!revText || !user) return;
+    try {
+      const { review } = await portalApi.addReview({
+        client_name: user.full_name,
+        client_title: revTitle || 'Managing Director',
+        company_name: user.company_name || 'Enterprise Client',
+        rating: revRating,
+        review_text: revText,
+        is_featured: true,
+      });
+      setReviews([review, ...reviews]);
+      setRevSubmitted(true);
+      setRevText('');
+      setRevTitle('');
+      setTimeout(() => setRevSubmitted(false), 5000);
+    } catch (err: any) {
+      alert(`Error submitting review: ${err.message}`);
+    }
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 6) {
+      setPasswordMsg('✕ Password must be at least 6 characters long.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMsg('✕ Passwords do not match. Please re-enter.');
+      return;
+    }
+    setIsUpdatingPassword(true);
+    setPasswordMsg(null);
+    try {
+      await portalApi.changeMyPassword(newPassword);
+      setPasswordMsg('✓ Passkey updated successfully. You can use this password on your next sign in.');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      setPasswordMsg(`✕ Update error: ${err.message || 'Failed to update passkey'}`);
+    } finally {
+      setIsUpdatingPassword(false);
+    }
   };
 
   return (
@@ -245,6 +312,33 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
             <span className="w-5 h-5 rounded-full bg-median-taupe/10 text-median-taupe text-[10px] font-mono font-bold flex items-center justify-center">
               {billingDocs.length}
             </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 ${
+              activeTab === 'reviews'
+                ? 'border-black text-black font-bold'
+                : 'border-transparent text-median-taupe/60 hover:text-black'
+            }`}
+          >
+            <span>Testimonials & Reviews</span>
+            {reviews.length > 0 && (
+              <span className="w-5 h-5 rounded-full bg-median-taupe/10 text-median-taupe text-[10px] font-mono font-bold flex items-center justify-center">
+                {reviews.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('security')}
+            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 ${
+              activeTab === 'security'
+                ? 'border-black text-black font-bold'
+                : 'border-transparent text-median-taupe/60 hover:text-black'
+            }`}
+          >
+            <span>Security & Passkey</span>
           </button>
         </div>
 
@@ -758,6 +852,252 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ================= TAB 5: TESTIMONIALS & REVIEWS ================= */}
+        {activeTab === 'reviews' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Submit Review Form */}
+            <div className="lg:col-span-6 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-6">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
+                  Public Architectural Accreditation
+                </span>
+                <h3 className="font-oswald text-2xl font-bold uppercase text-black">
+                  Submit Client Testimonial
+                </h3>
+                <p className="text-xs text-median-taupe/80 mt-1">
+                  Share your experience working with Monolith LK. Approved reviews are displayed on the public website homepage and client portfolio.
+                </p>
+              </div>
+
+              {revSubmitted && (
+                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-mono font-semibold">
+                  ✓ Thank you! Your testimonial has been submitted and published to the Monolith LK network.
+                </div>
+              )}
+
+              <form onSubmit={handleSubmitReview} className="space-y-4 text-xs font-mono">
+                {/* Auto-filled Client Info */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-median-taupe/5 border border-median-taupe/15">
+                  <div>
+                    <span className="text-[10px] uppercase text-median-taupe block">Client Executive</span>
+                    <strong className="text-black text-xs font-mono">{user?.full_name}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase text-median-taupe block">Enterprise Partner</span>
+                    <strong className="text-black text-xs font-mono">{user?.company_name || 'Enterprise Client'}</strong>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold uppercase text-black mb-1.5">
+                    Your Title / Executive Designation *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={revTitle}
+                    onChange={(e) => setRevTitle(e.target.value)}
+                    placeholder="e.g. Managing Director / Chief Technology Officer"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-sm text-black focus:outline-none focus:border-black transition-colors"
+                  />
+                </div>
+
+                {/* Star Rating Selector */}
+                <div>
+                  <label className="block font-bold uppercase text-black mb-1.5">
+                    Rating Classification *
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRevRating(star)}
+                        className={`text-2xl transition-transform hover:scale-125 focus:outline-none ${
+                          star <= revRating ? 'text-amber-500' : 'text-median-taupe/30'
+                        }`}
+                        title={`${star} Star${star > 1 ? 's' : ''}`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                    <span className="ml-2 text-xs font-mono text-median-taupe font-bold">
+                      {revRating === 5 && '5.0 / 5.0 — Exceptional Engineering & Delivery'}
+                      {revRating === 4 && '4.0 / 5.0 — High-Grade Production Architecture'}
+                      {revRating === 3 && '3.0 / 5.0 — Satisfactory Deliverable'}
+                      {revRating < 3 && `${revRating}.0 / 5.0 — Needs Calibration`}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold uppercase text-black mb-1.5">
+                    Your Testimonial & Review *
+                  </label>
+                  <textarea
+                    rows={5}
+                    required
+                    value={revText}
+                    onChange={(e) => setRevText(e.target.value)}
+                    placeholder="Describe the speed, uptime, precision, and engineering quality Monolith LK delivered for your organization..."
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-sm text-black focus:outline-none focus:border-black transition-colors leading-relaxed"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 rounded-xl bg-black text-white font-oswald text-xs uppercase tracking-widest hover:bg-median-taupe transition-colors flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <span>Submit Accreditation Testimonial</span>
+                  <span>→</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Client's Published Reviews */}
+            <div className="lg:col-span-6 space-y-4">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
+                  Active Accreditations
+                </span>
+                <h3 className="font-oswald text-2xl font-bold uppercase text-black">
+                  Your Published Endorsements ({reviews.length})
+                </h3>
+              </div>
+
+              {reviews.length === 0 ? (
+                <div className="p-8 text-center rounded-2xl bg-white border border-median-taupe/20 text-median-taupe font-mono text-xs">
+                  <p className="font-oswald text-lg uppercase text-black mb-1">No Endorsements Logged Yet</p>
+                  <span>Submit your first review using the form on the left to be featured on Monolith LK.</span>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map((r) => (
+                    <div
+                      key={r.id}
+                      className="p-6 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex text-amber-500 text-sm">
+                          {[...Array(r.rating || 5)].map((_, i) => (
+                            <span key={i}>★</span>
+                          ))}
+                        </div>
+                        <span className="px-2.5 py-1 rounded-full border border-emerald-300 bg-emerald-50 text-[10px] font-mono text-emerald-800 font-bold uppercase">
+                          Live On Monolith LK
+                        </span>
+                      </div>
+                      <blockquote className="text-sm text-black italic font-serif leading-relaxed">
+                        "{r.review_text}"
+                      </blockquote>
+                      <div className="pt-2 border-t border-median-taupe/15 flex items-center justify-between text-xs font-mono">
+                        <div>
+                          <strong className="text-black font-semibold">{r.client_name}</strong>
+                          <span className="text-median-taupe/80"> · {r.client_title}</span>
+                        </div>
+                        <span className="text-[10px] text-median-taupe font-semibold uppercase">{r.company_name}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ================= TAB 6: SECURITY & PASSKEY MANAGEMENT ================= */}
+        {activeTab === 'security' && (
+          <div className="max-w-2xl mx-auto p-6 sm:p-10 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-6">
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
+                Zero-Trust Credential Hardening
+              </span>
+              <h3 className="font-oswald text-2xl sm:text-3xl font-bold uppercase text-black">
+                Update Portal Passkey & Password
+              </h3>
+              <p className="text-xs text-median-taupe/80 mt-1">
+                Maintain cryptographic security over your enterprise account. Passkey updates take effect immediately across all sessions.
+              </p>
+            </div>
+
+            {passwordMsg && (
+              <div
+                className={`p-4 rounded-xl text-xs font-mono font-semibold ${
+                  passwordMsg.startsWith('✓')
+                    ? 'bg-emerald-50 border border-emerald-300 text-emerald-800'
+                    : 'bg-red-50 border border-red-300 text-red-800'
+                }`}
+              >
+                {passwordMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleUpdatePassword} className="space-y-4 text-xs font-mono">
+              <div>
+                <label className="block font-bold uppercase text-black mb-1.5">
+                  Authorized Account Email
+                </label>
+                <input
+                  type="email"
+                  disabled
+                  value={user?.email || ''}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-median-taupe/20 bg-median-taupe/5 text-median-taupe text-sm cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold uppercase text-black mb-1.5">
+                  New Security Passkey / Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Minimum 6 characters"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-sm text-black focus:outline-none focus:border-black transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold uppercase text-black mb-1.5">
+                  Confirm New Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter new password"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-sm text-black focus:outline-none focus:border-black transition-colors"
+                />
+              </div>
+
+              <div className="p-4 rounded-xl bg-median-taupe/5 border border-median-taupe/15 space-y-1.5 text-[11px] text-median-taupe">
+                <span className="font-bold text-black uppercase block">Security Safeguards:</span>
+                <div>• Must contain at least 6 characters.</div>
+                <div>• Synchronized to Supabase GoTrue Auth & offline fallback session.</div>
+                <div>• If locked out, contact Monolith LK Executive Desk in Kurunegala directly.</div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isUpdatingPassword}
+                className="w-full py-3.5 rounded-xl bg-black text-white font-oswald text-xs uppercase tracking-widest hover:bg-median-taupe transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm"
+              >
+                {isUpdatingPassword ? (
+                  <span>Securing Credentials...</span>
+                ) : (
+                  <>
+                    <span>Commit New Password</span>
+                    <span>→</span>
+                  </>
+                )}
+              </button>
+            </form>
           </div>
         )}
       </main>

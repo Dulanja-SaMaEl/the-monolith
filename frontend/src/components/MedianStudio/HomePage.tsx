@@ -15,7 +15,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [, setActiveTeamId] = useState<string>(TEAM_MEMBERS[0].id);
-  const [liveReviews, setLiveReviews] = useState<CustomerReview[]>([]);
+  const [liveReviews, setLiveReviews] = useState<CustomerReview[]>(() => portalStore.getReviews(true));
   const [livePosts, setLivePosts] = useState<BlogPost[]>(BLOG_POSTS);
   const [livePartners, setLivePartners] = useState<{ name: string; image: string }[]>(CLIENT_LOGOS);
 
@@ -684,8 +684,8 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
                   Verified Enterprise Endorsements
                 </h3>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {liveReviews.slice(0, 3).map((rev) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {liveReviews.slice(0, 6).map((rev) => (
                   <div
                     key={rev.id}
                     className="p-6 sm:p-8 rounded-2xl border border-median-taupe/20 bg-[#FAF8F5] flex flex-col justify-between shadow-sm hover:border-median-taupe transition-colors"

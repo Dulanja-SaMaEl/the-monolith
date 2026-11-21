@@ -23,10 +23,25 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/reviews - Admin adds a new customer review
-router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+// POST /api/reviews - Admin or authenticated client adds a customer review
+router.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { client_name, client_title, company_name, rating = 5, review_text, client_avatar_url, is_featured = true } = req.body;
+    let { client_name, client_title, company_name, rating = 5, review_text, client_avatar_url, is_featured } = req.body;
+
+    // If submitted by an enterprise client, autofill details if not provided
+    if (req.user && req.user.role !== 'admin') {
+      const { data: clientProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('full_name, company_name')
+        .eq('id', req.user.id)
+        .single();
+
+      if (!client_name) client_name = clientProfile?.full_name || 'Enterprise Client';
+      if (!company_name) company_name = clientProfile?.company_name || 'Enterprise Partner';
+      if (is_featured === undefined) is_featured = true;
+    } else {
+      if (is_featured === undefined) is_featured = true;
+    }
 
     if (!client_name || !company_name || !review_text) {
       res.status(400).json({ error: 'client_name, company_name, and review_text are required' });
@@ -42,7 +57,7 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
         rating: Math.min(5, Math.max(1, Number(rating))),
         review_text,
         client_avatar_url,
-        is_featured,
+        is_featured: Boolean(is_featured),
       })
       .select()
       .single();

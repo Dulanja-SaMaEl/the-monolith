@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   company_name TEXT,
   phone TEXT,
   avatar_url TEXT,
+  is_blocked BOOLEAN DEFAULT FALSE,
+  status TEXT DEFAULT 'active',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -152,6 +154,21 @@ CREATE TABLE IF NOT EXISTS public.contact_inquiries (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 11. Executive Daily Tasks & Sprints (For Dulanja & Remashi)
+CREATE TABLE IF NOT EXISTS public.executive_tasks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  assignee TEXT NOT NULL DEFAULT 'Dulanja Abeysinghe',
+  category TEXT DEFAULT 'Architecture',
+  priority TEXT CHECK (priority IN ('urgent', 'high', 'normal')) DEFAULT 'normal',
+  task_date DATE DEFAULT CURRENT_DATE,
+  is_completed BOOLEAN DEFAULT FALSE,
+  completed_at TIMESTAMPTZ,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ====================================================================
 -- SAFE COLUMN MIGRATIONS (Upgrades pre-existing tables cleanly)
 -- ====================================================================
@@ -160,6 +177,8 @@ ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS company_name TEXT,
   ADD COLUMN IF NOT EXISTS phone TEXT,
   ADD COLUMN IF NOT EXISTS avatar_url TEXT,
+  ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active',
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 ALTER TABLE public.partners
@@ -246,6 +265,7 @@ ALTER TABLE public.meeting_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customer_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contact_inquiries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.executive_tasks ENABLE ROW LEVEL SECURITY;
 
 -- Helper function: Is Admin?
 CREATE OR REPLACE FUNCTION public.is_admin()
@@ -392,6 +412,18 @@ CREATE POLICY "Featured reviews viewable by everyone"
 DROP POLICY IF EXISTS "Admins manage all customer reviews" ON public.customer_reviews;
 CREATE POLICY "Admins manage all customer reviews"
   ON public.customer_reviews FOR ALL
+  USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Authenticated users can submit customer reviews" ON public.customer_reviews;
+CREATE POLICY "Authenticated users can submit customer reviews"
+  ON public.customer_reviews FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+-- Executive Tasks Policies (Dulanja & Remashi)
+DROP POLICY IF EXISTS "Admins manage executive tasks" ON public.executive_tasks;
+CREATE POLICY "Admins manage executive tasks"
+  ON public.executive_tasks FOR ALL
   USING (public.is_admin());
 
 -- Blog Posts Policies
