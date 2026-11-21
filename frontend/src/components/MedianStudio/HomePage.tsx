@@ -680,43 +680,125 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
             })}
           </div>
           {/* Featured Client Testimonials (Connected to Admin Reviews) */}
-          {liveReviews.length > 0 && (
-            <div className="mt-16 pt-16 border-t border-median-taupe/20">
-              <div className="text-center mb-10">
-                <span className="text-xs font-bold tracking-widest uppercase text-median-taupe/70 block mb-2">
-                  Client Voices
-                </span>
-                <h3 className="font-oswald text-2xl sm:text-4xl font-bold uppercase text-black">
+          <div className="mt-20 pt-16 border-t border-median-taupe/20">
+            <div className="text-center max-w-2xl mx-auto mb-14">
+              <ScrollReveal variant="badge-drop" duration={750}>
+                <div className="inline-flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold tracking-widest uppercase text-median-taupe/70">
+                    Client Voices
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-median-taupe animate-pulse" />
+                </div>
+              </ScrollReveal>
+
+              <ScrollReveal variant="split-mask" delay={100} duration={850}>
+                <h3 className="font-oswald text-3xl sm:text-5xl font-bold uppercase tracking-tight text-black">
                   Verified Enterprise Endorsements
                 </h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {liveReviews.slice(0, 6).map((rev) => (
-                  <div
-                    key={rev.id}
-                    className="p-6 sm:p-8 rounded-2xl border border-median-taupe/20 bg-[#FAF8F5] flex flex-col justify-between shadow-sm hover:border-median-taupe transition-colors"
-                  >
-                    <div>
-                      <div className="text-amber-500 text-xs mb-3 tracking-widest">
-                        {'★'.repeat(rev.rating || 5)}
-                      </div>
-                      <p className="text-xs sm:text-sm text-black/85 leading-relaxed mb-6">
-                        &ldquo;{rev.review_text}&rdquo;
-                      </p>
-                    </div>
-                    <div className="pt-4 border-t border-median-taupe/15">
-                      <div className="font-oswald text-base font-bold uppercase text-black">
-                        {rev.client_name}
-                      </div>
-                      <div className="text-[11px] text-median-taupe uppercase">
-                        {rev.client_title} · {rev.company_name}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              </ScrollReveal>
+
+              <ScrollReveal variant="blur-focus" delay={180} duration={800}>
+                <p className="text-xs sm:text-sm text-median-taupe/80 max-w-lg mx-auto font-normal mt-3">
+                  Direct testimonies from institutional leaders, healthcare executives, and high-volume enterprise partners.
+                </p>
+              </ScrollReveal>
             </div>
-          )}
+
+            {/* Endorsement Cards Grid with Staggered ScrollReveal Entrance */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {liveReviews.length > 0 ? (
+                liveReviews.slice(0, 6).map((rev, idx) => {
+                  const cardVariants: RevealVariant[] = [
+                    'card-lift',
+                    'card-flip-left',
+                    'card-flip-right',
+                    'curtain-expand',
+                    'zoom-rotate',
+                    'blur-focus',
+                  ];
+                  const cardVariant = cardVariants[idx % cardVariants.length];
+                  const colDelay = (idx % 3) * 140;
+
+                  return (
+                    <ScrollReveal
+                      key={rev.id}
+                      variant={cardVariant}
+                      delay={colDelay}
+                      duration={950}
+                      className="h-full"
+                    >
+                      <div className="p-6 sm:p-8 rounded-2xl border border-median-taupe/20 bg-[#FAF8F5] flex flex-col justify-between shadow-sm hover:shadow-xl hover:border-median-taupe hover:-translate-y-1 transition-all duration-500 h-full group">
+                        <div>
+                          <ScrollReveal variant="badge-drop" delay={colDelay + 120} duration={750}>
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="text-amber-500 text-xs sm:text-sm tracking-widest flex items-center">
+                                {'★'.repeat(Math.max(1, Math.min(5, rev.rating || 5)))}
+                              </div>
+                              <span className="text-[10px] font-mono tracking-wider text-median-taupe/60 uppercase">
+                                Verified Client
+                              </span>
+                            </div>
+                          </ScrollReveal>
+
+                          <ScrollReveal variant="blur-focus" delay={colDelay + 200} duration={800}>
+                            <p className="text-xs sm:text-sm text-black/85 leading-relaxed mb-6 font-normal">
+                              &ldquo;{rev.review_text}&rdquo;
+                            </p>
+                          </ScrollReveal>
+                        </div>
+
+                        <ScrollReveal variant="fade-up" delay={colDelay + 280} duration={750}>
+                          <div className="pt-4 border-t border-median-taupe/15 flex items-center justify-between">
+                            <div>
+                              <div className="font-oswald text-base font-bold uppercase text-black group-hover:text-median-taupe transition-colors">
+                                {rev.client_name}
+                              </div>
+                              <div className="text-[11px] text-median-taupe uppercase tracking-wide">
+                                {rev.client_title} · {rev.company_name}
+                              </div>
+                            </div>
+                            <div className="w-8 h-8 rounded-full border border-median-taupe/25 flex items-center justify-center text-median-taupe group-hover:bg-median-taupe group-hover:text-white transition-all text-sm font-serif italic select-none">
+                              &ldquo;
+                            </div>
+                          </div>
+                        </ScrollReveal>
+                      </div>
+                    </ScrollReveal>
+                  );
+                })
+              ) : (
+                // Haute Editorial Skeleton Animation Loader
+                [1, 2, 3].map((sk, idx) => (
+                  <ScrollReveal
+                    key={sk}
+                    variant="card-lift"
+                    delay={idx * 120}
+                    duration={800}
+                    className="h-full"
+                  >
+                    <div className="p-6 sm:p-8 rounded-2xl border border-median-taupe/15 bg-[#FAF8F5]/60 animate-pulse h-64 flex flex-col justify-between">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <div className="h-3 w-20 bg-median-taupe/20 rounded-full" />
+                          <div className="h-2.5 w-16 bg-median-taupe/15 rounded-full" />
+                        </div>
+                        <div className="h-3.5 w-full bg-median-taupe/15 rounded-lg" />
+                        <div className="h-3.5 w-5/6 bg-median-taupe/15 rounded-lg" />
+                        <div className="h-3.5 w-3/4 bg-median-taupe/15 rounded-lg" />
+                      </div>
+                      <div className="pt-4 border-t border-median-taupe/15 flex items-center justify-between">
+                        <div className="space-y-1.5">
+                          <div className="h-4 w-28 bg-median-taupe/25 rounded" />
+                          <div className="h-3 w-40 bg-median-taupe/15 rounded" />
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-median-taupe/15" />
+                      </div>
+                    </div>
+                  </ScrollReveal>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
