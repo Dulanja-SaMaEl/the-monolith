@@ -209,13 +209,24 @@ const escapeHtml = (str: unknown): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
+const cleanFileSegment = (raw: unknown, maxLen = 36): string =>
+  String(raw ?? '')
+    .replace(/[<>:"/\\|?*\x00-\x1F]+/g, ' ')
+    .replace(/&/g, 'and')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, maxLen)
+    .replace(/-$/g, '');
+
 // GET /api/billing/:id/download - Download voucher file
 router.get('/:id/download', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     let query = supabaseAdmin
       .from('documents_billing')
-      .select('*, client:profiles!client_id(full_name, email, company_name, phone)')
+      .select('*, client:profiles!client_id(full_name, email, company_name, phone), project:projects!project_id(title, code_name)')
       .eq('id', id);
 
     if (req.user?.role !== 'admin') {
@@ -228,14 +239,26 @@ router.get('/:id/download', requireAuth, async (req: AuthenticatedRequest, res: 
       return;
     }
 
+    const kind = doc.type === 'invoice' ? 'Invoice' : 'Quotation';
+    const clientSeg = cleanFileSegment(doc.client?.company_name || doc.client?.full_name, 30);
+    const subjectSeg = cleanFileSegment(
+      doc.project?.title || (Array.isArray(doc.line_items) && doc.line_items[0]?.description) || '',
+      36
+    );
+    const docNoSeg = cleanFileSegment(doc.document_number, 24) || kind;
+    const dateSeg = String(doc.created_at || new Date().toISOString()).slice(0, 10);
+    const meaningfulBase = ['Monolith-LK', kind, clientSeg, subjectSeg, docNoSeg, dateSeg]
+      .filter(Boolean)
+      .join('_');
+
     const cur = escapeHtml(doc.currency || 'LKR');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="${escapeHtml(doc.document_number)}.html"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${meaningfulBase}.html"`);
     res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>${escapeHtml(doc.document_number)} — Monolith LK</title>
+  <title>${escapeHtml(meaningfulBase)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">

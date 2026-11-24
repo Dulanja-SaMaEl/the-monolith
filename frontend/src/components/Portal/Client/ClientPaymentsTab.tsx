@@ -236,7 +236,7 @@ export const ClientPaymentsTab: React.FC<ClientPaymentsTabProps> = ({
                     description: `Upcoming scheduled payment due on ${summary.earliestDueDate}. Review package progress & download official receipts inside the Monolith LK Client Portal.`,
                     date: summary.earliestDueDate,
                     reminderDaysBefore: [3, 1],
-                    filename: `monolith-payment-due-${summary.earliestDueDate}`,
+                    filename: `Payment-Due_${summary.earliestDueDate}`,
                   }}
                 />
               </div>
@@ -352,7 +352,7 @@ export const ClientPaymentsTab: React.FC<ClientPaymentsTabProps> = ({
                                     description: `Project: ${group.projectTitle}\nPackage: ${plan.package_name}\nDue Amount: ${plan.currency} ${(plan.billing_type === 'monthly' ? Number(plan.installment_amount || totalTarget) : remaining).toLocaleString()}\nManaged via Monolith LK Client Portal.`,
                                     date: plan.next_due_date,
                                     reminderDaysBefore: [3, 1],
-                                    filename: `payment-due-${plan.package_name}`,
+                                    filename: `Payment-Due_${group.projectTitle}_${plan.package_name}_${plan.next_due_date}`,
                                   }}
                                 />
                               </div>

@@ -727,7 +727,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                                     description: `Domain renewal scheduled for ${proj.title} (${proj.code_name}).${proj.production_url ? `\nLive URL: ${proj.production_url}` : ''}\nManaged by Monolith LK.`,
                                     date: proj.domain_renewal_date,
                                     reminderDaysBefore: [14, 3, 1],
-                                    filename: `domain-renewal-${proj.code_name}`,
+                                    filename: `Domain-Renewal_${proj.title}_${proj.domain_renewal_date}`,
                                   }}
                                 />
                               </div>
@@ -752,7 +752,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                                     description: `Server / Cloud hosting renewal scheduled for ${proj.title} (${proj.code_name}).${proj.production_url ? `\nLive URL: ${proj.production_url}` : ''}\nManaged by Monolith LK.`,
                                     date: proj.server_expiry_date,
                                     reminderDaysBefore: [14, 3, 1],
-                                    filename: `server-renewal-${proj.code_name}`,
+                                    filename: `Server-Renewal_${proj.title}_${proj.server_expiry_date}`,
                                   }}
                                 />
                               </div>
@@ -844,7 +844,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                                           description: `Project: ${proj.title}\nPackage: ${pl.package_name}\nDue: ${pl.next_due_date}`,
                                           date: pl.next_due_date,
                                           reminderDaysBefore: [3, 1],
-                                          filename: `payment-due-${pl.package_name}`,
+                                          filename: `Payment-Due_${proj.title}_${pl.package_name}_${pl.next_due_date}`,
                                         }}
                                       />
                                     </span>
@@ -1184,7 +1184,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                             time: m.requested_time,
                             durationMinutes: 45,
                             location: m.meeting_link || 'Monolith LK Video Room',
-                            filename: `monolith-meeting-${m.requested_date}`,
+                            filename: `Meeting_${m.meeting_type}_${m.requested_date}`,
                           }}
                         />
                       )}
@@ -1286,7 +1286,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                               description: `Invoice ${doc.document_number} (${doc.project_title || 'Monolith LK'})\nAmount Due: ${doc.currency || 'LKR'} ${doc.total.toLocaleString()}\nDownload PDF inside your Monolith LK Client Portal.`,
                               date: doc.due_date,
                               reminderDaysBefore: [3, 1],
-                              filename: `invoice-due-${doc.document_number}`,
+                              filename: `Invoice-Due_${doc.project_title || doc.client_name}_${doc.document_number}_${doc.due_date}`,
                             }}
                           />
                         )}

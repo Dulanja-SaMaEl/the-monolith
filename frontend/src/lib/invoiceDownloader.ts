@@ -1,5 +1,57 @@
 import { BillingDocument, ProjectPaymentPlan, PaymentRecord } from './portalStore';
 
+/**
+ * Produces clean, filesystem-safe, human-readable filename segments
+ * e.g. "Menu Pvt Ltd" -> "Menu-Pvt-Ltd"
+ */
+const cleanSegment = (raw: string | undefined | null, maxLen = 36): string => {
+  if (!raw) return '';
+  return String(raw)
+    .replace(/[<>:"/\\|?*\x00-\x1F]+/g, ' ')
+    .replace(/&/g, 'and')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, maxLen)
+    .replace(/-$/g, '');
+};
+
+export const buildBillingFilename = (doc: BillingDocument): string => {
+  const kind = doc.type === 'invoice' ? 'Invoice' : 'Quotation';
+  const clientSeg = cleanSegment(doc.client_name, 30);
+  const subjectRaw =
+    doc.project_title ||
+    (Array.isArray(doc.line_items) && doc.line_items[0]?.description) ||
+    '';
+  const subjectSeg = cleanSegment(subjectRaw, 36);
+  const docNo = cleanSegment(doc.document_number, 24) || kind;
+  const issueDate = (doc.created_at || new Date().toISOString()).slice(0, 10);
+
+  return ['Monolith-LK', kind, clientSeg, subjectSeg, docNo, issueDate]
+    .filter(Boolean)
+    .join('_');
+};
+
+export const buildReceiptFilename = (
+  plan: ProjectPaymentPlan,
+  record: PaymentRecord
+): string => {
+  const shortId = record.id.replace(/[^a-zA-Z0-9]/g, '').slice(-5).toUpperCase() || '001';
+  const year = (record.payment_date || new Date().toISOString()).slice(0, 4);
+  const receiptNumber = `RCP-${year}-${shortId}`;
+
+  const clientSeg = cleanSegment(plan.client_name, 28);
+  const targetSeg = cleanSegment(plan.project_title || plan.package_name, 34);
+  const cur = cleanSegment(record.currency || plan.currency || 'LKR', 6);
+  const amt = Math.round(Number(record.amount || 0));
+  const dateSeg = cleanSegment(record.payment_date || new Date().toISOString().slice(0, 10), 12);
+
+  return ['Monolith-LK', 'Payment-Receipt', clientSeg, targetSeg, `${cur}-${amt}`, dateSeg, receiptNumber]
+    .filter(Boolean)
+    .join('_');
+};
+
 export const generateInvoiceHtml = (doc: BillingDocument): string => {
   const isInvoice = doc.type === 'invoice';
   const typeLabel = isInvoice ? 'INVOICE' : 'QUOTATION';
@@ -9,13 +61,14 @@ export const generateInvoiceHtml = (doc: BillingDocument): string => {
     month: 'long',
     day: 'numeric',
   });
+  const pdfTitle = buildBillingFilename(doc);
 
   const cur = doc.currency || 'LKR';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>${doc.document_number} — Monolith LK ${typeLabel}</title>
+  <title>${pdfTitle}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
@@ -434,7 +487,7 @@ export const downloadBillingVoucherHtml = (doc: BillingDocument): void => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `${doc.document_number}_${doc.type.toUpperCase()}.html`;
+  link.download = `${buildBillingFilename(doc)}.html`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -443,10 +496,11 @@ export const downloadBillingVoucherHtml = (doc: BillingDocument): void => {
 
 /**
  * Renders the voucher into a hidden iframe (never blocked by popup blockers)
- * and opens the native Print / Save as PDF dialog cleanly.
+ * and opens the native Print / Save as PDF dialog with a meaningful suggested filename.
  */
 export const printBillingVoucherPdf = (doc: BillingDocument): void => {
   const htmlContent = generateInvoiceHtml(doc);
+  const pdfFileName = buildBillingFilename(doc);
   const iframe = document.createElement('iframe');
   iframe.style.position = 'fixed';
   iframe.style.right = '0';
@@ -469,15 +523,26 @@ export const printBillingVoucherPdf = (doc: BillingDocument): void => {
   iframeDoc.close();
 
   const triggerPrint = () => {
-    try {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-    } finally {
+    const prevParentTitle = document.title;
+    // Browsers use the active/parent document.title as the default "Save as PDF" filename
+    document.title = pdfFileName;
+    if (iframeDoc) iframeDoc.title = pdfFileName;
+
+    const cleanup = () => {
+      document.title = prevParentTitle;
       setTimeout(() => {
         if (document.body.contains(iframe)) {
           document.body.removeChild(iframe);
         }
       }, 1500);
+    };
+
+    try {
+      iframe.contentWindow?.addEventListener('afterprint', cleanup, { once: true });
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+    } finally {
+      setTimeout(cleanup, 2500);
     }
   };
 
@@ -517,11 +582,13 @@ export const generatePaymentReceiptHtml = (
       ? `${plan.total_months}-Month Installment Plan`
       : 'One-Time Fixed Package';
 
+  const pdfTitle = buildReceiptFilename(plan, record);
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>${escReceipt(receiptNumber)} — Monolith LK Official Payment Receipt</title>
+  <title>${escReceipt(pdfTitle)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
@@ -769,10 +836,9 @@ export const downloadPaymentReceiptHtml = (
   const html = generatePaymentReceiptHtml(plan, record);
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
-  const shortId = record.id.replace(/[^a-zA-Z0-9]/g, '').slice(-5).toUpperCase() || '001';
   const link = document.createElement('a');
   link.href = url;
-  link.download = `RCP_${record.payment_date || 'MonolithLK'}_${shortId}.html`;
+  link.download = `${buildReceiptFilename(plan, record)}.html`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -784,6 +850,7 @@ export const printPaymentReceiptPdf = (
   record: PaymentRecord
 ): void => {
   const html = generatePaymentReceiptHtml(plan, record);
+  const pdfFileName = buildReceiptFilename(plan, record);
   const iframe = document.createElement('iframe');
   iframe.style.position = 'fixed';
   iframe.style.right = '0';
@@ -806,15 +873,25 @@ export const printPaymentReceiptPdf = (
   iframeDoc.close();
 
   const triggerPrint = () => {
-    try {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-    } finally {
+    const prevParentTitle = document.title;
+    document.title = pdfFileName;
+    if (iframeDoc) iframeDoc.title = pdfFileName;
+
+    const cleanup = () => {
+      document.title = prevParentTitle;
       setTimeout(() => {
         if (document.body.contains(iframe)) {
           document.body.removeChild(iframe);
         }
       }, 1500);
+    };
+
+    try {
+      iframe.contentWindow?.addEventListener('afterprint', cleanup, { once: true });
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+    } finally {
+      setTimeout(cleanup, 2500);
     }
   };
 

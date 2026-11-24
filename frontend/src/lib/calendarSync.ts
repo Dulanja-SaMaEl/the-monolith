@@ -118,15 +118,24 @@ export function downloadIcsReminder(event: CalendarReminderEvent): void {
   const ics = buildIcsContent(event);
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
-  const slug = (event.filename || event.title)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
+  const rawBase = (event.filename || event.title)
+    .replace(/[<>:"/\\|?*\x00-\x1F]+/g, ' ')
+    .replace(/·/g, ' ')
+    .replace(/&/g, 'and')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
     .replace(/(^-|-$)/g, '')
-    .slice(0, 60);
+    .slice(0, 80)
+    .replace(/-$/g, '');
+
+  const prefixed = rawBase.toLowerCase().startsWith('monolith-lk')
+    ? rawBase
+    : `Monolith-LK_${rawBase || 'Calendar-Reminder'}`;
 
   const link = document.createElement('a');
   link.href = url;
-  link.download = `${slug || 'monolith-lk-reminder'}.ics`;
+  link.download = `${prefixed}.ics`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
