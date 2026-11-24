@@ -13,6 +13,7 @@ import {
   printBillingVoucherPdf,
   printPaymentReceiptPdf,
 } from '../../../lib/invoiceDownloader';
+import { ScrollReveal, CountingNumber } from '../../MedianStudio/ScrollReveal';
 
 interface AdminPaymentsPanelProps {
   users: UserProfile[];
@@ -70,6 +71,7 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
   // Filter States
   const [filterClient, setFilterClient] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
+  const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const PAGE_SIZE = 5;
 
@@ -216,6 +218,7 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
       setInstallmentAmount('');
       setNextDueDate('');
       setPlanNotes('');
+      setShowCreateForm(false);
       await onRefresh();
       showAlert(`✓ Payment package "${packageName.trim()}" added and visible in client portal.`);
     } catch (err: any) {
@@ -422,45 +425,102 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
   };
 
   return (
-    <div className="space-y-8">
-      {/* Financial Telemetry Summary Strip */}
+    <div className="space-y-6">
+      {/* Financial Telemetry Summary Strip with Smooth Reveal */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
-            Total Collected (All Plans)
-          </span>
-          <div className="font-oswald text-2xl sm:text-3xl font-bold text-emerald-700">
-            LKR {summary.totalCollected.toLocaleString()}
+        <ScrollReveal variant="card-flip-left" delay={0} duration={600} once className="h-full">
+          <div className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm h-full">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
+              Total Collected
+            </span>
+            <div className="font-oswald text-2xl sm:text-3xl font-bold text-emerald-700">
+              <CountingNumber value={summary.totalCollected} prefix="LKR " duration={1000} />
+            </div>
           </div>
-        </div>
-        <div className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
-            Remaining Project Balances
-          </span>
-          <div className="font-oswald text-2xl sm:text-3xl font-bold text-black">
-            LKR {summary.totalRemaining.toLocaleString()}
+        </ScrollReveal>
+        <ScrollReveal variant="card-lift" delay={70} duration={600} once className="h-full">
+          <div className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm h-full">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
+              Remaining Project Balances
+            </span>
+            <div className="font-oswald text-2xl sm:text-3xl font-bold text-black">
+              <CountingNumber value={summary.totalRemaining} prefix="LKR " duration={1000} />
+            </div>
           </div>
-        </div>
-        <div className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
-            Active Monthly Retainers
-          </span>
-          <div className="font-oswald text-2xl sm:text-3xl font-bold text-median-taupe">
-            LKR {summary.monthlyRecurringRate.toLocaleString()}/mo
+        </ScrollReveal>
+        <ScrollReveal variant="card-flip-right" delay={140} duration={600} once className="h-full">
+          <div className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm h-full">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
+              Monthly Retainer Run-Rate
+            </span>
+            <div className="font-oswald text-2xl sm:text-3xl font-bold text-median-taupe">
+              <CountingNumber value={summary.monthlyRecurringRate} prefix="LKR " suffix="/mo" duration={1000} />
+            </div>
           </div>
-        </div>
-        <div className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
-            Active Project Packages
-          </span>
-          <div className="font-oswald text-2xl sm:text-3xl font-bold text-black">
-            {paymentPlans.length} Plans
+        </ScrollReveal>
+        <ScrollReveal variant="zoom-rotate" delay={210} duration={600} once className="h-full">
+          <div className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm h-full">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
+              Active Packages
+            </span>
+            <div className="font-oswald text-2xl sm:text-3xl font-bold text-black">
+              <CountingNumber value={paymentPlans.length} suffix=" Plans" duration={800} />
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
 
-      {/* Create New Project Payment Package Form */}
-      <div className="p-5 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
+      {/* Minimalist Filter & Action Bar */}
+      <ScrollReveal variant="fade-up" delay={80} duration={550} once>
+        <div className="p-3.5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+          <div className="flex flex-wrap gap-2">
+            <select
+              value={filterClient}
+              onChange={(e) => {
+                setFilterClient(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2 rounded-xl border border-median-taupe/25 bg-[#FAF8F5] text-black"
+            >
+              <option value="all">All Clients</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.company_name || c.full_name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filterType}
+              onChange={(e) => {
+                setFilterType(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2 rounded-xl border border-median-taupe/25 bg-[#FAF8F5] text-black"
+            >
+              <option value="all">All Billing Models</option>
+              <option value="one_time">One-Time</option>
+              <option value="monthly">Monthly Recurring</option>
+              <option value="installment">Multi-Month Installment</option>
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowCreateForm((s) => !s)}
+            className={`px-4 py-2 rounded-xl font-oswald text-xs uppercase tracking-wider font-bold transition-all shrink-0 ${
+              showCreateForm
+                ? 'border border-black text-black bg-white hover:bg-black hover:text-white'
+                : 'bg-black text-white hover:bg-median-taupe shadow-sm'
+            }`}
+          >
+            {showCreateForm ? '✕ Close Package Form' : '+ New Payment Package'}
+          </button>
+        </div>
+      </ScrollReveal>
+
+      {/* Collapsible Create New Project Payment Package Form */}
+      {showCreateForm && (
+      <ScrollReveal variant="card-lift" duration={500} once>
+      <div className="p-5 sm:p-8 rounded-2xl bg-white border border-black/15 shadow-md">
         <h3 className="font-oswald text-xl font-bold uppercase text-black mb-1">
           Configure Project Payment Package
         </h3>
@@ -666,6 +726,8 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
           </button>
         </form>
       </div>
+      </ScrollReveal>
+      )}
 
       {/* Instant Banner for Auto-Generated Cycle Invoice */}
       {generatedInvoiceDoc && (
@@ -705,43 +767,11 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
         </div>
       )}
 
-      {/* Filters & Payment Plans List */}
+      {/* Payment Plans List */}
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h3 className="font-oswald text-xl font-bold uppercase text-black">
-            Client Payment Plans & Ledgers ({filteredPlans.length})
-          </h3>
-          <div className="flex flex-wrap gap-2 text-xs font-mono">
-            <select
-              value={filterClient}
-              onChange={(e) => {
-                setFilterClient(e.target.value);
-                setPage(1);
-              }}
-              className="px-3 py-1.5 rounded-xl border border-median-taupe/30 bg-white text-black"
-            >
-              <option value="all">All Clients</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.company_name || c.full_name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={filterType}
-              onChange={(e) => {
-                setFilterType(e.target.value);
-                setPage(1);
-              }}
-              className="px-3 py-1.5 rounded-xl border border-median-taupe/30 bg-white text-black"
-            >
-              <option value="all">All Billing Models</option>
-              <option value="one_time">One-Time</option>
-              <option value="monthly">Monthly Recurring</option>
-              <option value="installment">Multi-Month Installment</option>
-            </select>
-          </div>
-        </div>
+        <h3 className="font-oswald text-lg font-bold uppercase text-black">
+          Client Payment Plans &amp; Ledgers ({filteredPlans.length})
+        </h3>
 
         {isSyncing ? (
           <div className="space-y-3 animate-pulse">
@@ -755,7 +785,7 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
           </div>
         ) : (
           <div className="space-y-5">
-            {pagedPlans.map((plan) => {
+            {pagedPlans.map((plan, pIdx) => {
               const payments = plan.payments || [];
               const paidSoFar = payments.reduce((sum, r) => sum + Number(r.amount || 0), 0);
               const totalTarget = Number(plan.total_amount || 0);
@@ -770,8 +800,8 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
               const editClientProjects = projects.filter((p) => p.client_id === plan.client_id);
 
               return (
+                <ScrollReveal key={plan.id} variant="fade-up" delay={pIdx * 65} duration={600} once>
                 <div
-                  key={plan.id}
                   className="p-5 sm:p-6 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-5"
                 >
                   {/* Card Top Header */}
@@ -1262,6 +1292,7 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
                     )}
                   </div>
                 </div>
+                </ScrollReveal>
               );
             })}
           </div>
