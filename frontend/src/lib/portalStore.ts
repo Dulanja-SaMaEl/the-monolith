@@ -45,6 +45,37 @@ export interface ProjectMilestone {
   due_date?: string;
 }
 
+export interface HeartbeatSslInfo {
+  enabled: boolean;
+  valid: boolean;
+  days_remaining: number | null;
+  expires_at: string | null;
+  issuer: string | null;
+  protocol: string | null;
+}
+
+export interface HeartbeatSample {
+  status: 'online' | 'degraded' | 'offline';
+  latency_ms: number | null;
+  checked_at: string;
+}
+
+export interface SystemHeartbeat {
+  configured: boolean;
+  project_id: string;
+  url: string;
+  hostname: string;
+  status: 'online' | 'degraded' | 'offline' | 'unconfigured';
+  http_status: number | null;
+  latency_ms: number | null;
+  ssl: HeartbeatSslInfo | null;
+  checked_at: string;
+  cached: boolean;
+  error_detail: string | null;
+  history: HeartbeatSample[];
+  mode?: 'live_backend' | 'browser_fallback';
+}
+
 export interface PortalProject {
   id: string;
   client_id: string;

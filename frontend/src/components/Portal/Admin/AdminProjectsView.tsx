@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { UserProfile, PortalProject } from '../../../lib/portalStore';
 import { portalApi } from '../../../lib/portalApi';
 import { AdminPagination, AdminSkeletonList, AdminToolbar } from './AdminUiPrimitives';
+import { SystemHeartbeatMonitor } from '../SystemHeartbeatMonitor';
 import { ScrollReveal } from '../../MedianStudio/ScrollReveal';
 
 interface AdminProjectsViewProps {
@@ -283,7 +284,7 @@ export const AdminProjectsView: React.FC<AdminProjectsViewProps> = ({
                       <span className="font-bold uppercase text-median-taupe">{proj.code_name}</span>
                       <span className="text-median-taupe/40">·</span>
                       <span className="font-semibold text-black">{proj.client_name}</span>
-                      {(proj.domain_renewal_date || proj.server_expiry_date) && (
+                      {(proj.production_url || proj.domain_renewal_date || proj.server_expiry_date) && (
                         <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[9px] font-bold uppercase">
                           Vault Configured
                         </span>
@@ -320,6 +321,15 @@ export const AdminProjectsView: React.FC<AdminProjectsViewProps> = ({
                     </button>
                   </div>
                 </div>
+
+                {/* Live Production System Heartbeat Strip (when production_url is configured) */}
+                {proj.production_url && (
+                  <SystemHeartbeatMonitor
+                    projectId={proj.id}
+                    productionUrl={proj.production_url}
+                    variant="compact"
+                  />
+                )}
 
                 {/* Inline Full Project & Deliverables Vault Editor */}
                 {editingProject?.id === proj.id && (

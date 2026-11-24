@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { requireAuth, requireAdmin, AuthenticatedRequest } from '../middleware/auth';
 import { supabaseAdmin } from '../services/supabase';
+import { checkSystemHeartbeat } from '../services/heartbeat';
 
 const router = Router();
 
@@ -21,6 +22,57 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =>
     res.json({ projects: data });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/projects/:id/heartbeat - Live System Heartbeat telemetry (latency, HTTP status, SSL cert validity)
+router.get('/:id/heartbeat', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const force = req.query.force === '1' || req.query.force === 'true';
+
+    let query = supabaseAdmin
+      .from('projects')
+      .select('id, client_id, title, production_url, staging_url')
+      .eq('id', id);
+
+    if (req.user?.role !== 'admin') {
+      query = query.eq('client_id', req.user?.id);
+    }
+
+    const { data: project, error } = await query.maybeSingle();
+
+    if (error) throw error;
+    if (!project) {
+      res.status(404).json({ error: 'Project not found or access denied' });
+      return;
+    }
+
+    const targetUrl = (project.production_url || '').trim();
+    if (!targetUrl) {
+      res.json({
+        heartbeat: {
+          configured: false,
+          project_id: project.id,
+          url: '',
+          hostname: '',
+          status: 'unconfigured',
+          http_status: null,
+          latency_ms: null,
+          ssl: null,
+          checked_at: new Date().toISOString(),
+          cached: false,
+          error_detail: 'No production URL configured in Project Vault yet.',
+          history: [],
+        },
+      });
+      return;
+    }
+
+    const heartbeat = await checkSystemHeartbeat(project.id, targetUrl, force);
+    res.json({ heartbeat });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Heartbeat check failed' });
   }
 });
 

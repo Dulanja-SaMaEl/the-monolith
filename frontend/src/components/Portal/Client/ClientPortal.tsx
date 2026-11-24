@@ -11,6 +11,7 @@ import {
 import { portalApi } from '../../../lib/portalApi';
 import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
 import { ClientPaymentsTab } from './ClientPaymentsTab';
+import { SystemHeartbeatMonitor } from '../SystemHeartbeatMonitor';
 import { ScrollReveal, RevealVariant } from '../../MedianStudio/ScrollReveal';
 import { usePwaInstall } from '../../../lib/usePwaInstall';
 
@@ -574,6 +575,15 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                           Managed by Monolith LK
                         </span>
                       </div>
+
+                      {/* Live System Heartbeat Telemetry Monitor (tied to actual production_url) */}
+                      {proj.production_url && (
+                        <SystemHeartbeatMonitor
+                          projectId={proj.id}
+                          productionUrl={proj.production_url}
+                          variant="vault"
+                        />
+                      )}
 
                       {/* Asset Quick-Access Links */}
                       {(proj.production_url || proj.staging_url || proj.figma_url || proj.api_docs_url) && (

@@ -14,6 +14,7 @@ import {
   ProjectPaymentPlan,
   PaymentRecord,
   BillingScope,
+  SystemHeartbeat,
 } from './portalStore';
 
 // Helper: get current Supabase JWT if logged in via real Supabase Auth
@@ -27,7 +28,12 @@ async function getAccessToken(): Promise<string | null> {
   }
 }
 
-async function apiFetch<T>(path: string, options: RequestInit = {}, token?: string | null): Promise<T> {
+async function apiFetch<T>(
+  path: string,
+  options: RequestInit = {},
+  token?: string | null,
+  timeoutMs = 8000
+): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...((options.headers as Record<string, string>) || {}),
@@ -37,7 +43,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}, token?: stri
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(`${API_BASE_URL}${path}`, {
@@ -507,6 +513,112 @@ export const portalApi = {
       }
     }
     portalStore.updateProjectProgress(projectId, { milestones: allMilestones });
+  },
+
+  async getProjectHeartbeat(
+    projectId: string,
+    productionUrl?: string,
+    force = false
+  ): Promise<SystemHeartbeat> {
+    const trimmedUrl = (productionUrl || '').trim();
+    const token = await getAccessToken();
+
+    if (token) {
+      try {
+        const res = await apiFetch<{ heartbeat: SystemHeartbeat }>(
+          `/api/projects/${projectId}/heartbeat${force ? '?force=1' : ''}`,
+          {},
+          token,
+          15000
+        );
+        if (res?.heartbeat) {
+          return { ...res.heartbeat, mode: 'live_backend' };
+        }
+      } catch {
+        // Fall through to lightweight browser probe if Render is temporarily unreachable
+      }
+    }
+
+    const checkedAt = new Date().toISOString();
+    if (!trimmedUrl) {
+      return {
+        configured: false,
+        project_id: projectId,
+        url: '',
+        hostname: '',
+        status: 'unconfigured',
+        http_status: null,
+        latency_ms: null,
+        ssl: null,
+        checked_at: checkedAt,
+        cached: false,
+        error_detail: 'No production URL configured in Vault.',
+        history: [],
+        mode: 'browser_fallback',
+      };
+    }
+
+    let normalized = trimmedUrl;
+    if (!/^https?:\/\//i.test(normalized)) normalized = `https://${normalized}`;
+    let hostname = trimmedUrl;
+    let isHttps = true;
+    try {
+      const parsed = new URL(normalized);
+      hostname = parsed.hostname;
+      isHttps = parsed.protocol === 'https:';
+    } catch {
+      // keep raw
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    const start = performance.now();
+
+    try {
+      await fetch(normalized, { mode: 'no-cors', cache: 'no-store', signal: controller.signal });
+      const latency = Math.max(1, Math.round(performance.now() - start));
+      const status: 'online' | 'degraded' = latency > 2500 ? 'degraded' : 'online';
+      return {
+        configured: true,
+        project_id: projectId,
+        url: trimmedUrl,
+        hostname,
+        status,
+        http_status: 200,
+        latency_ms: latency,
+        ssl: {
+          enabled: isHttps,
+          valid: isHttps,
+          days_remaining: null,
+          expires_at: null,
+          issuer: isHttps ? 'HTTPS Active' : null,
+          protocol: isHttps ? 'TLS' : 'HTTP',
+        },
+        checked_at: checkedAt,
+        cached: false,
+        error_detail: null,
+        history: [{ status, latency_ms: latency, checked_at: checkedAt }],
+        mode: 'browser_fallback',
+      };
+    } catch {
+      return {
+        configured: true,
+        project_id: projectId,
+        url: trimmedUrl,
+        hostname,
+        status: 'offline',
+        http_status: null,
+        latency_ms: null,
+        ssl: null,
+        checked_at: checkedAt,
+        cached: false,
+        error_detail: 'Endpoint did not respond within 5 seconds.',
+        history: [{ status: 'offline', latency_ms: null, checked_at: checkedAt }],
+        mode: 'browser_fallback',
+      };
+    } finally {
+      clearTimeout(timer);
+    }
   },
 
   // ================= BILLING (INVOICES & QUOTATIONS IN LKR) =================
