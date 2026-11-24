@@ -142,7 +142,7 @@ const MedianStudioContent: React.FC<MedianStudioProps> = () => {
   };
 
   return (
-    <div className="median-root min-h-screen flex flex-col bg-white text-median-taupe font-inter selection:bg-median-taupe selection:text-white relative">
+    <div className="median-root min-h-screen w-full max-w-full overflow-x-hidden flex flex-col bg-white text-median-taupe font-inter selection:bg-median-taupe selection:text-white relative">
       {/* Preloader on initial load */}
       <Preloader />
 
@@ -150,7 +150,7 @@ const MedianStudioContent: React.FC<MedianStudioProps> = () => {
       <CustomCursor />
 
       {isPortalRoute ? (
-        <main className="flex-1">
+        <main className="flex-1 w-full min-w-0 overflow-x-hidden">
           {renderPage()}
         </main>
       ) : (

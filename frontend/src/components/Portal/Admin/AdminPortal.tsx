@@ -252,7 +252,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const currentMeta = TAB_META[activeTab];
 
   return (
-    <div className="min-h-screen md:h-screen md:overflow-hidden bg-[#FAF8F5] text-black font-inter selection:bg-median-taupe selection:text-white flex flex-col md:flex-row">
+    <div className="min-h-screen md:h-screen md:overflow-hidden w-full max-w-full overflow-x-hidden bg-[#FAF8F5] text-black font-inter selection:bg-median-taupe selection:text-white flex flex-col md:flex-row">
       {/* ================= MINIMALIST GROUPED ADMIN SIDEBAR ================= */}
       <aside className="w-full md:w-64 md:h-screen bg-white border-b md:border-b-0 md:border-r border-median-taupe/20 p-4 sm:p-5 flex flex-col shrink-0">
         {/* Top Brand Header (Pinned) */}
@@ -390,7 +390,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       </aside>
 
       {/* ================= MAIN EXECUTIVE CONTENT PANE ================= */}
-      <main ref={mainScrollRef} className="flex-1 p-4 sm:p-6 lg:p-8 md:h-screen md:overflow-y-auto w-full min-w-0">
+      <main ref={mainScrollRef} className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 md:h-screen overflow-x-hidden md:overflow-y-auto">
         <div className="max-w-6xl mx-auto space-y-6 pb-12">
           {/* Animated Minimalist Page Header */}
           <ScrollReveal key={`header-${activeTab}`} variant="fade-up" duration={500} once>
