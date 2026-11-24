@@ -391,15 +391,26 @@ export const portalApi = {
     const token = await getAccessToken();
     if (token) {
       try {
-        const res = await apiFetch<{ projects: any[] }>('/api/projects', {}, token);
-        return { data: (res.projects || []).map(mapProjectRow), live: true };
+        const qs = clientId ? `?client_id=${encodeURIComponent(clientId)}` : '';
+        const res = await apiFetch<{ projects: any[] }>(`/api/projects${qs}`, {}, token);
+        const mapped = (res.projects || []).map(mapProjectRow);
+        return {
+          data: clientId ? mapped.filter((p) => p.client_id === clientId) : mapped,
+          live: true,
+        };
       } catch {
         let q = supabase
           .from('projects')
           .select('*, client:profiles!client_id(full_name, email, company_name), milestones:project_milestones(*)');
         if (clientId) q = q.eq('client_id', clientId);
         const { data, error } = await q.order('created_at', { ascending: false });
-        if (!error && data) return { data: data.map(mapProjectRow), live: true };
+        if (!error && data) {
+          const mapped = data.map(mapProjectRow);
+          return {
+            data: clientId ? mapped.filter((p) => p.client_id === clientId) : mapped,
+            live: true,
+          };
+        }
       }
     }
     return { data: portalStore.getProjects(clientId), live: false };
@@ -626,15 +637,26 @@ export const portalApi = {
     const token = await getAccessToken();
     if (token) {
       try {
-        const res = await apiFetch<{ documents: any[] }>('/api/billing', {}, token);
-        return { data: (res.documents || []).map(mapBillingRow), live: true };
+        const qs = clientId ? `?client_id=${encodeURIComponent(clientId)}` : '';
+        const res = await apiFetch<{ documents: any[] }>(`/api/billing${qs}`, {}, token);
+        const mapped = (res.documents || []).map(mapBillingRow);
+        return {
+          data: clientId ? mapped.filter((d) => d.client_id === clientId) : mapped,
+          live: true,
+        };
       } catch {
         let q = supabase
           .from('documents_billing')
           .select('*, client:profiles!client_id(full_name, email, company_name, phone), project:projects!project_id(title, code_name)');
         if (clientId) q = q.eq('client_id', clientId);
         const { data, error } = await q.order('created_at', { ascending: false });
-        if (!error && data) return { data: data.map(mapBillingRow), live: true };
+        if (!error && data) {
+          const mapped = data.map(mapBillingRow);
+          return {
+            data: clientId ? mapped.filter((d) => d.client_id === clientId) : mapped,
+            live: true,
+          };
+        }
       }
     }
     return { data: portalStore.getBillingDocuments(clientId), live: false };
@@ -767,13 +789,24 @@ export const portalApi = {
     const token = await getAccessToken();
     if (token) {
       try {
-        const res = await apiFetch<{ requests: any[] }>('/api/projects/requests', {}, token);
-        return { data: (res.requests || []).map(mapRequestRow), live: true };
+        const qs = clientId ? `?client_id=${encodeURIComponent(clientId)}` : '';
+        const res = await apiFetch<{ requests: any[] }>(`/api/projects/requests${qs}`, {}, token);
+        const mapped = (res.requests || []).map(mapRequestRow);
+        return {
+          data: clientId ? mapped.filter((r) => r.client_id === clientId) : mapped,
+          live: true,
+        };
       } catch {
         let q = supabase.from('project_requests').select('*, client:profiles!client_id(full_name, email, company_name)');
         if (clientId) q = q.eq('client_id', clientId);
         const { data, error } = await q.order('created_at', { ascending: false });
-        if (!error && data) return { data: data.map(mapRequestRow), live: true };
+        if (!error && data) {
+          const mapped = data.map(mapRequestRow);
+          return {
+            data: clientId ? mapped.filter((r) => r.client_id === clientId) : mapped,
+            live: true,
+          };
+        }
       }
     }
     return { data: portalStore.getProjectRequests(clientId), live: false };
@@ -819,13 +852,24 @@ export const portalApi = {
     const token = await getAccessToken();
     if (token) {
       try {
-        const res = await apiFetch<{ meetings: any[] }>('/api/meetings', {}, token);
-        return { data: (res.meetings || []).map(mapMeetingRow), live: true };
+        const qs = clientId ? `?client_id=${encodeURIComponent(clientId)}` : '';
+        const res = await apiFetch<{ meetings: any[] }>(`/api/meetings${qs}`, {}, token);
+        const mapped = (res.meetings || []).map(mapMeetingRow);
+        return {
+          data: clientId ? mapped.filter((m) => m.client_id === clientId) : mapped,
+          live: true,
+        };
       } catch {
         let q = supabase.from('meeting_requests').select('*, client:profiles!client_id(full_name, email, company_name)');
         if (clientId) q = q.eq('client_id', clientId);
         const { data, error } = await q.order('requested_date', { ascending: true });
-        if (!error && data) return { data: data.map(mapMeetingRow), live: true };
+        if (!error && data) {
+          const mapped = data.map(mapMeetingRow);
+          return {
+            data: clientId ? mapped.filter((m) => m.client_id === clientId) : mapped,
+            live: true,
+          };
+        }
       }
     }
     return { data: portalStore.getMeetings(clientId), live: false };
@@ -1201,7 +1245,8 @@ export const portalApi = {
     const token = await getAccessToken();
     if (token) {
       try {
-        const res = await apiFetch<{ plans: any[] }>('/api/payments', {}, token);
+        const qs = clientId ? `?client_id=${encodeURIComponent(clientId)}` : '';
+        const res = await apiFetch<{ plans: any[] }>(`/api/payments${qs}`, {}, token);
         const mapped = (res.plans || []).map(mapPaymentPlanRow);
         return {
           data: clientId ? mapped.filter((p) => p.client_id === clientId) : mapped,
@@ -1216,7 +1261,13 @@ export const portalApi = {
             );
           if (clientId) q = q.eq('client_id', clientId);
           const { data, error } = await q.order('created_at', { ascending: false });
-          if (!error && data) return { data: data.map(mapPaymentPlanRow), live: true };
+          if (!error && data) {
+            const mapped = data.map(mapPaymentPlanRow);
+            return {
+              data: clientId ? mapped.filter((p) => p.client_id === clientId) : mapped,
+              live: true,
+            };
+          }
         }
       }
     }

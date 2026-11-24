@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import {
+  UserProfile,
   PortalProject,
   MeetingRequest,
   ProjectRequest,
@@ -31,8 +32,11 @@ interface ClientPortalProps {
 }
 
 export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
-  const { user, logout, isLiveAuth } = useAuth();
+  const { user, logout, isLiveAuth, previewClient, setPreviewClient } = useAuth();
   const { canInstall, promptInstall } = usePwaInstall();
+  const isAdminPreview = user?.role === 'admin';
+  const [previewClients, setPreviewClients] = useState<UserProfile[]>([]);
+  const activeClient = isAdminPreview ? previewClient || previewClients[0] || null : user;
   const [activeTab, setActiveTab] = useState<'projects' | 'payments' | 'request' | 'meetings' | 'billing' | 'reviews' | 'security'>('projects');
   const [isLiveDb, setIsLiveDb] = useState<boolean>(false);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
@@ -73,16 +77,33 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
   const [passwordMsg, setPasswordMsg] = useState<string | null>(null);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
+  // Load client directory when an Admin opens Client Preview Mode
+  useEffect(() => {
+    if (!isAdminPreview) return;
+    let cancelled = false;
+    portalApi.getClients().then(({ data }) => {
+      if (cancelled) return;
+      const clientList = data.filter((u) => u.role === 'client');
+      setPreviewClients(clientList);
+      if (!previewClient && clientList.length > 0) {
+        setPreviewClient(clientList[0]);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdminPreview, previewClient, setPreviewClient]);
+
   const loadClientData = useCallback(async () => {
-    if (!user?.id) return;
+    if (!activeClient?.id) return;
     setIsLoadingData(true);
     try {
       const [projRes, payRes, reqRes, meetRes, billRes, revRes] = await Promise.all([
-        portalApi.getProjects(user.id),
-        portalApi.getPaymentPlans(user.id),
-        portalApi.getProjectRequests(user.id),
-        portalApi.getMeetings(user.id),
-        portalApi.getBillingDocuments(user.id),
+        portalApi.getProjects(activeClient.id),
+        portalApi.getPaymentPlans(activeClient.id),
+        portalApi.getProjectRequests(activeClient.id),
+        portalApi.getMeetings(activeClient.id),
+        portalApi.getBillingDocuments(activeClient.id),
         portalApi.getReviews(true),
       ]);
       setProjects(projRes.data);
@@ -93,15 +114,16 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
       // Filter reviews relevant to this client
       const myReviews = revRes.data.filter(
         (r) =>
-          (user.company_name && r.company_name?.toLowerCase().includes(user.company_name.toLowerCase())) ||
-          r.client_name?.toLowerCase() === user.full_name?.toLowerCase()
+          (activeClient.company_name &&
+            r.company_name?.toLowerCase().includes(activeClient.company_name.toLowerCase())) ||
+          r.client_name?.toLowerCase() === activeClient.full_name?.toLowerCase()
       );
       setReviews(myReviews);
       setIsLiveDb(projRes.live || isLiveAuth);
     } finally {
       setIsLoadingData(false);
     }
-  }, [user, isLiveAuth]);
+  }, [activeClient, isLiveAuth]);
 
   useEffect(() => {
     loadClientData();
@@ -201,6 +223,48 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-black font-inter selection:bg-median-taupe selection:text-white pb-24">
+      {/* Admin Client Preview Bar (Only visible when an Admin previews a client's portal) */}
+      {isAdminPreview && (
+        <div className="bg-black text-white px-4 sm:px-6 md:px-12 py-2.5 border-b border-white/15">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5 text-xs font-mono">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="px-2.5 py-0.5 rounded-full bg-median-taupe text-white text-[10px] font-bold uppercase tracking-wider">
+                Admin Preview Mode
+              </span>
+              <span className="text-white/75 hidden sm:inline">Inspecting strictly isolated portal for:</span>
+              <select
+                value={activeClient?.id || ''}
+                onChange={(e) => {
+                  const chosen = previewClients.find((c) => c.id === e.target.value) || null;
+                  setPreviewClient(chosen);
+                }}
+                className="px-3 py-1 rounded-lg bg-white/10 border border-white/25 text-white text-xs font-mono focus:outline-none focus:border-median-taupe"
+              >
+                {previewClients.length === 0 ? (
+                  <option value="" className="text-black">Loading clients...</option>
+                ) : (
+                  previewClients.map((c) => (
+                    <option key={c.id} value={c.id} className="text-black">
+                      {c.company_name || c.full_name} ({c.email})
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setPreviewClient(null);
+                navigate('/portal/admin');
+              }}
+              className="px-3.5 py-1 rounded-lg bg-white text-black hover:bg-median-taupe hover:text-white font-bold uppercase text-[10px] tracking-wider transition-colors"
+            >
+              ← Return to Admin Portal
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Haute Editorial VIP Navigation */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-median-taupe/20 px-4 sm:px-6 md:px-12 py-3.5 sm:py-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
@@ -227,8 +291,8 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
           {/* User profile & actions */}
           <div className="flex items-center justify-between md:justify-end gap-3 sm:gap-4 text-xs font-mono">
             <div className="text-left sm:text-right truncate max-w-[160px] sm:max-w-none">
-              <span className="font-bold text-black block truncate">{user?.company_name || user?.full_name}</span>
-              <span className="text-median-taupe/70 text-[10px] hidden sm:block">{user?.email}</span>
+              <span className="font-bold text-black block truncate">{activeClient?.company_name || activeClient?.full_name}</span>
+              <span className="text-median-taupe/70 text-[10px] hidden sm:block">{activeClient?.email}</span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {canInstall && (
@@ -276,7 +340,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
               </ScrollReveal>
               <ScrollReveal variant="split-mask" delay={140} duration={750} once>
                 <h1 className="font-oswald text-3xl sm:text-4xl font-bold uppercase tracking-tight text-black">
-                  Welcome, {user?.company_name || user?.full_name}
+                  Welcome, {activeClient?.company_name || activeClient?.full_name}
                 </h1>
               </ScrollReveal>
               <ScrollReveal variant="fade-up" delay={200} duration={700} once>

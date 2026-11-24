@@ -13,6 +13,8 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =>
 
     if (req.user?.role !== 'admin') {
       query = query.eq('client_id', req.user?.id);
+    } else if (typeof req.query.client_id === 'string' && req.query.client_id.trim()) {
+      query = query.eq('client_id', req.query.client_id.trim());
     }
 
     const { data, error } = await query.order('requested_date', { ascending: true });

@@ -102,7 +102,7 @@ const TAB_META: Record<AdminTabId, { group: string; title: string; subtitle: str
 };
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
-  const { user, logout, switchDemoRole, isLiveAuth } = useAuth();
+  const { user, logout, setPreviewClient, isLiveAuth } = useAuth();
   const { canInstall, promptInstall } = usePwaInstall();
   const mainScrollRef = useRef<HTMLElement | null>(null);
 
@@ -323,7 +323,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
         <div className="flex md:hidden items-center justify-between gap-2 pt-2.5 border-t border-median-taupe/15 text-[11px] font-mono shrink-0">
           <button
             onClick={() => {
-              switchDemoRole('client');
+              const firstClient = users.find((u) => u.role === 'client') || null;
+              setPreviewClient(firstClient);
               navigate('/portal/client');
             }}
             className="px-2.5 py-1.5 rounded-lg border border-median-taupe/30 text-black"
@@ -346,7 +347,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
           <div className="grid grid-cols-2 gap-1.5">
             <button
               onClick={() => {
-                switchDemoRole('client');
+                const firstClient = users.find((u) => u.role === 'client') || null;
+                setPreviewClient(firstClient);
                 navigate('/portal/client');
               }}
               className="py-1.5 px-2 rounded-lg border border-median-taupe/30 hover:border-black text-black text-[10px] text-center transition-colors"

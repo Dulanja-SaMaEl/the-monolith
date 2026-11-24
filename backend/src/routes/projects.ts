@@ -5,7 +5,7 @@ import { checkSystemHeartbeat } from '../services/heartbeat';
 
 const router = Router();
 
-// GET /api/projects - View projects (Admin: all, Client: own)
+// GET /api/projects - View projects (Admin: all or scoped by ?client_id=, Client: strictly own)
 router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     let query = supabaseAdmin
@@ -14,6 +14,8 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =>
 
     if (req.user?.role !== 'admin') {
       query = query.eq('client_id', req.user?.id);
+    } else if (typeof req.query.client_id === 'string' && req.query.client_id.trim()) {
+      query = query.eq('client_id', req.query.client_id.trim());
     }
 
     const { data, error } = await query.order('created_at', { ascending: false });
@@ -294,6 +296,8 @@ router.get('/requests', requireAuth, async (req: AuthenticatedRequest, res: Resp
 
     if (req.user?.role !== 'admin') {
       query = query.eq('client_id', req.user?.id);
+    } else if (typeof req.query.client_id === 'string' && req.query.client_id.trim()) {
+      query = query.eq('client_id', req.query.client_id.trim());
     }
 
     const { data, error } = await query.order('created_at', { ascending: false });

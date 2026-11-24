@@ -8,6 +8,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLiveAuth: boolean;
   isLoading: boolean;
+  previewClient: UserProfile | null;
+  setPreviewClient: (client: UserProfile | null) => void;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; role?: 'admin' | 'client' }>;
   loginDemo: (targetRole: 'admin' | 'client') => { success: boolean; role: 'admin' | 'client' };
   logout: () => Promise<void>;
@@ -33,6 +35,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [isLiveAuth, setIsLiveAuth] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [previewClient, setPreviewClientState] = useState<UserProfile | null>(null);
+
+  const setPreviewClient = (client: UserProfile | null) => {
+    setPreviewClientState(user?.role === 'admin' ? client : null);
+  };
 
   useEffect(() => {
     const initAuth = async () => {
@@ -151,7 +158,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginDemo = (targetRole: 'admin' | 'client'): { success: boolean; role: 'admin' | 'client' } => {
+    // Always clear any live Supabase session so demo mode can never reuse a live Admin/Client JWT
+    if (isSupabaseConfigured) {
+      supabase.auth.signOut().catch(() => {});
+    }
     setIsLiveAuth(false);
+    setPreviewClientState(null);
     const users = portalStore.getUsers();
     const found = users.find((u) => u.role === targetRole) || users[0];
     setUser(found);
@@ -168,6 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
     setIsLiveAuth(false);
+    setPreviewClientState(null);
     setUser(null);
     localStorage.removeItem('monolith_active_user');
   };
@@ -184,6 +197,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: Boolean(user),
         isLiveAuth,
         isLoading,
+        previewClient: user?.role === 'admin' ? previewClient : null,
+        setPreviewClient,
         login,
         loginDemo,
         logout,
