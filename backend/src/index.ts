@@ -13,6 +13,7 @@ import postsRouter from './routes/posts';
 import inquiriesRouter from './routes/inquiries';
 import tasksRouter from './routes/tasks';
 import paymentsRouter from './routes/payments';
+import changeRequestsRouter from './routes/changeRequests';
 
 dotenv.config();
 
@@ -85,6 +86,7 @@ app.use('/api/posts', postsRouter);
 app.use('/api/inquiries', inquiriesRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/payments', paymentsRouter);
+app.use('/api/change-requests', changeRequestsRouter);
 
 // 404 Handler
 app.use((_req: Request, res: Response) => {

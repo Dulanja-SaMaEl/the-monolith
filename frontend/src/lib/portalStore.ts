@@ -45,6 +45,41 @@ export interface ProjectMilestone {
   due_date?: string;
 }
 
+export type ChangeRequestStatus =
+  | 'requested'
+  | 'quoted'
+  | 'approved'
+  | 'declined'
+  | 'in_progress'
+  | 'completed';
+
+export interface ProjectChangeRequest {
+  id: string;
+  project_id: string;
+  project_title?: string;
+  project_code?: string;
+  project_launch_date?: string;
+  client_id: string;
+  client_name?: string;
+  title: string;
+  description: string;
+  priority: 'normal' | 'urgent';
+  status: ChangeRequestStatus;
+  is_complimentary: boolean;
+  estimated_cost: number;
+  currency: string;
+  timeline_impact_days: number;
+  auto_create_invoice: boolean;
+  admin_notes?: string;
+  client_notes?: string;
+  invoice_id?: string;
+  invoice_number?: string;
+  quoted_at?: string;
+  responded_at?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
 export interface HeartbeatSslInfo {
   enabled: boolean;
   valid: boolean;
@@ -1246,5 +1281,164 @@ export const portalStore = {
       payments: (plan.payments || []).filter((r) => r.id !== recordId),
     }));
     setStored('payment_plans', list);
+  },
+
+  // --- PROJECT CHANGE REQUESTS ("Change Request Impact Cards") ---
+  getChangeRequests: (clientId?: string, projectId?: string): ProjectChangeRequest[] => {
+    let list = getStored<ProjectChangeRequest[]>('change_requests', []);
+    if (clientId) list = list.filter((cr) => cr.client_id === clientId);
+    if (projectId) list = list.filter((cr) => cr.project_id === projectId);
+    return list;
+  },
+  createChangeRequest: (payload: {
+    project_id: string;
+    project_title?: string;
+    project_code?: string;
+    client_id: string;
+    client_name?: string;
+    title: string;
+    description: string;
+    priority?: 'normal' | 'urgent';
+  }): ProjectChangeRequest => {
+    const list = getStored<ProjectChangeRequest[]>('change_requests', []);
+    const created: ProjectChangeRequest = {
+      id: `cr-${Date.now()}`,
+      project_id: payload.project_id,
+      project_title: payload.project_title,
+      project_code: payload.project_code,
+      client_id: payload.client_id,
+      client_name: payload.client_name,
+      title: payload.title,
+      description: payload.description,
+      priority: payload.priority === 'urgent' ? 'urgent' : 'normal',
+      status: 'requested',
+      is_complimentary: false,
+      estimated_cost: 0,
+      currency: 'LKR',
+      timeline_impact_days: 0,
+      auto_create_invoice: true,
+      created_at: new Date().toISOString(),
+    };
+    setStored('change_requests', [created, ...list]);
+    return created;
+  },
+  quoteChangeRequest: (
+    id: string,
+    quote: {
+      is_complimentary: boolean;
+      estimated_cost: number;
+      currency?: string;
+      timeline_impact_days: number;
+      auto_create_invoice: boolean;
+      admin_notes?: string;
+    }
+  ): ProjectChangeRequest | null => {
+    let updated: ProjectChangeRequest | null = null;
+    const complimentary = Boolean(quote.is_complimentary) || Number(quote.estimated_cost) <= 0;
+    const list = getStored<ProjectChangeRequest[]>('change_requests', []).map((cr) => {
+      if (cr.id !== id) return cr;
+      updated = {
+        ...cr,
+        is_complimentary: complimentary,
+        estimated_cost: complimentary ? 0 : Math.max(0, Number(quote.estimated_cost) || 0),
+        currency: quote.currency || 'LKR',
+        timeline_impact_days: Math.max(0, Math.round(Number(quote.timeline_impact_days) || 0)),
+        auto_create_invoice: complimentary ? false : Boolean(quote.auto_create_invoice),
+        admin_notes: quote.admin_notes,
+        status: 'quoted',
+        quoted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      return updated;
+    });
+    setStored('change_requests', list);
+    return updated;
+  },
+  respondChangeRequest: (
+    id: string,
+    action: 'approve' | 'decline',
+    client_notes?: string
+  ): { change_request: ProjectChangeRequest | null; invoice: BillingDocument | null } => {
+    const all = getStored<ProjectChangeRequest[]>('change_requests', []);
+    const target = all.find((c) => c.id === id);
+    if (!target) return { change_request: null, invoice: null };
+
+    let createdInvoice: BillingDocument | null = null;
+    if (action === 'approve') {
+      if (!target.is_complimentary && target.estimated_cost > 0 && target.auto_create_invoice !== false) {
+        const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        createdInvoice = portalStore.createBillingDocument({
+          type: 'invoice',
+          client_id: target.client_id,
+          client_name: target.client_name || 'Client',
+          project_id: target.project_id,
+          project_title: target.project_title,
+          billing_scope: 'separate',
+          status: 'sent',
+          currency: target.currency || 'LKR',
+          line_items: [
+            {
+              id: `cr-li-${Date.now()}`,
+              description: `Approved Change Request: ${target.title}`,
+              quantity: 1,
+              unit_price: target.estimated_cost,
+              total: target.estimated_cost,
+            },
+          ],
+          subtotal: target.estimated_cost,
+          tax: 0,
+          total: target.estimated_cost,
+          due_date: dueDate,
+          notes: `Auto-generated upon client approval of Change Request "${target.title}".`,
+        });
+      }
+      // Also update project timeline & append milestone locally
+      const projects = portalStore.getProjects();
+      const proj = projects.find((p) => p.id === target.project_id);
+      if (proj) {
+        let nextLaunch = proj.target_launch_date;
+        if (target.timeline_impact_days > 0 && proj.target_launch_date) {
+          const d = new Date(`${proj.target_launch_date}T00:00:00Z`);
+          if (!Number.isNaN(d.getTime())) {
+            d.setUTCDate(d.getUTCDate() + target.timeline_impact_days);
+            nextLaunch = d.toISOString().split('T')[0];
+          }
+        }
+        portalStore.updateProject(proj.id, {
+          target_launch_date: nextLaunch,
+          milestones: [
+            ...(proj.milestones || []),
+            { id: `ms-cr-${Date.now()}`, title: `Add-On: ${target.title}`, is_completed: false },
+          ],
+        });
+      }
+    }
+
+    let updatedCr: ProjectChangeRequest | null = null;
+    const next = all.map((cr) => {
+      if (cr.id !== id) return cr;
+      updatedCr = {
+        ...cr,
+        status: action === 'approve' ? 'approved' : 'declined',
+        client_notes,
+        invoice_id: createdInvoice?.id || cr.invoice_id,
+        invoice_number: createdInvoice?.document_number || cr.invoice_number,
+        responded_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      return updatedCr;
+    });
+    setStored('change_requests', next);
+    return { change_request: updatedCr, invoice: createdInvoice };
+  },
+  updateChangeRequestStatus: (id: string, status: ChangeRequestStatus): void => {
+    const next = getStored<ProjectChangeRequest[]>('change_requests', []).map((cr) =>
+      cr.id === id ? { ...cr, status, updated_at: new Date().toISOString() } : cr
+    );
+    setStored('change_requests', next);
+  },
+  deleteChangeRequest: (id: string): void => {
+    const next = getStored<ProjectChangeRequest[]>('change_requests', []).filter((cr) => cr.id !== id);
+    setStored('change_requests', next);
   },
 };

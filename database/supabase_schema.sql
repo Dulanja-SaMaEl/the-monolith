@@ -211,6 +211,30 @@ CREATE TABLE IF NOT EXISTS public.payment_records (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 14. Project Change Requests ("Change Request Impact Cards")
+CREATE TABLE IF NOT EXISTS public.project_change_requests (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE NOT NULL,
+  client_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  priority TEXT CHECK (priority IN ('normal', 'urgent')) DEFAULT 'normal',
+  status TEXT CHECK (status IN ('requested', 'quoted', 'approved', 'declined', 'in_progress', 'completed')) DEFAULT 'requested',
+  is_complimentary BOOLEAN DEFAULT FALSE,
+  estimated_cost NUMERIC(14, 2) DEFAULT 0,
+  currency TEXT DEFAULT 'LKR',
+  timeline_impact_days INTEGER DEFAULT 0,
+  auto_create_invoice BOOLEAN DEFAULT TRUE,
+  admin_notes TEXT,
+  client_notes TEXT,
+  invoice_id UUID REFERENCES public.documents_billing(id) ON DELETE SET NULL,
+  invoice_number TEXT,
+  quoted_at TIMESTAMPTZ,
+  responded_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ====================================================================
 -- SAFE COLUMN MIGRATIONS (Upgrades pre-existing tables cleanly)
 -- ====================================================================
@@ -318,6 +342,7 @@ ALTER TABLE public.contact_inquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.executive_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.project_payment_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payment_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.project_change_requests ENABLE ROW LEVEL SECURITY;
 
 -- Helper function: Is Admin?
 CREATE OR REPLACE FUNCTION public.is_admin()
@@ -520,4 +545,25 @@ CREATE POLICY "Clients view own payment records"
 DROP POLICY IF EXISTS "Admins manage all payment records" ON public.payment_records;
 CREATE POLICY "Admins manage all payment records"
   ON public.payment_records FOR ALL
+  USING (public.is_admin());
+
+-- Project Change Requests Policies
+DROP POLICY IF EXISTS "Clients view own change requests" ON public.project_change_requests;
+CREATE POLICY "Clients view own change requests"
+  ON public.project_change_requests FOR SELECT
+  USING (client_id = auth.uid() OR public.is_admin());
+
+DROP POLICY IF EXISTS "Clients create own change requests" ON public.project_change_requests;
+CREATE POLICY "Clients create own change requests"
+  ON public.project_change_requests FOR INSERT
+  WITH CHECK (client_id = auth.uid() OR public.is_admin());
+
+DROP POLICY IF EXISTS "Clients respond to own change requests" ON public.project_change_requests;
+CREATE POLICY "Clients respond to own change requests"
+  ON public.project_change_requests FOR UPDATE
+  USING (client_id = auth.uid() OR public.is_admin());
+
+DROP POLICY IF EXISTS "Admins manage all change requests" ON public.project_change_requests;
+CREATE POLICY "Admins manage all change requests"
+  ON public.project_change_requests FOR ALL
   USING (public.is_admin());

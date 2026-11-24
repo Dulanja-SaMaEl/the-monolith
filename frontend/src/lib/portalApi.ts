@@ -15,6 +15,8 @@ import {
   PaymentRecord,
   BillingScope,
   SystemHeartbeat,
+  ProjectChangeRequest,
+  ChangeRequestStatus,
 } from './portalStore';
 
 // Helper: get current Supabase JWT if logged in via real Supabase Auth
@@ -175,6 +177,33 @@ const mapMeetingRow = (row: any): MeetingRequest => ({
   meeting_link: row.meeting_link,
   status: row.status,
   created_at: row.created_at,
+});
+
+const mapChangeRequestRow = (row: any): ProjectChangeRequest => ({
+  id: row.id,
+  project_id: row.project_id,
+  project_title: row.project?.title || row.project_title || undefined,
+  project_code: row.project?.code_name || row.project_code || undefined,
+  project_launch_date: row.project?.target_launch_date || row.project_launch_date || undefined,
+  client_id: row.client_id,
+  client_name: row.client?.company_name || row.client?.full_name || row.client_name || 'Client',
+  title: row.title || '',
+  description: row.description || '',
+  priority: row.priority === 'urgent' ? 'urgent' : 'normal',
+  status: row.status || 'requested',
+  is_complimentary: Boolean(row.is_complimentary),
+  estimated_cost: Number(row.estimated_cost ?? 0),
+  currency: row.currency || 'LKR',
+  timeline_impact_days: Number(row.timeline_impact_days ?? 0),
+  auto_create_invoice: row.auto_create_invoice !== false,
+  admin_notes: row.admin_notes || undefined,
+  client_notes: row.client_notes || undefined,
+  invoice_id: row.invoice_id || undefined,
+  invoice_number: row.invoice_number || undefined,
+  quoted_at: row.quoted_at || undefined,
+  responded_at: row.responded_at || undefined,
+  created_at: row.created_at,
+  updated_at: row.updated_at || undefined,
 });
 
 export const portalApi = {
@@ -1441,5 +1470,232 @@ export const portalApi = {
       }
     }
     portalStore.deletePaymentRecord(recordId);
+  },
+
+  // ================= PROJECT CHANGE REQUESTS ("Change Request Impact Cards") =================
+  async getChangeRequests(
+    clientId?: string,
+    projectId?: string
+  ): Promise<{ data: ProjectChangeRequest[]; live: boolean }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        const params = new URLSearchParams();
+        if (clientId) params.set('client_id', clientId);
+        if (projectId) params.set('project_id', projectId);
+        const qs = params.toString() ? `?${params.toString()}` : '';
+        const res = await apiFetch<{ change_requests: any[] }>(`/api/change-requests${qs}`, {}, token);
+        let mapped = (res.change_requests || []).map(mapChangeRequestRow);
+        if (clientId) mapped = mapped.filter((c) => c.client_id === clientId);
+        if (projectId) mapped = mapped.filter((c) => c.project_id === projectId);
+        return { data: mapped, live: true };
+      } catch {
+        if (isSupabaseConfigured) {
+          let q = supabase
+            .from('project_change_requests')
+            .select(
+              '*, client:profiles!client_id(full_name, email, company_name), project:projects!project_id(id, title, code_name, target_launch_date)'
+            );
+          if (clientId) q = q.eq('client_id', clientId);
+          if (projectId) q = q.eq('project_id', projectId);
+          const { data, error } = await q.order('created_at', { ascending: false });
+          if (!error && data) {
+            let mapped = data.map(mapChangeRequestRow);
+            if (clientId) mapped = mapped.filter((c) => c.client_id === clientId);
+            if (projectId) mapped = mapped.filter((c) => c.project_id === projectId);
+            return { data: mapped, live: true };
+          }
+        }
+      }
+    }
+    return { data: portalStore.getChangeRequests(clientId, projectId), live: false };
+  },
+
+  async createChangeRequest(payload: {
+    project_id: string;
+    project_title?: string;
+    project_code?: string;
+    client_id: string;
+    client_name?: string;
+    title: string;
+    description: string;
+    priority?: 'normal' | 'urgent';
+  }): Promise<{ change_request: ProjectChangeRequest; live: boolean }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        const res = await apiFetch<{ change_request: any }>(
+          '/api/change-requests',
+          { method: 'POST', body: JSON.stringify(payload) },
+          token
+        );
+        return { change_request: mapChangeRequestRow(res.change_request), live: true };
+      } catch {
+        if (isSupabaseConfigured) {
+          const { data, error } = await supabase
+            .from('project_change_requests')
+            .insert({
+              project_id: payload.project_id,
+              client_id: payload.client_id,
+              title: payload.title,
+              description: payload.description,
+              priority: payload.priority === 'urgent' ? 'urgent' : 'normal',
+              status: 'requested',
+              currency: 'LKR',
+            })
+            .select()
+            .single();
+          if (!error && data) {
+            return {
+              change_request: mapChangeRequestRow({
+                ...data,
+                project_title: payload.project_title,
+                project_code: payload.project_code,
+                client_name: payload.client_name,
+              }),
+              live: true,
+            };
+          }
+        }
+      }
+    }
+    return { change_request: portalStore.createChangeRequest(payload), live: false };
+  },
+
+  async quoteChangeRequest(
+    id: string,
+    quote: {
+      is_complimentary: boolean;
+      estimated_cost: number;
+      currency?: string;
+      timeline_impact_days: number;
+      auto_create_invoice: boolean;
+      admin_notes?: string;
+    }
+  ): Promise<{ change_request: ProjectChangeRequest | null; live: boolean }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        const res = await apiFetch<{ change_request: any }>(
+          `/api/change-requests/${id}/quote`,
+          { method: 'PATCH', body: JSON.stringify(quote) },
+          token
+        );
+        return { change_request: mapChangeRequestRow(res.change_request), live: true };
+      } catch {
+        if (isSupabaseConfigured) {
+          const complimentary = Boolean(quote.is_complimentary) || Number(quote.estimated_cost) <= 0;
+          const { data, error } = await supabase
+            .from('project_change_requests')
+            .update({
+              is_complimentary: complimentary,
+              estimated_cost: complimentary ? 0 : Math.max(0, Number(quote.estimated_cost) || 0),
+              currency: quote.currency || 'LKR',
+              timeline_impact_days: Math.max(0, Math.round(Number(quote.timeline_impact_days) || 0)),
+              auto_create_invoice: complimentary ? false : Boolean(quote.auto_create_invoice),
+              admin_notes: quote.admin_notes || null,
+              status: 'quoted',
+              quoted_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', id)
+            .select()
+            .single();
+          if (!error && data) return { change_request: mapChangeRequestRow(data), live: true };
+        }
+      }
+    }
+    return { change_request: portalStore.quoteChangeRequest(id, quote), live: false };
+  },
+
+  async respondChangeRequest(
+    id: string,
+    action: 'approve' | 'decline',
+    client_notes?: string
+  ): Promise<{
+    change_request: ProjectChangeRequest | null;
+    invoice: BillingDocument | null;
+    updated_launch_date?: string | null;
+    live: boolean;
+  }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        const res = await apiFetch<{
+          change_request: any;
+          invoice?: any;
+          updated_launch_date?: string | null;
+        }>(
+          `/api/change-requests/${id}/respond`,
+          { method: 'POST', body: JSON.stringify({ action, client_notes }) },
+          token
+        );
+        return {
+          change_request: res.change_request ? mapChangeRequestRow(res.change_request) : null,
+          invoice: res.invoice ? mapBillingRow(res.invoice) : null,
+          updated_launch_date: res.updated_launch_date || null,
+          live: true,
+        };
+      } catch {
+        if (isSupabaseConfigured) {
+          const { data, error } = await supabase
+            .from('project_change_requests')
+            .update({
+              status: action === 'approve' ? 'approved' : 'declined',
+              client_notes: client_notes || null,
+              responded_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', id)
+            .select()
+            .single();
+          if (!error && data) {
+            return {
+              change_request: mapChangeRequestRow(data),
+              invoice: null,
+              updated_launch_date: null,
+              live: true,
+            };
+          }
+        }
+      }
+    }
+    const local = portalStore.respondChangeRequest(id, action, client_notes);
+    return { ...local, live: false };
+  },
+
+  async updateChangeRequestStatus(id: string, status: ChangeRequestStatus): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/change-requests/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }, token);
+        return;
+      } catch {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase
+            .from('project_change_requests')
+            .update({ status, updated_at: new Date().toISOString() })
+            .eq('id', id);
+          if (!error) return;
+        }
+      }
+    }
+    portalStore.updateChangeRequestStatus(id, status);
+  },
+
+  async deleteChangeRequest(id: string): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/change-requests/${id}`, { method: 'DELETE' }, token);
+        return;
+      } catch {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase.from('project_change_requests').delete().eq('id', id);
+          if (!error) return;
+        }
+      }
+    }
+    portalStore.deleteChangeRequest(id);
   },
 };

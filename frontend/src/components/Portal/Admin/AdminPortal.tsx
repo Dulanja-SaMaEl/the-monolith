@@ -12,6 +12,7 @@ import {
   ContactInquiry,
   ExecutiveTask,
   ProjectPaymentPlan,
+  ProjectChangeRequest,
 } from '../../../lib/portalStore';
 import { portalApi } from '../../../lib/portalApi';
 import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
@@ -114,6 +115,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [projects, setProjects] = useState<PortalProject[]>([]);
+  const [changeRequests, setChangeRequests] = useState<ProjectChangeRequest[]>([]);
   const [paymentPlans, setPaymentPlans] = useState<ProjectPaymentPlan[]>([]);
   const [billingDocs, setBillingDocs] = useState<BillingDocument[]>([]);
   const [reviews, setReviews] = useState<CustomerReview[]>([]);
@@ -134,11 +136,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const refreshData = useCallback(async () => {
     setIsSyncing(true);
     try {
-      const [clientsRes, partRes, projRes, payRes, billRes, revRes, blogRes, reqRes, meetRes, inqRes, taskRes] =
+      const [clientsRes, partRes, projRes, crRes, payRes, billRes, revRes, blogRes, reqRes, meetRes, inqRes, taskRes] =
         await Promise.all([
           portalApi.getClients(),
           portalApi.getPartners(true),
           portalApi.getProjects(),
+          portalApi.getChangeRequests(),
           portalApi.getPaymentPlans(),
           portalApi.getBillingDocuments(),
           portalApi.getReviews(true),
@@ -152,6 +155,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       setUsers(clientsRes.data);
       setPartners(partRes.data);
       setProjects(projRes.data);
+      setChangeRequests(crRes.data);
       setPaymentPlans(payRes.data);
       setBillingDocs(billRes.data);
       setReviews(revRes.data);
@@ -203,8 +207,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
     }
   };
 
+  const pendingChangeRequestsCount = changeRequests.filter((cr) => cr.status === 'requested').length;
+
   // Grouped Minimalist Sidebar Structure
-  const navGroups: { label: string; items: { id: AdminTabId; label: string; count: number | null }[] }[] = [
+  const navGroups: { label: string; items: { id: AdminTabId; label: string; count: number | null; badge?: string }[] }[] = [
     {
       label: 'Command',
       items: [
@@ -216,7 +222,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       label: 'Operations',
       items: [
         { id: 'customers', label: 'Customers', count: users.filter((u) => u.role === 'client').length },
-        { id: 'projects', label: 'Projects', count: projects.length },
+        {
+          id: 'projects',
+          label: 'Projects',
+          count: projects.length,
+          badge: pendingChangeRequestsCount > 0 ? `${pendingChangeRequestsCount} CR` : undefined,
+        },
         { id: 'requests', label: 'Inbox & Calls', count: requests.length + meetings.length + inquiries.length },
       ],
     },
@@ -304,15 +315,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   }`}
                 >
                   <span>{tab.label}</span>
-                  {tab.count !== null && (
-                    <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                        activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-median-taupe/10 text-median-taupe'
-                      }`}
-                    >
-                      {tab.count}
-                    </span>
-                  )}
+                  <span className="flex items-center gap-1.5">
+                    {tab.badge && (
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-amber-400 text-black font-bold">
+                        {tab.badge}
+                      </span>
+                    )}
+                    {tab.count !== null && (
+                      <span
+                        className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                          activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-median-taupe/10 text-median-taupe'
+                        }`}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
+                  </span>
                 </button>
               ))}
             </div>
@@ -475,6 +493,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               <AdminProjectsView
                 users={users}
                 projects={projects}
+                changeRequests={changeRequests}
                 isSyncing={isSyncing}
                 onRefresh={refreshData}
                 showAlert={showAlert}

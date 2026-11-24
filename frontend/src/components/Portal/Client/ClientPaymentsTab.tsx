@@ -11,6 +11,7 @@ import {
   printPaymentReceiptPdf,
 } from '../../../lib/invoiceDownloader';
 import { ScrollReveal, CountingNumber, RevealVariant } from '../../MedianStudio/ScrollReveal';
+import { CalendarSyncButton } from '../CalendarSyncButton';
 
 interface ClientPaymentsTabProps {
   paymentPlans: ProjectPaymentPlan[];
@@ -213,16 +214,33 @@ export const ClientPaymentsTab: React.FC<ClientPaymentsTabProps> = ({
         </ScrollReveal>
 
         <ScrollReveal variant="zoom-rotate" delay={260} duration={800} once className="h-full">
-          <div className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm hover:border-median-taupe hover:shadow-md transition-all h-full">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
-              Next Payment Due Date
-            </span>
-            <div className="font-oswald text-2xl sm:text-3xl font-bold text-black">
-              {summary.earliestDueDate || 'All Clear'}
+          <div className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm hover:border-median-taupe hover:shadow-md transition-all h-full flex flex-col justify-between gap-2">
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
+                Next Payment Due Date
+              </span>
+              <div className="font-oswald text-2xl sm:text-3xl font-bold text-black">
+                {summary.earliestDueDate || 'All Clear'}
+              </div>
+              <span className="text-[10px] font-mono text-median-taupe/70">
+                {summary.earliestDueDate ? 'Earliest scheduled milestone / cycle' : 'No pending due dates'}
+              </span>
             </div>
-            <span className="text-[10px] font-mono text-median-taupe/70">
-              {summary.earliestDueDate ? 'Earliest scheduled milestone / cycle' : 'No pending due dates'}
-            </span>
+            {summary.earliestDueDate && (
+              <div>
+                <CalendarSyncButton
+                  align="left"
+                  event={{
+                    uid: `monolith-next-payment-${summary.earliestDueDate}`,
+                    title: 'Monolith LK · Scheduled Payment Due',
+                    description: `Upcoming scheduled payment due on ${summary.earliestDueDate}. Review package progress & download official receipts inside the Monolith LK Client Portal.`,
+                    date: summary.earliestDueDate,
+                    reminderDaysBefore: [3, 1],
+                    filename: `monolith-payment-due-${summary.earliestDueDate}`,
+                  }}
+                />
+              </div>
+            )}
           </div>
         </ScrollReveal>
       </div>
@@ -313,16 +331,31 @@ export const ClientPaymentsTab: React.FC<ClientPaymentsTabProps> = ({
 
                           {plan.next_due_date && plan.status !== 'completed' && (
                             <div
-                              className={`px-4 py-2.5 rounded-xl border text-left sm:text-right shrink-0 ${
+                              className={`px-4 py-2.5 rounded-xl border text-left sm:text-right shrink-0 space-y-1.5 ${
                                 dueStatus.urgent
                                   ? 'bg-amber-50 border-amber-300 text-amber-950'
                                   : 'bg-[#FAF8F5] border-median-taupe/25 text-black'
                               }`}
                             >
-                              <span className="text-[10px] font-mono uppercase tracking-wider opacity-75 block">
-                                Next Due Date
-                              </span>
-                              <strong className="font-oswald text-lg uppercase">{plan.next_due_date}</strong>
+                              <div>
+                                <span className="text-[10px] font-mono uppercase tracking-wider opacity-75 block">
+                                  Next Due Date
+                                </span>
+                                <strong className="font-oswald text-lg uppercase">{plan.next_due_date}</strong>
+                              </div>
+                              <div>
+                                <CalendarSyncButton
+                                  align="right"
+                                  event={{
+                                    uid: `monolith-plan-due-${plan.id}-${plan.next_due_date}`,
+                                    title: `Monolith LK · Payment Due — ${plan.package_name}`,
+                                    description: `Project: ${group.projectTitle}\nPackage: ${plan.package_name}\nDue Amount: ${plan.currency} ${(plan.billing_type === 'monthly' ? Number(plan.installment_amount || totalTarget) : remaining).toLocaleString()}\nManaged via Monolith LK Client Portal.`,
+                                    date: plan.next_due_date,
+                                    reminderDaysBefore: [3, 1],
+                                    filename: `payment-due-${plan.package_name}`,
+                                  }}
+                                />
+                              </div>
                             </div>
                           )}
                         </div>

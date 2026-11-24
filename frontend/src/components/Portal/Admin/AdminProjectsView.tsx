@@ -1,13 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { UserProfile, PortalProject } from '../../../lib/portalStore';
+import { UserProfile, PortalProject, ProjectChangeRequest } from '../../../lib/portalStore';
 import { portalApi } from '../../../lib/portalApi';
 import { AdminPagination, AdminSkeletonList, AdminToolbar } from './AdminUiPrimitives';
+import { AdminChangeRequestsPanel } from './AdminChangeRequestsPanel';
 import { SystemHeartbeatMonitor } from '../SystemHeartbeatMonitor';
 import { ScrollReveal } from '../../MedianStudio/ScrollReveal';
 
 interface AdminProjectsViewProps {
   users: UserProfile[];
   projects: PortalProject[];
+  changeRequests: ProjectChangeRequest[];
   isSyncing: boolean;
   onRefresh: () => Promise<void>;
   showAlert: (msg: string) => void;
@@ -16,6 +18,7 @@ interface AdminProjectsViewProps {
 export const AdminProjectsView: React.FC<AdminProjectsViewProps> = ({
   users,
   projects,
+  changeRequests,
   isSyncing,
   onRefresh,
   showAlert,
@@ -557,6 +560,14 @@ export const AdminProjectsView: React.FC<AdminProjectsViewProps> = ({
                     )}
                   </div>
                 </div>
+
+                {/* Change Request Impact Cards for this Project */}
+                <AdminChangeRequestsPanel
+                  project={proj}
+                  changeRequests={changeRequests}
+                  onRefresh={onRefresh}
+                  showAlert={showAlert}
+                />
               </div>
             </ScrollReveal>
           ))}

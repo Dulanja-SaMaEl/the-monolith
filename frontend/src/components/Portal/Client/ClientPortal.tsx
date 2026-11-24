@@ -8,11 +8,14 @@ import {
   BillingDocument,
   CustomerReview,
   ProjectPaymentPlan,
+  ProjectChangeRequest,
 } from '../../../lib/portalStore';
 import { portalApi } from '../../../lib/portalApi';
 import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
 import { ClientPaymentsTab } from './ClientPaymentsTab';
+import { ClientChangeRequestsSection } from './ClientChangeRequestsSection';
 import { SystemHeartbeatMonitor } from '../SystemHeartbeatMonitor';
+import { CalendarSyncButton } from '../CalendarSyncButton';
 import { ScrollReveal, RevealVariant } from '../../MedianStudio/ScrollReveal';
 import { usePwaInstall } from '../../../lib/usePwaInstall';
 
@@ -44,6 +47,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
   // Client Data States
   const [projects, setProjects] = useState<PortalProject[]>([]);
   const [paymentPlans, setPaymentPlans] = useState<ProjectPaymentPlan[]>([]);
+  const [changeRequests, setChangeRequests] = useState<ProjectChangeRequest[]>([]);
   const [requests, setRequests] = useState<ProjectRequest[]>([]);
   const [meetings, setMeetings] = useState<MeetingRequest[]>([]);
   const [billingDocs, setBillingDocs] = useState<BillingDocument[]>([]);
@@ -98,9 +102,10 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
     if (!activeClient?.id) return;
     setIsLoadingData(true);
     try {
-      const [projRes, payRes, reqRes, meetRes, billRes, revRes] = await Promise.all([
+      const [projRes, payRes, crRes, reqRes, meetRes, billRes, revRes] = await Promise.all([
         portalApi.getProjects(activeClient.id),
         portalApi.getPaymentPlans(activeClient.id),
+        portalApi.getChangeRequests(activeClient.id),
         portalApi.getProjectRequests(activeClient.id),
         portalApi.getMeetings(activeClient.id),
         portalApi.getBillingDocuments(activeClient.id),
@@ -108,6 +113,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
       ]);
       setProjects(projRes.data);
       setPaymentPlans(payRes.data);
+      setChangeRequests(crRes.data);
       setRequests(reqRes.data);
       setMeetings(meetRes.data);
       setBillingDocs(billRes.data);
@@ -699,33 +705,57 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                         </div>
                       )}
 
-                      {/* Domain & Server Renewal Timers */}
+                      {/* Domain & Server Renewal Timers + Renewal Shield 1-Tap Calendar Sync */}
                       {(proj.domain_renewal_date || proj.server_expiry_date) && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
                           {proj.domain_renewal_date && (
-                            <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-median-taupe/20 flex items-center justify-between gap-2">
+                            <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-median-taupe/20 flex flex-wrap items-center justify-between gap-2">
                               <div>
                                 <span className="text-[10px] uppercase text-median-taupe block">Domain Renewal Date</span>
                                 <strong className="font-oswald text-base text-black">{proj.domain_renewal_date}</strong>
                               </div>
-                              {domainBadge && (
-                                <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${domainBadge.cls}`}>
-                                  {domainBadge.label}
-                                </span>
-                              )}
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                {domainBadge && (
+                                  <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${domainBadge.cls}`}>
+                                    {domainBadge.label}
+                                  </span>
+                                )}
+                                <CalendarSyncButton
+                                  event={{
+                                    uid: `monolith-domain-renewal-${proj.id}-${proj.domain_renewal_date}`,
+                                    title: `Monolith LK · Domain Renewal — ${proj.title}`,
+                                    description: `Domain renewal scheduled for ${proj.title} (${proj.code_name}).${proj.production_url ? `\nLive URL: ${proj.production_url}` : ''}\nManaged by Monolith LK.`,
+                                    date: proj.domain_renewal_date,
+                                    reminderDaysBefore: [14, 3, 1],
+                                    filename: `domain-renewal-${proj.code_name}`,
+                                  }}
+                                />
+                              </div>
                             </div>
                           )}
                           {proj.server_expiry_date && (
-                            <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-median-taupe/20 flex items-center justify-between gap-2">
+                            <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-median-taupe/20 flex flex-wrap items-center justify-between gap-2">
                               <div>
                                 <span className="text-[10px] uppercase text-median-taupe block">Server / Cloud Expiry</span>
                                 <strong className="font-oswald text-base text-black">{proj.server_expiry_date}</strong>
                               </div>
-                              {serverBadge && (
-                                <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${serverBadge.cls}`}>
-                                  {serverBadge.label}
-                                </span>
-                              )}
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                {serverBadge && (
+                                  <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${serverBadge.cls}`}>
+                                    {serverBadge.label}
+                                  </span>
+                                )}
+                                <CalendarSyncButton
+                                  event={{
+                                    uid: `monolith-server-expiry-${proj.id}-${proj.server_expiry_date}`,
+                                    title: `Monolith LK · Server & Cloud Renewal — ${proj.title}`,
+                                    description: `Server / Cloud hosting renewal scheduled for ${proj.title} (${proj.code_name}).${proj.production_url ? `\nLive URL: ${proj.production_url}` : ''}\nManaged by Monolith LK.`,
+                                    date: proj.server_expiry_date,
+                                    reminderDaysBefore: [14, 3, 1],
+                                    filename: `server-renewal-${proj.code_name}`,
+                                  }}
+                                />
+                              </div>
                             </div>
                           )}
                         </div>
@@ -804,7 +834,20 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                                     </span>
                                   )}
                                   {pl.next_due_date && pl.status !== 'completed' && (
-                                    <span className="text-median-taupe">Due: {pl.next_due_date}</span>
+                                    <span className="inline-flex items-center gap-1.5 text-median-taupe">
+                                      <span>Due: {pl.next_due_date}</span>
+                                      <CalendarSyncButton
+                                        label="+ Cal"
+                                        event={{
+                                          uid: `monolith-proj-pay-${pl.id}-${pl.next_due_date}`,
+                                          title: `Monolith LK · Payment Due — ${pl.package_name}`,
+                                          description: `Project: ${proj.title}\nPackage: ${pl.package_name}\nDue: ${pl.next_due_date}`,
+                                          date: pl.next_due_date,
+                                          reminderDaysBefore: [3, 1],
+                                          filename: `payment-due-${pl.package_name}`,
+                                        }}
+                                      />
+                                    </span>
                                   )}
                                 </div>
                               </div>
@@ -814,6 +857,18 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                       </div>
                     );
                   })()}
+
+                  {/* Change Request Impact Cards ("Zero Awkward Money Talks") */}
+                  {activeClient && (
+                    <ClientChangeRequestsSection
+                      project={proj}
+                      client={activeClient}
+                      changeRequests={changeRequests}
+                      billingDocs={billingDocs}
+                      onRefresh={loadClientData}
+                      onViewInvoice={(doc) => setSelectedBillingDoc(doc)}
+                    />
+                  )}
                     </div>
                   </ScrollReveal>
                 );
@@ -1105,17 +1160,35 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                       {m.agenda}
                     </p>
 
-                    {m.meeting_link && (
-                      <a
-                        href={m.meeting_link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black text-white text-xs font-mono uppercase hover:bg-median-taupe transition-colors"
-                      >
-                        <span>Join Video Room</span>
-                        <span>↗</span>
-                      </a>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {m.meeting_link && (
+                        <a
+                          href={m.meeting_link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black text-white text-xs font-mono uppercase hover:bg-median-taupe transition-colors"
+                        >
+                          <span>Join Video Room</span>
+                          <span>↗</span>
+                        </a>
+                      )}
+                      {m.requested_date && m.status !== 'cancelled' && m.status !== 'completed' && (
+                        <CalendarSyncButton
+                          align="left"
+                          size="sm"
+                          event={{
+                            uid: `monolith-meeting-${m.id}`,
+                            title: `Monolith LK · ${m.meeting_type}`,
+                            description: `Agenda: ${m.agenda}${m.meeting_link ? `\nMeeting Link: ${m.meeting_link}` : ''}`,
+                            date: m.requested_date,
+                            time: m.requested_time,
+                            durationMinutes: 45,
+                            location: m.meeting_link || 'Monolith LK Video Room',
+                            filename: `monolith-meeting-${m.requested_date}`,
+                          }}
+                        />
+                      )}
+                    </div>
                   </div>
                 ))
               )}
@@ -1201,8 +1274,22 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                         </div>
                       )}
 
-                      <div className="text-xs text-median-taupe/70 font-mono mb-4">
-                        Due Date: {doc.due_date} · Issued: {new Date(doc.created_at).toLocaleDateString()}
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-median-taupe/70 font-mono mb-4">
+                        <span>
+                          Due Date: {doc.due_date || 'Upon Receipt'} · Issued: {new Date(doc.created_at).toLocaleDateString()}
+                        </span>
+                        {doc.type === 'invoice' && doc.status !== 'paid' && doc.due_date && (
+                          <CalendarSyncButton
+                            event={{
+                              uid: `monolith-invoice-due-${doc.id}`,
+                              title: `Monolith LK · Invoice ${doc.document_number} Due (${doc.currency || 'LKR'} ${doc.total.toLocaleString()})`,
+                              description: `Invoice ${doc.document_number} (${doc.project_title || 'Monolith LK'})\nAmount Due: ${doc.currency || 'LKR'} ${doc.total.toLocaleString()}\nDownload PDF inside your Monolith LK Client Portal.`,
+                              date: doc.due_date,
+                              reminderDaysBefore: [3, 1],
+                              filename: `invoice-due-${doc.document_number}`,
+                            }}
+                          />
+                        )}
                       </div>
 
                       {/* Items Preview */}
