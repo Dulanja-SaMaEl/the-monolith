@@ -11,6 +11,19 @@ import {
 import { portalApi } from '../../../lib/portalApi';
 import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
 import { ClientPaymentsTab } from './ClientPaymentsTab';
+import { ScrollReveal, RevealVariant } from '../../MedianStudio/ScrollReveal';
+import { usePwaInstall } from '../../../lib/usePwaInstall';
+
+const getExpiryBadge = (dateStr?: string) => {
+  if (!dateStr) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(dateStr + 'T00:00:00');
+  const diffDays = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return { label: `Expired ${Math.abs(diffDays)}d ago`, cls: 'bg-red-100 text-red-800 border-red-300' };
+  if (diffDays <= 30) return { label: `Renew in ${diffDays}d`, cls: 'bg-amber-100 text-amber-800 border-amber-300' };
+  return { label: `Active · ${diffDays}d left`, cls: 'bg-emerald-100 text-emerald-800 border-emerald-300' };
+};
 
 interface ClientPortalProps {
   navigate: (route: string) => void;
@@ -18,6 +31,7 @@ interface ClientPortalProps {
 
 export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
   const { user, logout, isLiveAuth } = useAuth();
+  const { canInstall, promptInstall } = usePwaInstall();
   const [activeTab, setActiveTab] = useState<'projects' | 'payments' | 'request' | 'meetings' | 'billing' | 'reviews' | 'security'>('projects');
   const [isLiveDb, setIsLiveDb] = useState<boolean>(false);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
@@ -216,6 +230,14 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
               <span className="text-median-taupe/70 text-[10px] hidden sm:block">{user?.email}</span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              {canInstall && (
+                <button
+                  onClick={promptInstall}
+                  className="px-3 py-1.5 rounded-lg border border-median-taupe bg-median-taupe/10 text-black hover:bg-median-taupe hover:text-white transition-colors font-semibold"
+                >
+                  + Install App
+                </button>
+              )}
               <button
                 onClick={() => navigate('/')}
                 className="px-3 py-1.5 rounded-lg border border-median-taupe/30 hover:border-black text-black transition-colors"
@@ -235,42 +257,52 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
 
       {/* Main Hub Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 pt-6 sm:pt-8">
-        {/* Welcome Greeting Banner */}
-        <div className="mb-8 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-median-taupe/30 bg-median-taupe/5 text-[10px] font-mono uppercase tracking-widest text-median-taupe mb-2">
-              <span className={`w-2 h-2 rounded-full animate-pulse ${isLiveDb ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-              <span>
-                {isLoadingData
-                  ? 'Synchronizing Cluster...'
-                  : isLiveDb
-                  ? 'Live Supabase DB Sync · Nominal (99.98% SLA)'
-                  : 'Offline Preview Sandbox · Local State'}
-              </span>
+        {/* Welcome Greeting Banner with Haute Editorial Entrance */}
+        <ScrollReveal variant="blur-focus" duration={800} once>
+          <div className="mb-8 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div>
+              <ScrollReveal variant="badge-drop" delay={80} duration={700} once>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-median-taupe/30 bg-median-taupe/5 text-[10px] font-mono uppercase tracking-widest text-median-taupe mb-2">
+                  <span className={`w-2 h-2 rounded-full animate-pulse ${isLiveDb ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                  <span>
+                    {isLoadingData
+                      ? 'Synchronizing Cluster...'
+                      : isLiveDb
+                      ? 'Live Supabase DB Sync · Nominal (99.98% SLA)'
+                      : 'Monolith LK Portal · Local Cache'}
+                  </span>
+                </div>
+              </ScrollReveal>
+              <ScrollReveal variant="split-mask" delay={140} duration={750} once>
+                <h1 className="font-oswald text-3xl sm:text-4xl font-bold uppercase tracking-tight text-black">
+                  Welcome, {user?.company_name || user?.full_name}
+                </h1>
+              </ScrollReveal>
+              <ScrollReveal variant="fade-up" delay={200} duration={700} once>
+                <p className="text-xs sm:text-sm text-median-taupe/80 mt-1 max-w-xl">
+                  Track real-time engineering milestones, payment packages, project deliverables vault, and coordinate directly with Monolith LK.
+                </p>
+              </ScrollReveal>
             </div>
-            <h1 className="font-oswald text-3xl sm:text-4xl font-bold uppercase tracking-tight text-black">
-              Welcome, {user?.company_name || user?.full_name}
-            </h1>
-            <p className="text-xs sm:text-sm text-median-taupe/80 mt-1 max-w-xl">
-              Track real-time engineering milestones, commission new architecture pipelines, and coordinate directly with Principal Systems Architects.
-            </p>
-          </div>
 
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setActiveTab('request')}
-              className="px-5 py-2.5 rounded-xl bg-black text-white font-oswald text-sm uppercase tracking-wider hover:bg-median-taupe transition-colors"
-            >
-              + Commission New Project
-            </button>
-            <button
-              onClick={() => setActiveTab('meetings')}
-              className="px-5 py-2.5 rounded-xl border border-median-taupe text-black font-oswald text-sm uppercase tracking-wider hover:bg-median-taupe hover:text-white transition-colors"
-            >
-              Book Architecture Session
-            </button>
+            <ScrollReveal variant="horizontal-slide-right" delay={180} duration={750} once>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setActiveTab('payments')}
+                  className="px-5 py-2.5 rounded-xl bg-black text-white font-oswald text-sm uppercase tracking-wider hover:bg-median-taupe transition-colors"
+                >
+                  Payment Progress →
+                </button>
+                <button
+                  onClick={() => setActiveTab('meetings')}
+                  className="px-5 py-2.5 rounded-xl border border-median-taupe text-black font-oswald text-sm uppercase tracking-wider hover:bg-median-taupe hover:text-white transition-colors"
+                >
+                  Book Session
+                </button>
+              </div>
+            </ScrollReveal>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Portal Tabs Bar */}
         <div className="flex border-b border-median-taupe/20 mb-8 overflow-x-auto no-scrollbar gap-3 sm:gap-6 font-oswald text-sm sm:text-base uppercase tracking-wider">
@@ -374,25 +406,64 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
         {/* ================= TAB 1: ACTIVE PROJECTS & MILESTONES ================= */}
         {activeTab === 'projects' && (
           <div className="space-y-6">
-            {projects.length === 0 ? (
-              <div className="p-12 text-center rounded-2xl bg-white border border-median-taupe/20">
-                <p className="font-oswald text-xl uppercase text-black mb-2">No Active Projects Dispatched Yet</p>
-                <p className="text-xs text-median-taupe/80 max-w-md mx-auto mb-6">
-                  You do not have any live engineering contracts active. Submit a project scope to initiate architecture discovery.
-                </p>
-                <button
-                  onClick={() => setActiveTab('request')}
-                  className="px-6 py-3 rounded-xl bg-black text-white font-oswald uppercase tracking-wider text-xs hover:bg-median-taupe transition-colors"
-                >
-                  Commission Initial Project
-                </button>
+            {isLoadingData && projects.length === 0 ? (
+              <div className="space-y-6 animate-pulse">
+                {[1, 2].map((sk) => (
+                  <div key={sk} className="p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/15 space-y-5">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2 w-2/3">
+                        <div className="h-3 w-28 bg-median-taupe/20 rounded-full" />
+                        <div className="h-7 w-3/4 bg-median-taupe/25 rounded-lg" />
+                      </div>
+                      <div className="h-7 w-24 bg-median-taupe/20 rounded-full" />
+                    </div>
+                    <div className="h-3 w-full bg-median-taupe/15 rounded-full" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="h-12 bg-median-taupe/10 rounded-xl" />
+                      <div className="h-12 bg-median-taupe/10 rounded-xl" />
+                    </div>
+                  </div>
+                ))}
               </div>
+            ) : projects.length === 0 ? (
+              <ScrollReveal variant="fade-up" duration={750} once>
+                <div className="p-12 text-center rounded-2xl bg-white border border-median-taupe/20">
+                  <p className="font-oswald text-xl uppercase text-black mb-2">No Active Projects Dispatched Yet</p>
+                  <p className="text-xs text-median-taupe/80 max-w-md mx-auto mb-6">
+                    You do not have any live engineering contracts active. Submit a project scope to initiate architecture discovery.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('request')}
+                    className="px-6 py-3 rounded-xl bg-black text-white font-oswald uppercase tracking-wider text-xs hover:bg-median-taupe transition-colors"
+                  >
+                    Commission Initial Project
+                  </button>
+                </div>
+              </ScrollReveal>
             ) : (
-              projects.map((proj) => (
-                <div
-                  key={proj.id}
-                  className="p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 hover:border-median-taupe shadow-sm transition-all"
-                >
+              projects.map((proj, pIdx) => {
+                const projVariants: RevealVariant[] = ['card-lift', 'card-flip-left', 'card-flip-right'];
+                const hasVaultData = Boolean(
+                  proj.production_url ||
+                    proj.staging_url ||
+                    proj.figma_url ||
+                    proj.api_docs_url ||
+                    proj.domain_renewal_date ||
+                    proj.server_expiry_date ||
+                    proj.vault_notes
+                );
+                const domainBadge = getExpiryBadge(proj.domain_renewal_date);
+                const serverBadge = getExpiryBadge(proj.server_expiry_date);
+
+                return (
+                  <ScrollReveal
+                    key={proj.id}
+                    variant={projVariants[pIdx % projVariants.length]}
+                    delay={pIdx * 110}
+                    duration={850}
+                    once
+                  >
+                    <div className="p-5 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 hover:border-median-taupe shadow-sm hover:shadow-lg transition-all duration-300">
                   {/* Project Header Row */}
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-median-taupe/15">
                     <div>
@@ -491,6 +562,109 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                     </div>
                   </div>
 
+                  {/* Protected Project Deliverables & Infrastructure Vault */}
+                  {hasVaultData && (
+                    <div className="mt-6 pt-5 border-t border-median-taupe/15 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h3 className="font-oswald text-sm font-bold uppercase tracking-wider text-black flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          <span>Project Deliverables &amp; Infrastructure Vault</span>
+                        </h3>
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe">
+                          Managed by Monolith LK
+                        </span>
+                      </div>
+
+                      {/* Asset Quick-Access Links */}
+                      {(proj.production_url || proj.staging_url || proj.figma_url || proj.api_docs_url) && (
+                        <div className="flex flex-wrap gap-2">
+                          {proj.production_url && (
+                            <a
+                              href={proj.production_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-3.5 py-2 rounded-xl bg-black text-white hover:bg-median-taupe text-xs font-mono uppercase font-semibold transition-colors inline-flex items-center gap-1.5"
+                            >
+                              <span>Live Production</span>
+                              <span>↗</span>
+                            </a>
+                          )}
+                          {proj.staging_url && (
+                            <a
+                              href={proj.staging_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-3.5 py-2 rounded-xl border border-black text-black hover:bg-black hover:text-white text-xs font-mono uppercase font-semibold transition-colors inline-flex items-center gap-1.5"
+                            >
+                              <span>Staging Preview</span>
+                              <span>↗</span>
+                            </a>
+                          )}
+                          {proj.figma_url && (
+                            <a
+                              href={proj.figma_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-3.5 py-2 rounded-xl border border-median-taupe/40 bg-[#FAF8F5] text-black hover:border-black text-xs font-mono uppercase font-semibold transition-colors inline-flex items-center gap-1.5"
+                            >
+                              <span>Figma Design Vault</span>
+                              <span>↗</span>
+                            </a>
+                          )}
+                          {proj.api_docs_url && (
+                            <a
+                              href={proj.api_docs_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-3.5 py-2 rounded-xl border border-median-taupe/40 bg-[#FAF8F5] text-black hover:border-black text-xs font-mono uppercase font-semibold transition-colors inline-flex items-center gap-1.5"
+                            >
+                              <span>API &amp; Technical Docs</span>
+                              <span>↗</span>
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Domain & Server Renewal Timers */}
+                      {(proj.domain_renewal_date || proj.server_expiry_date) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                          {proj.domain_renewal_date && (
+                            <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-median-taupe/20 flex items-center justify-between gap-2">
+                              <div>
+                                <span className="text-[10px] uppercase text-median-taupe block">Domain Renewal Date</span>
+                                <strong className="font-oswald text-base text-black">{proj.domain_renewal_date}</strong>
+                              </div>
+                              {domainBadge && (
+                                <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${domainBadge.cls}`}>
+                                  {domainBadge.label}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {proj.server_expiry_date && (
+                            <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-median-taupe/20 flex items-center justify-between gap-2">
+                              <div>
+                                <span className="text-[10px] uppercase text-median-taupe block">Server / Cloud Expiry</span>
+                                <strong className="font-oswald text-base text-black">{proj.server_expiry_date}</strong>
+                              </div>
+                              {serverBadge && (
+                                <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${serverBadge.cls}`}>
+                                  {serverBadge.label}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {proj.vault_notes && (
+                        <div className="p-3 rounded-xl bg-median-taupe/5 border border-median-taupe/15 text-[11px] font-mono text-black/80">
+                          <strong className="text-median-taupe uppercase">Infrastructure &amp; SLA Notes:</strong> {proj.vault_notes}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Per-Project Payment Progress Summary Strip */}
                   {(() => {
                     const projPlans = paymentPlans.filter((pl) => pl.project_id === proj.id);
@@ -566,8 +740,10 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                       </div>
                     );
                   })()}
-                </div>
-              ))
+                    </div>
+                  </ScrollReveal>
+                );
+              })
             )}
           </div>
         )}
@@ -585,7 +761,8 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
         {/* ================= TAB 2: REQUEST NEW PROJECT ================= */}
         {activeTab === 'request' && (
           <div className="max-w-3xl mx-auto">
-            <div className="p-8 sm:p-10 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
+            <ScrollReveal variant="card-lift" duration={800} once>
+            <div className="p-6 sm:p-10 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
               <div className="mb-6">
                 <span className="text-xs font-mono uppercase tracking-widest text-median-taupe font-semibold block mb-1">
                   Commissioning Desk
@@ -690,6 +867,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                 </button>
               </form>
             </div>
+            </ScrollReveal>
 
             {/* Past Requests History */}
             {requests.length > 0 && (
@@ -721,7 +899,8 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
         {/* ================= TAB 3: SCHEDULE MEETING ================= */}
         {activeTab === 'meetings' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-6 p-8 sm:p-10 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
+            <ScrollReveal variant="card-flip-left" duration={800} once className="lg:col-span-6">
+            <div className="p-6 sm:p-10 rounded-2xl bg-white border border-median-taupe/20 shadow-sm h-full">
               <div className="mb-6">
                 <span className="text-xs font-mono uppercase tracking-widest text-median-taupe font-semibold block mb-1">
                   Architecture & Sprint Sync
@@ -811,9 +990,10 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                 </button>
               </form>
             </div>
+            </ScrollReveal>
 
             {/* Scheduled Meetings List */}
-            <div className="lg:col-span-6 space-y-4">
+            <ScrollReveal variant="card-flip-right" delay={120} duration={800} once className="lg:col-span-6 space-y-4">
               <h3 className="font-oswald text-xl font-bold uppercase text-black">
                 Upcoming & Past Consultations
               </h3>
@@ -865,34 +1045,45 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                   </div>
                 ))
               )}
-            </div>
+            </ScrollReveal>
           </div>
         )}
 
         {/* ================= TAB 4: BILLING & INVOICES ================= */}
         {activeTab === 'billing' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="font-oswald text-2xl sm:text-3xl font-bold uppercase text-black">
-                  Invoices & Quotations
-                </h2>
-                <p className="text-xs text-median-taupe/80">
-                  Itemized billing records and formal architecture quotations issued to {user?.company_name}.
-                </p>
+            <ScrollReveal variant="split-mask" duration={750} once>
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="font-oswald text-2xl sm:text-3xl font-bold uppercase text-black">
+                    Invoices &amp; Quotations
+                  </h2>
+                  <p className="text-xs text-median-taupe/80">
+                    Itemized billing records and formal quotations issued to {user?.company_name}.
+                  </p>
+                </div>
               </div>
-            </div>
+            </ScrollReveal>
 
             {billingDocs.length === 0 ? (
-              <div className="p-12 text-center rounded-2xl bg-white border border-median-taupe/20 text-xs font-mono text-median-taupe">
-                No billing vouchers or quotations issued yet.
-              </div>
+              <ScrollReveal variant="fade-up" duration={750} once>
+                <div className="p-12 text-center rounded-2xl bg-white border border-median-taupe/20 text-xs font-mono text-median-taupe">
+                  No billing vouchers or quotations issued yet.
+                </div>
+              </ScrollReveal>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {billingDocs.map((doc) => (
-                  <div
+                {billingDocs.map((doc, idx) => (
+                  <ScrollReveal
                     key={doc.id}
-                    className="p-6 rounded-2xl bg-white border border-median-taupe/20 hover:border-median-taupe shadow-sm transition-all flex flex-col justify-between"
+                    variant={idx % 2 === 0 ? 'card-flip-left' : 'card-flip-right'}
+                    delay={(idx % 2) * 110}
+                    duration={800}
+                    once
+                    className="h-full"
+                  >
+                  <div
+                    className="p-6 rounded-2xl bg-white border border-median-taupe/20 hover:border-median-taupe shadow-sm hover:shadow-lg transition-all flex flex-col justify-between h-full"
                   >
                     <div>
                       <div className="flex justify-between items-start gap-2 mb-4">
@@ -977,6 +1168,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                       </div>
                     </div>
                   </div>
+                  </ScrollReveal>
                 ))}
               </div>
             )}
@@ -987,7 +1179,8 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
         {activeTab === 'reviews' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Submit Review Form */}
-            <div className="lg:col-span-6 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-6">
+            <ScrollReveal variant="card-flip-left" duration={800} once className="lg:col-span-6">
+            <div className="p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-6 h-full">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
                   Public Architectural Accreditation
@@ -1084,9 +1277,10 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                 </button>
               </form>
             </div>
+            </ScrollReveal>
 
             {/* Client's Published Reviews */}
-            <div className="lg:col-span-6 space-y-4">
+            <ScrollReveal variant="card-flip-right" delay={120} duration={800} once className="lg:col-span-6 space-y-4">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
                   Active Accreditations
@@ -1132,12 +1326,13 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                   ))}
                 </div>
               )}
-            </div>
+            </ScrollReveal>
           </div>
         )}
 
         {/* ================= TAB 6: SECURITY & PASSKEY MANAGEMENT ================= */}
         {activeTab === 'security' && (
+          <ScrollReveal variant="card-lift" duration={800} once>
           <div className="max-w-2xl mx-auto p-6 sm:p-10 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-6">
             <div>
               <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
@@ -1227,6 +1422,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
               </button>
             </form>
           </div>
+          </ScrollReveal>
         )}
       </main>
 

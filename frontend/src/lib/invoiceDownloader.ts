@@ -1,4 +1,4 @@
-import { BillingDocument } from './portalStore';
+import { BillingDocument, ProjectPaymentPlan, PaymentRecord } from './portalStore';
 
 export const generateInvoiceHtml = (doc: BillingDocument): string => {
   const isInvoice = doc.type === 'invoice';
@@ -466,6 +466,343 @@ export const printBillingVoucherPdf = (doc: BillingDocument): void => {
 
   iframeDoc.open();
   iframeDoc.write(htmlContent);
+  iframeDoc.close();
+
+  const triggerPrint = () => {
+    try {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+    } finally {
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 1500);
+    }
+  };
+
+  if (iframeDoc.fonts && iframeDoc.fonts.ready) {
+    iframeDoc.fonts.ready.then(() => setTimeout(triggerPrint, 200));
+  } else {
+    setTimeout(triggerPrint, 500);
+  }
+};
+
+// ====================================================================
+// OFFICIAL MONOLITH LK PAYMENT RECEIPT GENERATOR (HTML + PRINT TO PDF)
+// ====================================================================
+
+const escReceipt = (v: unknown): string =>
+  String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+export const generatePaymentReceiptHtml = (
+  plan: ProjectPaymentPlan,
+  record: PaymentRecord
+): string => {
+  const cur = record.currency || plan.currency || 'LKR';
+  const shortId = record.id.replace(/[^a-zA-Z0-9]/g, '').slice(-5).toUpperCase() || '001';
+  const year = (record.payment_date || new Date().toISOString()).slice(0, 4);
+  const receiptNumber = `RCP-${year}-${shortId}`;
+
+  const totalPaid = (plan.payments || []).reduce((s, r) => s + Number(r.amount || 0), 0);
+  const remaining = plan.billing_type === 'monthly' ? 0 : Math.max(0, Number(plan.total_amount || 0) - totalPaid);
+  const billingModelLabel =
+    plan.billing_type === 'monthly'
+      ? 'Monthly Recurring Retainer'
+      : plan.billing_type === 'installment'
+      ? `${plan.total_months}-Month Installment Plan`
+      : 'One-Time Fixed Package';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${escReceipt(receiptNumber)} — Monolith LK Official Payment Receipt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter Tight', sans-serif;
+      background: #FAF8F5;
+      color: #141414;
+      padding: 36px 20px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .receipt-card {
+      max-width: 780px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid rgba(159, 129, 112, 0.28);
+      border-radius: 16px;
+      padding: 44px;
+      box-shadow: 0 12px 32px rgba(159, 129, 112, 0.08);
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid rgba(159, 129, 112, 0.22);
+      padding-bottom: 24px;
+      margin-bottom: 28px;
+      gap: 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .cube {
+      width: 16px; height: 16px; background: #000; color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700;
+    }
+    .brand-title {
+      font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase; color: #000;
+    }
+    .brand-title span { color: #9F8170; margin-left: 3px; }
+    .meta-sub { font-size: 11px; color: rgba(159, 129, 112, 0.92); line-height: 1.6; }
+    .right-meta { text-align: right; }
+    .pill {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      background: #065F46; color: #fff; padding: 4px 10px; border-radius: 4px; margin-bottom: 6px;
+    }
+    .rcp-no {
+      font-family: 'Oswald', sans-serif; font-size: 26px; font-weight: 700;
+      color: #000; letter-spacing: 0.05em;
+    }
+    .verified-stamp {
+      display: inline-block; margin-top: 4px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #065F46;
+      background: #ECFDF5; border: 1px solid #A7F3D0; padding: 3px 8px; border-radius: 4px;
+    }
+    .amount-banner {
+      background: #FAF8F5;
+      border: 1px solid rgba(159, 129, 112, 0.25);
+      border-left: 4px solid #065F46;
+      border-radius: 12px;
+      padding: 22px 26px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      gap: 16px;
+    }
+    .amount-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.14em; color: #9F8170; margin-bottom: 4px;
+    }
+    .amount-value {
+      font-family: 'Oswald', sans-serif; font-size: 34px; font-weight: 700; color: #065F46;
+    }
+    .date-box { text-align: right; font-size: 12px; color: #4b5563; }
+    .date-box strong { color: #000; font-family: 'Oswald', sans-serif; font-size: 16px; display: block; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .box {
+      background: #FAF8F5; border: 1px solid rgba(159, 129, 112, 0.2);
+      border-radius: 10px; padding: 16px 18px;
+    }
+    .box-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: #9F8170; margin-bottom: 6px;
+    }
+    .box-title {
+      font-family: 'Oswald', sans-serif; font-size: 17px; font-weight: 700;
+      color: #000; text-transform: uppercase; margin-bottom: 4px;
+    }
+    .box-text { font-size: 12px; color: #4b5563; line-height: 1.5; }
+    .details-table { width: 100%; border-collapse: collapse; margin-bottom: 26px; font-size: 12px; }
+    .details-table td {
+      padding: 12px 14px; border-bottom: 1px solid rgba(159, 129, 112, 0.18);
+    }
+    .details-table td:first-child {
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      color: #9F8170; width: 42%; font-size: 11px;
+    }
+    .details-table td:last-child { color: #000; font-weight: 600; text-align: right; }
+    .notes {
+      background: #FAF8F5; border: 1px solid rgba(159, 129, 112, 0.2);
+      border-radius: 10px; padding: 14px 18px; font-size: 11px; color: #4b5563; margin-bottom: 28px;
+    }
+    .sig-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 36px;
+      border-top: 1px solid rgba(159, 129, 112, 0.2); padding-top: 24px;
+    }
+    .sig-line { height: 1px; background: #000; margin-bottom: 8px; }
+    .sig-name {
+      font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 700;
+      color: #000; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .sig-role { font-size: 10px; text-transform: uppercase; color: #9F8170; }
+    .footer-note {
+      margin-top: 28px; text-align: center; font-size: 10px;
+      color: rgba(159, 129, 112, 0.7); text-transform: uppercase; letter-spacing: 0.14em;
+    }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .receipt-card { border: none; box-shadow: none; padding: 20px; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="receipt-card">
+    <div class="top-bar">
+      <div>
+        <div class="brand">
+          <span class="cube">■</span>
+          <span class="brand-title">MONOLITH<span>LK</span></span>
+        </div>
+        <div class="meta-sub">
+          Kurunegala · Giriulla · Colombo, Sri Lanka<br>
+          +94 76 591 7189 · contact@monolith.lk
+        </div>
+      </div>
+      <div class="right-meta">
+        <div class="pill">Official Payment Receipt</div>
+        <div class="rcp-no">${escReceipt(receiptNumber)}</div>
+        <div class="verified-stamp">✓ Payment Verified &amp; Cleared</div>
+      </div>
+    </div>
+
+    <div class="amount-banner">
+      <div>
+        <div class="amount-label">Amount Received (${escReceipt(cur)})</div>
+        <div class="amount-value">${escReceipt(cur)} ${Number(record.amount || 0).toLocaleString()}</div>
+      </div>
+      <div class="date-box">
+        <span>Date Cleared</span>
+        <strong>${escReceipt(record.payment_date || 'Confirmed')}</strong>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="box">
+        <div class="box-label">Received From</div>
+        <div class="box-title">${escReceipt(plan.client_name || 'Valued Client')}</div>
+        <div class="box-text">
+          Payment Method: <strong>${escReceipt(record.payment_method || 'Bank Transfer / CEFTS')}</strong><br>
+          ${record.reference_number ? `Reference / Receipt #: <strong>${escReceipt(record.reference_number)}</strong>` : 'Settlement Recorded in Monolith LK Ledger'}
+        </div>
+      </div>
+      <div class="box">
+        <div class="box-label">Applied Package &amp; Project</div>
+        <div class="box-title">${escReceipt(plan.package_name)}</div>
+        <div class="box-text">
+          ${plan.project_title ? `Project: <strong>${escReceipt(plan.project_title)}</strong><br>` : ''}
+          Billing Type: <strong>${escReceipt(billingModelLabel)}</strong>
+        </div>
+      </div>
+    </div>
+
+    <table class="details-table">
+      <tbody>
+        <tr>
+          <td>Package Settlement Scope</td>
+          <td>${record.billing_scope === 'separate' ? 'Separate / Standalone Charge' : 'Project Package Cover-Up'}</td>
+        </tr>
+        ${
+          plan.billing_type !== 'monthly'
+            ? `<tr>
+                <td>Total Package Commitment</td>
+                <td>${escReceipt(cur)} ${Number(plan.total_amount || 0).toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td>Total Paid to Date (Cumulative)</td>
+                <td style="color:#065F46;">${escReceipt(cur)} ${totalPaid.toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td>Remaining Package Balance</td>
+                <td>${remaining > 0 ? `${escReceipt(cur)} ${remaining.toLocaleString()}` : `${escReceipt(cur)} 0 (Fully Settled)`}</td>
+              </tr>`
+            : `<tr>
+                <td>Monthly Retainer Rate</td>
+                <td>${escReceipt(cur)} ${Number(plan.installment_amount || plan.total_amount || 0).toLocaleString()} / month</td>
+              </tr>
+              <tr>
+                <td>Total Retainer Cycles Cleared</td>
+                <td>${(plan.payments || []).length} Cycle${(plan.payments || []).length === 1 ? '' : 's'}</td>
+              </tr>`
+        }
+        ${
+          plan.next_due_date && remaining > 0
+            ? `<tr><td>Next Scheduled Due Date</td><td>${escReceipt(plan.next_due_date)}</td></tr>`
+            : ''
+        }
+      </tbody>
+    </table>
+
+    ${
+      record.notes
+        ? `<div class="notes"><strong>Settlement Notes:</strong> ${escReceipt(record.notes)}</div>`
+        : ''
+    }
+
+    <div class="sig-row">
+      <div>
+        <div class="sig-line"></div>
+        <div class="sig-name">Dulanja Abeysinghe</div>
+        <div class="sig-role">Founder · Monolith LK</div>
+      </div>
+      <div>
+        <div class="sig-line"></div>
+        <div class="sig-name">Remashi Diyana</div>
+        <div class="sig-role">Co-Founder · Monolith LK</div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Official Electronically Verified Receipt · Monolith LK · Kurunegala, Sri Lanka
+    </div>
+  </div>
+</body>
+</html>`;
+};
+
+export const downloadPaymentReceiptHtml = (
+  plan: ProjectPaymentPlan,
+  record: PaymentRecord
+): void => {
+  const html = generatePaymentReceiptHtml(plan, record);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const shortId = record.id.replace(/[^a-zA-Z0-9]/g, '').slice(-5).toUpperCase() || '001';
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `RCP_${record.payment_date || 'MonolithLK'}_${shortId}.html`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+export const printPaymentReceiptPdf = (
+  plan: ProjectPaymentPlan,
+  record: PaymentRecord
+): void => {
+  const html = generatePaymentReceiptHtml(plan, record);
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  iframe.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(iframe);
+
+  const iframeDoc = iframe.contentWindow?.document;
+  if (!iframeDoc || !iframe.contentWindow) {
+    document.body.removeChild(iframe);
+    downloadPaymentReceiptHtml(plan, record);
+    return;
+  }
+
+  iframeDoc.open();
+  iframeDoc.write(html);
   iframeDoc.close();
 
   const triggerPrint = () => {

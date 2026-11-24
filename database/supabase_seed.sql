@@ -82,6 +82,13 @@ CREATE TABLE IF NOT EXISTS public.payment_records (
 ALTER TABLE IF EXISTS public.documents_billing ADD COLUMN IF NOT EXISTS payment_plan_id UUID REFERENCES public.project_payment_plans(id) ON DELETE SET NULL;
 ALTER TABLE IF EXISTS public.documents_billing ADD COLUMN IF NOT EXISTS billing_scope TEXT DEFAULT 'separate';
 
+ALTER TABLE IF EXISTS public.projects ADD COLUMN IF NOT EXISTS production_url TEXT;
+ALTER TABLE IF EXISTS public.projects ADD COLUMN IF NOT EXISTS figma_url TEXT;
+ALTER TABLE IF EXISTS public.projects ADD COLUMN IF NOT EXISTS api_docs_url TEXT;
+ALTER TABLE IF EXISTS public.projects ADD COLUMN IF NOT EXISTS domain_renewal_date DATE;
+ALTER TABLE IF EXISTS public.projects ADD COLUMN IF NOT EXISTS server_expiry_date DATE;
+ALTER TABLE IF EXISTS public.projects ADD COLUMN IF NOT EXISTS vault_notes TEXT;
+
 -- 1. Seed Auth Accounts & Profiles (Founder Admin + 3 Enterprise Clients)
 DO $$
 DECLARE

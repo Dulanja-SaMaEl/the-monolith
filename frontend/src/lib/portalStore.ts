@@ -55,6 +55,12 @@ export interface PortalProject {
   status: 'discovery' | 'architecture' | 'in_progress' | 'qa_testing' | 'deployed' | 'maintenance';
   progress_percentage: number;
   staging_url?: string;
+  production_url?: string;
+  figma_url?: string;
+  api_docs_url?: string;
+  domain_renewal_date?: string;
+  server_expiry_date?: string;
+  vault_notes?: string;
   repository_or_demo_url?: string;
   target_launch_date?: string;
   summary: string;
@@ -303,6 +309,12 @@ const initialProjects: PortalProject[] = [
     status: 'in_progress',
     progress_percentage: 85,
     staging_url: 'https://staging.shadowtopup.com',
+    production_url: 'https://shadowtopup.com',
+    figma_url: 'https://figma.com/@monolithlk',
+    api_docs_url: 'https://docs.shadowtopup.com/api',
+    domain_renewal_date: '2027-09-15',
+    server_expiry_date: '2026-12-15',
+    vault_notes: 'Cloudflare DNS + Singapore NVMe Cloud Node · Managed by Monolith LK SLA.',
     repository_or_demo_url: 'https://github.com/Dulanja-SaMaEl',
     target_launch_date: '2026-12-15',
     summary: 'Automated digital gaming currency fulfillment platform connecting Next.js 14 and Laravel microservices with sub-second dispatching.',

@@ -66,6 +66,12 @@ const mapProjectRow = (row: any): PortalProject => ({
   status: row.status,
   progress_percentage: Number(row.progress_percentage ?? 0),
   staging_url: row.staging_url,
+  production_url: row.production_url || undefined,
+  figma_url: row.figma_url || undefined,
+  api_docs_url: row.api_docs_url || undefined,
+  domain_renewal_date: row.domain_renewal_date || undefined,
+  server_expiry_date: row.server_expiry_date || undefined,
+  vault_notes: row.vault_notes || undefined,
   repository_or_demo_url: row.repository_or_demo_url,
   target_launch_date: row.target_launch_date,
   summary: row.summary || '',
@@ -401,6 +407,13 @@ export const portalApi = {
     category: string;
     status: PortalProject['status'];
     progress_percentage: number;
+    staging_url?: string;
+    production_url?: string;
+    figma_url?: string;
+    api_docs_url?: string;
+    domain_renewal_date?: string;
+    server_expiry_date?: string;
+    vault_notes?: string;
     target_launch_date?: string;
     summary: string;
     milestones: { id?: string; title: string; is_completed: boolean }[];

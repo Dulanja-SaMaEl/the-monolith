@@ -5,8 +5,14 @@ import {
   ProjectPaymentPlan,
   PaymentRecord,
   BillingType,
+  BillingDocument,
 } from '../../../lib/portalStore';
 import { portalApi } from '../../../lib/portalApi';
+import {
+  downloadBillingVoucherHtml,
+  printBillingVoucherPdf,
+  printPaymentReceiptPdf,
+} from '../../../lib/invoiceDownloader';
 
 interface AdminPaymentsPanelProps {
   users: UserProfile[];
@@ -94,6 +100,8 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
 
   // Edit Existing Payment Record State
   const [editingRecord, setEditingRecord] = useState<PaymentRecord | null>(null);
+  const [generatedInvoiceDoc, setGeneratedInvoiceDoc] = useState<BillingDocument | null>(null);
+  const [generatingInvoiceForId, setGeneratingInvoiceForId] = useState<string | null>(null);
 
   const clientProjects = useMemo(
     () => (clientId ? projects.filter((p) => p.client_id === clientId) : []),
@@ -328,6 +336,88 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
       showAlert('✓ Payment record removed and balances recalculated.');
     } catch (err: any) {
       showAlert(`✕ Error deleting payment record: ${err.message}`);
+    }
+  };
+
+  // One-click Auto-Generate Monthly / Cycle Invoice linked directly to this package
+  const handleGenerateCycleInvoice = async (plan: ProjectPaymentPlan) => {
+    const client = users.find((u) => u.id === plan.client_id);
+    const payments = plan.payments || [];
+    const paidSoFar = payments.reduce((s, r) => s + Number(r.amount || 0), 0);
+    const remaining = Math.max(0, Number(plan.total_amount || 0) - paidSoFar);
+
+    const amount =
+      plan.billing_type === 'monthly'
+        ? Number(plan.installment_amount || plan.total_amount || 0)
+        : plan.billing_type === 'installment'
+        ? Math.min(remaining || Number(plan.installment_amount || 0), Number(plan.installment_amount || remaining))
+        : remaining || Number(plan.total_amount || 0);
+
+    if (amount <= 0) {
+      showAlert('This package is already fully settled.');
+      return;
+    }
+
+    const monthLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const cycleDesc =
+      plan.billing_type === 'monthly'
+        ? `${plan.package_name} — Monthly Retainer (${monthLabel})`
+        : plan.billing_type === 'installment'
+        ? `${plan.package_name} — Installment #${payments.length + 1} of ${plan.total_months} (${monthLabel})`
+        : `${plan.package_name} — Project Balance Settlement`;
+
+    const dueDate =
+      plan.next_due_date ||
+      (() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 14);
+        return d.toISOString().split('T')[0];
+      })();
+
+    setGeneratingInvoiceForId(plan.id);
+    try {
+      const { document: created } = await portalApi.createBillingDocument({
+        type: 'invoice',
+        client_id: plan.client_id,
+        client_name: client?.company_name || plan.client_name || client?.full_name || 'Client',
+        client_contact_name: client?.full_name,
+        client_email: client?.email,
+        client_phone: client?.phone,
+        project_id: plan.project_id,
+        payment_plan_id: plan.id,
+        billing_scope: 'project_cover',
+        project_title: plan.project_title || plan.package_name,
+        status: 'sent',
+        currency: plan.currency || 'LKR',
+        line_items: [
+          {
+            id: `li-${Date.now()}`,
+            description: cycleDesc,
+            quantity: 1,
+            unit_price: amount,
+            total: amount,
+          },
+        ],
+        subtotal: amount,
+        tax: 0,
+        total: amount,
+        due_date: dueDate,
+        notes: `Linked to ${plan.package_name}. Marking this invoice PAID automatically updates the client's project payment progress.`,
+      });
+
+      setGeneratedInvoiceDoc({
+        ...created,
+        client_name: created.client_name || client?.company_name || plan.client_name || 'Client',
+        client_contact_name: created.client_contact_name || client?.full_name,
+        client_email: created.client_email || client?.email,
+        client_phone: created.client_phone || client?.phone,
+      });
+      await onRefresh();
+      showAlert(`✓ Auto-generated ${created.document_number} (${plan.currency} ${amount.toLocaleString()}) and dispatched to Client Portal.`);
+    } catch (err: any) {
+      showAlert(`✕ Error generating cycle invoice: ${err.message}`);
+    } finally {
+      setGeneratingInvoiceForId(null);
     }
   };
 
@@ -577,6 +667,44 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
         </form>
       </div>
 
+      {/* Instant Banner for Auto-Generated Cycle Invoice */}
+      {generatedInvoiceDoc && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50 border border-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+          <div>
+            <strong className="text-emerald-950 uppercase block">
+              ✓ Auto-Generated Invoice Ready: {generatedInvoiceDoc.document_number}
+            </strong>
+            <span className="text-emerald-800">
+              {generatedInvoiceDoc.client_name} · {generatedInvoiceDoc.currency}{' '}
+              {generatedInvoiceDoc.total.toLocaleString()} (Linked to Project Cover-Up)
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => downloadBillingVoucherHtml(generatedInvoiceDoc)}
+              className="px-3 py-1.5 rounded-lg bg-white border border-emerald-700 text-emerald-900 hover:bg-emerald-700 hover:text-white font-bold uppercase transition-colors"
+            >
+              ↓ Download
+            </button>
+            <button
+              type="button"
+              onClick={() => printBillingVoucherPdf(generatedInvoiceDoc)}
+              className="px-3 py-1.5 rounded-lg bg-black text-white hover:bg-median-taupe font-bold uppercase transition-colors"
+            >
+              Save PDF ↗
+            </button>
+            <button
+              type="button"
+              onClick={() => setGeneratedInvoiceDoc(null)}
+              className="px-2 py-1 text-emerald-800 hover:text-black font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Filters & Payment Plans List */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -682,6 +810,22 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      {(plan.billing_type === 'monthly' || remaining > 0) && plan.status !== 'completed' && (
+                        <button
+                          type="button"
+                          disabled={generatingInvoiceForId === plan.id}
+                          onClick={() => handleGenerateCycleInvoice(plan)}
+                          className="px-3.5 py-1.5 rounded-xl bg-black text-white hover:bg-median-taupe text-[11px] font-mono font-bold uppercase transition-colors disabled:opacity-50"
+                        >
+                          {generatingInvoiceForId === plan.id
+                            ? 'Generating...'
+                            : plan.billing_type === 'monthly'
+                            ? '⚡ Generate Month Invoice'
+                            : plan.billing_type === 'installment'
+                            ? '⚡ Generate Installment Inv'
+                            : '⚡ Generate Balance Inv'}
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => openRecordPayment(plan)}
@@ -1086,7 +1230,15 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
                                   </div>
                                   {rec.notes && <div className="text-[11px] text-median-taupe/80">{rec.notes}</div>}
                                 </div>
-                                <div className="flex items-center gap-1.5 shrink-0">
+                                <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => printPaymentReceiptPdf(plan, rec)}
+                                    title="Print / Save Official Monolith LK Payment Receipt PDF"
+                                    className="px-2.5 py-1 rounded-lg bg-black text-white hover:bg-median-taupe text-[10px] font-bold uppercase transition-colors"
+                                  >
+                                    Receipt PDF ↗
+                                  </button>
                                   <button
                                     type="button"
                                     onClick={() => setEditingRecord({ ...rec })}

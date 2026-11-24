@@ -18,6 +18,8 @@ import {
 import { portalApi } from '../../../lib/portalApi';
 import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
 import { AdminPaymentsPanel } from './AdminPaymentsPanel';
+import { AdminCashflowHud } from './AdminCashflowHud';
+import { usePwaInstall } from '../../../lib/usePwaInstall';
 
 interface AdminPortalProps {
   navigate: (route: string) => void;
@@ -97,6 +99,7 @@ const AdminSkeletonList: React.FC<{ count?: number }> = ({ count = 3 }) => (
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const { user, logout, switchDemoRole, isLiveAuth } = useAuth();
+  const { canInstall, promptInstall } = usePwaInstall();
 
   // Active Admin View
   const [activeTab, setActiveTab] = useState<
@@ -523,6 +526,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
         progress_percentage: editingProject.progress_percentage,
         target_launch_date: editingProject.target_launch_date,
         staging_url: editingProject.staging_url,
+        production_url: editingProject.production_url,
+        figma_url: editingProject.figma_url,
+        api_docs_url: editingProject.api_docs_url,
+        domain_renewal_date: editingProject.domain_renewal_date,
+        server_expiry_date: editingProject.server_expiry_date,
+        vault_notes: editingProject.vault_notes,
         summary: editingProject.summary,
       });
       setProjects((prev) => prev.map((p) => (p.id === editingProject.id ? editingProject : p)));
@@ -758,6 +767,76 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
     }
   };
 
+  // One-Click Convert Approved/Sent Quotation -> Invoice (preserves all line items & project link)
+  const handleConvertQuotationToInvoice = async (quo: BillingDocument) => {
+    const scopeChoice = window.confirm(
+      `Convert Quotation ${quo.document_number} (${quo.currency || 'LKR'} ${quo.total.toLocaleString()}) into an Invoice?\n\nPress OK to count it toward the Project Payment Cover-Up (or Cancel to issue it as a Separate / Standalone Invoice? Use the next confirmation to proceed).`
+    );
+    const chosenScope: BillingScope = scopeChoice ? 'project_cover' : 'separate';
+    if (
+      !scopeChoice &&
+      !window.confirm(
+        `Create ${quo.document_number} as a SEPARATE / STANDALONE Invoice? (Cancel to abort conversion)`
+      )
+    ) {
+      return;
+    }
+
+    const enriched = enrichBillingDoc(quo);
+    const matchedPlan =
+      chosenScope === 'project_cover'
+        ? paymentPlans.find(
+            (pl) =>
+              pl.id === quo.payment_plan_id ||
+              (quo.project_id && pl.project_id === quo.project_id && pl.client_id === quo.client_id)
+          )
+        : undefined;
+
+    try {
+      const dueDate = (() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 14);
+        return d.toISOString().split('T')[0];
+      })();
+
+      const { document: createdInv } = await portalApi.createBillingDocument({
+        type: 'invoice',
+        client_id: quo.client_id,
+        client_name: enriched.client_name,
+        client_contact_name: enriched.client_contact_name,
+        client_email: enriched.client_email,
+        client_phone: enriched.client_phone,
+        project_id: quo.project_id || matchedPlan?.project_id,
+        payment_plan_id: chosenScope === 'project_cover' ? matchedPlan?.id || quo.payment_plan_id : undefined,
+        billing_scope: chosenScope,
+        project_title: quo.project_title || 'Converted Project Deliverable',
+        status: 'sent',
+        currency: quo.currency || 'LKR',
+        line_items: quo.line_items,
+        subtotal: quo.subtotal,
+        tax: quo.tax,
+        total: quo.total,
+        due_date: dueDate,
+        notes: `Converted from Quotation ${quo.document_number}. ${quo.notes || ''}`.trim(),
+      });
+
+      if (quo.status !== 'approved' && quo.status !== 'paid') {
+        await portalApi.updateBillingStatus(quo.id, 'approved');
+      }
+
+      const finalInv = enrichBillingDoc(createdInv);
+      setLastCreatedDoc(finalInv);
+      await refreshData();
+      showAlert(
+        `✓ Converted ${quo.document_number} → Invoice ${finalInv.document_number} (${
+          chosenScope === 'project_cover' ? 'Project Cover-Up' : 'Separate Charge'
+        }).`
+      );
+    } catch (err: any) {
+      showAlert(`✕ Error converting quotation: ${err.message}`);
+    }
+  };
+
   // 5. Submit Customer Review
   const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -952,7 +1031,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {canInstall && (
+              <button
+                type="button"
+                onClick={promptInstall}
+                className="px-3 py-1 rounded-full border border-median-taupe bg-median-taupe/10 hover:bg-median-taupe hover:text-white text-[10px] font-bold uppercase text-black transition-colors"
+              >
+                + Install App
+              </button>
+            )}
             <span className="px-3 py-1 rounded-full border border-median-taupe/30 bg-median-taupe/5 text-[10px] font-mono text-median-taupe">
               {isSyncing ? 'Syncing DB...' : isLiveDb ? 'Connected: Supabase + Render' : 'Offline Mode'}
             </span>
@@ -1016,6 +1104,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                 </div>
               ))}
             </div>
+
+            {/* Cashflow Forecast & Receivables HUD */}
+            <AdminCashflowHud
+              paymentPlans={paymentPlans}
+              billingDocs={billingDocs}
+              onOpenPayments={() => setActiveTab('payments')}
+              onOpenBilling={() => setActiveTab('billing')}
+            />
 
             {/* Quick Action Shortcuts */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -2345,17 +2441,95 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
-                          Staging / Demo URL
-                        </label>
-                        <input
-                          type="url"
-                          value={editingProject.staging_url || ''}
-                          onChange={(e) => setEditingProject({ ...editingProject, staging_url: e.target.value })}
-                          placeholder="https://staging.monolith.lk/..."
-                          className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
-                        />
+                      {/* Project Deliverables & Infrastructure Vault Fields */}
+                      <div className="pt-3 border-t border-median-taupe/20 space-y-3">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-black">
+                          Project Deliverables &amp; Infrastructure Vault (Visible in Client Portal)
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                              Production Live URL
+                            </label>
+                            <input
+                              type="url"
+                              value={editingProject.production_url || ''}
+                              onChange={(e) => setEditingProject({ ...editingProject, production_url: e.target.value })}
+                              placeholder="https://client-app.lk"
+                              className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                              Staging / Demo URL
+                            </label>
+                            <input
+                              type="url"
+                              value={editingProject.staging_url || ''}
+                              onChange={(e) => setEditingProject({ ...editingProject, staging_url: e.target.value })}
+                              placeholder="https://staging.monolith.lk/..."
+                              className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                              Figma / Design System Link
+                            </label>
+                            <input
+                              type="url"
+                              value={editingProject.figma_url || ''}
+                              onChange={(e) => setEditingProject({ ...editingProject, figma_url: e.target.value })}
+                              placeholder="https://figma.com/file/..."
+                              className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                              API Docs / Technical Guide URL
+                            </label>
+                            <input
+                              type="url"
+                              value={editingProject.api_docs_url || ''}
+                              onChange={(e) => setEditingProject({ ...editingProject, api_docs_url: e.target.value })}
+                              placeholder="https://docs.monolith.lk/..."
+                              className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                              Domain Renewal Date
+                            </label>
+                            <input
+                              type="date"
+                              value={editingProject.domain_renewal_date || ''}
+                              onChange={(e) => setEditingProject({ ...editingProject, domain_renewal_date: e.target.value })}
+                              className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                              Server / Cloud Expiry Date
+                            </label>
+                            <input
+                              type="date"
+                              value={editingProject.server_expiry_date || ''}
+                              onChange={(e) => setEditingProject({ ...editingProject, server_expiry_date: e.target.value })}
+                              className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-median-taupe mb-1">
+                            Managed Infrastructure &amp; Vault Notes
+                          </label>
+                          <input
+                            type="text"
+                            value={editingProject.vault_notes || ''}
+                            onChange={(e) => setEditingProject({ ...editingProject, vault_notes: e.target.value })}
+                            placeholder="e.g. Cloudflare DNS + Singapore VPS Node · Backups daily @ 02:00 UTC"
+                            className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
+                          />
+                        </div>
                       </div>
 
                       <div className="flex justify-end gap-2 pt-2">
@@ -2893,6 +3067,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                         >
                           Mark Approved
                         </button>
+                        {doc.type === 'quotation' && (
+                          <button
+                            type="button"
+                            onClick={() => handleConvertQuotationToInvoice(doc)}
+                            title="Convert this Quotation into an Invoice in one click"
+                            className="px-3 py-1 rounded bg-black text-white text-[10px] font-mono font-bold hover:bg-median-taupe transition-colors"
+                          >
+                            Convert → Invoice
+                          </button>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap gap-1.5">
