@@ -17,13 +17,15 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
       return;
     }
 
-    // Fast counter up to 100
-    const duration = 800; // 0.8 seconds
-    const intervalTime = 20;
-    const step = 100 / (duration / intervalTime);
+    const duration = 680; // Crisp, snappy GPU-driven counter
+    let startTime: number | null = null;
+    let rafId: number | null = null;
+    let cancelled = false;
 
     const markDoneEarlyOnScroll = () => {
       if ((window.scrollY || window.pageYOffset) > 5) {
+        cancelled = true;
+        if (rafId) cancelAnimationFrame(rafId);
         setPercent(100);
         setIsExiting(true);
         (window as unknown as { __median_preloader_done?: boolean }).__median_preloader_done = true;
@@ -32,45 +34,65 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
     };
     window.addEventListener('scroll', markDoneEarlyOnScroll, { passive: true });
 
-    const timer = setInterval(() => {
-      setPercent((prev) => {
-        const next = prev + step;
-        if (next >= 100) {
-          clearInterval(timer);
-          return 100;
-        }
-        return Math.floor(next);
-      });
-    }, intervalTime);
+    let lastShown = -1;
+    const step = (timestamp: number) => {
+      if (cancelled) return;
+      if (startTime === null) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out cubic for silky counter momentum
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const nextVal = Math.min(100, Math.round(eased * 100));
+
+      if (nextVal !== lastShown) {
+        lastShown = nextVal;
+        setPercent(nextVal);
+      }
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(step);
+      }
+    };
+
+    rafId = requestAnimationFrame(step);
 
     return () => {
-      clearInterval(timer);
+      cancelled = true;
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', markDoneEarlyOnScroll);
     };
-  }, [isHidden]);
+  }, [isHidden, onComplete]);
 
   useEffect(() => {
     if (percent === 100 && !isHidden) {
-      const exitTimer = setTimeout(() => {
-        setIsExiting(true);
-        // Start revealing hero content right as the preloader curtain starts sliding up
-        (window as unknown as { __median_preloader_done?: boolean }).__median_preloader_done = true;
-        window.dispatchEvent(new CustomEvent('median_preloader_done'));
+      let revealTimer: number | null = null;
+      let hideTimer: number | null = null;
 
-        const hideTimer = setTimeout(() => {
+      const exitTimer = window.setTimeout(() => {
+        setIsExiting(true);
+        // Fire hero reveal slightly into the curtain lift so GPU never battles both simultaneously
+        revealTimer = window.setTimeout(() => {
+          (window as unknown as { __median_preloader_done?: boolean }).__median_preloader_done = true;
+          window.dispatchEvent(new CustomEvent('median_preloader_done'));
+        }, 120);
+
+        hideTimer = window.setTimeout(() => {
           setIsHidden(true);
           sessionStorage.setItem('median_preloader_seen', 'true');
           if (onComplete) onComplete();
-        }, 700);
-        return () => clearTimeout(hideTimer);
-      }, 250);
-      return () => clearTimeout(exitTimer);
+        }, 620);
+      }, 140);
+
+      return () => {
+        window.clearTimeout(exitTimer);
+        if (revealTimer) window.clearTimeout(revealTimer);
+        if (hideTimer) window.clearTimeout(hideTimer);
+      };
     }
   }, [percent, isHidden, onComplete]);
 
   if (isHidden) return null;
 
-  // Format as 3 digits
   const formatted = String(percent).padStart(3, '0');
   const d1 = formatted[0];
   const d2 = formatted[1];
@@ -78,9 +100,10 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[9990] bg-median-taupe text-white flex flex-col justify-between p-8 md:p-16 transition-transform duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] select-none ${
+      className={`fixed inset-0 z-[9990] bg-median-taupe text-white flex flex-col justify-between p-6 sm:p-8 md:p-16 transition-transform duration-600 ease-[cubic-bezier(0.85,0,0.15,1)] will-change-transform select-none ${
         isExiting ? '-translate-y-full' : 'translate-y-0'
       }`}
+      style={{ backfaceVisibility: 'hidden', transitionDuration: '600ms' }}
     >
       {/* Background Architectural Grid Lines */}
       <div className="absolute inset-0 pointer-events-none flex justify-between px-6 md:px-16 overflow-hidden opacity-25">
@@ -100,41 +123,38 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
           <span className="w-2 h-2 rounded-full bg-white animate-ping" />
           <span>MONOLITH LK</span>
         </div>
-        <div className="hidden sm:block">HAUTE EDITORIAL ARCHITECTURE</div>
+        <div className="hidden sm:block">HAUTE EDITORIAL ENGINEERING</div>
         <div>2024–2026 EDITION</div>
       </div>
 
       {/* Center Big Rolling Numbers */}
-      <div className="relative z-10 flex items-baseline justify-center font-oswald text-7xl sm:text-9xl md:text-[14rem] leading-none tracking-tight">
-        {/* Rolling column 1 */}
+      <div className="relative z-10 flex items-baseline justify-center font-oswald text-7xl sm:text-9xl md:text-[14rem] leading-none tracking-tight tabular-nums">
         <div className="relative h-[1em] overflow-hidden inline-flex">
-          <span className="transition-transform duration-200">{d1}</span>
+          <span>{d1}</span>
         </div>
-        {/* Rolling column 2 */}
         <div className="relative h-[1em] overflow-hidden inline-flex">
-          <span className="transition-transform duration-200">{d2}</span>
+          <span>{d2}</span>
         </div>
-        {/* Rolling column 3 */}
         <div className="relative h-[1em] overflow-hidden inline-flex">
-          <span className="transition-transform duration-200">{d3}</span>
+          <span>{d3}</span>
         </div>
         <span className="text-3xl sm:text-5xl md:text-7xl font-light ml-2 text-white/70">
           %
         </span>
       </div>
 
-      {/* Bottom Status Bar */}
+      {/* Bottom Status Bar (Pure GPU scaleX bar instead of width layout reflow!) */}
       <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center text-xs tracking-wider text-white/80 gap-3 border-t border-white/20 pt-4">
         <div>
-          <span>CREATIVE DIRECTION & E-COMMERCE</span>
+          <span>SOFTWARE ENGINEERING &amp; DIGITAL SYSTEMS</span>
         </div>
         <div className="w-48 bg-white/20 h-1 rounded-full overflow-hidden">
           <div
-            className="bg-white h-full transition-all duration-150 ease-out"
-            style={{ width: `${percent}%` }}
+            className="bg-white h-full w-full origin-left will-change-transform"
+            style={{ transform: `scaleX(${percent / 100})` }}
           />
         </div>
-        <div>LOADING ASSETS & MOTION TOKENS</div>
+        <div>LOADING ASSETS &amp; MOTION TOKENS</div>
       </div>
     </div>
   );

@@ -118,7 +118,6 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLElement | null>(null);
-  const animRef = useRef<Animation | null>(null);
   const hasRevealedOnceRef = useRef(false);
   const isVisibleRef = useRef(false);
 
@@ -201,20 +200,17 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   };
 
   const getInitialFilter = () => {
-    if (variant === 'blur-focus') return 'blur(16px)';
-    if (variant === 'curtain-expand' || variant === 'card-lift') return 'blur(6px)';
+    if (variant === 'blur-focus') return 'blur(6px)';
     return undefined;
   };
 
   const getActiveFilter = () => {
-    if (variant === 'blur-focus' || variant === 'curtain-expand' || variant === 'card-lift') {
-      return 'blur(0px)';
-    }
+    if (variant === 'blur-focus') return 'blur(0px)';
     return undefined;
   };
 
   const getInitialClipPath = () => {
-    if (variant === 'curtain-expand') return 'inset(18% 14% 18% 14% round 24px)';
+    if (variant === 'curtain-expand') return 'inset(12% 8% 12% 8% round 20px)';
     return undefined;
   };
 
@@ -223,59 +219,13 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
     return undefined;
   };
 
-  const appliedDelay = isVisible ? Math.min(delay, 750) : 0;
-  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
-  const activeDuration = isVisible ? (isDesktop ? Math.round(duration * 1.12) : duration) : 320;
+  const appliedDelay = isVisible ? Math.min(delay, 600) : 0;
+  const activeDuration = isVisible ? duration : 280;
 
   const easing =
     variant === 'counter-pop' || variant === 'badge-drop' || variant === 'zoom-rotate'
       ? 'cubic-bezier(0.34, 1.56, 0.64, 1)'
       : 'cubic-bezier(0.22, 1, 0.36, 1)';
-
-  // Drive explicit Web Animations API keyframes whenever visibility changes so PC browsers
-  // (including high-refresh monitors and reduced-motion OS settings) NEVER skip a frame.
-  useEffect(() => {
-    const innerEl = innerRef.current;
-    if (!innerEl || typeof innerEl.animate !== 'function') return;
-
-    if (isVisible) {
-      animRef.current?.cancel();
-      const fromFrame: Keyframe = {
-        opacity: 0,
-        transform: getInitialTransform(),
-      };
-      const toFrame: Keyframe = {
-        opacity: 1,
-        transform: getActiveTransform(),
-      };
-
-      const initFilter = getInitialFilter();
-      const actFilter = getActiveFilter();
-      if (initFilter && actFilter) {
-        fromFrame.filter = initFilter;
-        toFrame.filter = actFilter;
-      }
-
-      const initClip = getInitialClipPath();
-      const actClip = getActiveClipPath();
-      if (initClip && actClip) {
-        fromFrame.clipPath = initClip;
-        toFrame.clipPath = actClip;
-      }
-
-      animRef.current = innerEl.animate([fromFrame, toFrame], {
-        duration: activeDuration,
-        delay: appliedDelay,
-        easing,
-        fill: 'both',
-      });
-    } else {
-      if (animRef.current) {
-        animRef.current.cancel();
-        animRef.current = null;
-      }
-    }
-  }, [isVisible, variant]);
 
   useEffect(() => {
     const el = wrapperRef.current;
@@ -392,11 +342,21 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
     };
   }, [once]);
 
+  const hasFilter = variant === 'blur-focus';
+  const hasClip = variant === 'curtain-expand';
+
+  const transitionParts = [
+    `opacity ${activeDuration}ms ${easing} ${appliedDelay}ms`,
+    `transform ${activeDuration}ms ${easing} ${appliedDelay}ms`,
+    ...(hasFilter ? [`filter ${activeDuration}ms ease-out ${appliedDelay}ms`] : []),
+    ...(hasClip ? [`clip-path ${activeDuration}ms ${easing} ${appliedDelay}ms`] : []),
+  ];
+
   const transitionStyles: React.CSSProperties = {
     opacity: isVisible ? 1 : 0,
     transform: isVisible ? getActiveTransform() : getInitialTransform(),
-    filter: isVisible ? getActiveFilter() : getInitialFilter(),
-    clipPath: isVisible ? getActiveClipPath() : getInitialClipPath(),
+    ...(hasFilter ? { filter: isVisible ? getActiveFilter() : getInitialFilter() } : {}),
+    ...(hasClip ? { clipPath: isVisible ? getActiveClipPath() : getInitialClipPath() } : {}),
     transformOrigin:
       variant === 'line-wipe'
         ? 'left center'
@@ -405,8 +365,9 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
         : variant === 'card-flip-right'
         ? 'right center'
         : 'center center',
-    transition: `opacity ${activeDuration}ms ${easing} ${appliedDelay}ms, transform ${activeDuration}ms ${easing} ${appliedDelay}ms, filter ${activeDuration}ms ease-out ${appliedDelay}ms, clip-path ${activeDuration}ms ${easing} ${appliedDelay}ms`,
+    transition: transitionParts.join(', '),
     willChange: isVisible ? 'auto' : 'opacity, transform',
+    backfaceVisibility: 'hidden',
     ...style,
   };
 

@@ -94,9 +94,9 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
       {/* ================= HERO SECTION ================= */}
       <section id="hero" className="relative min-h-[88svh] sm:min-h-[92vh] flex flex-col justify-center items-center text-center px-4 sm:px-6 pt-28 sm:pt-32 pb-16 sm:pb-20">
-        <ScrollReveal variant="blur-focus" duration={950} className="relative max-w-5xl w-full mx-auto">
+        <ScrollReveal variant="scale-up" duration={680} once className="relative max-w-5xl w-full mx-auto">
           {/* Outer framing box with corner geometric markers */}
-          <div className="relative py-10 sm:py-14 md:py-20 px-4 sm:px-12 border border-median-taupe/20 rounded-2xl bg-white/50 backdrop-blur-[2px]">
+          <div className="relative py-10 sm:py-14 md:py-20 px-4 sm:px-12 border border-median-taupe/20 rounded-2xl bg-white/95">
             {/* 4 Corner Geometric Square Accents */}
             <span className="absolute -top-2.5 -left-2.5 w-5 h-5 border-2 border-median-taupe bg-white shadow-sm" />
             <span className="absolute -top-2.5 -right-2.5 w-5 h-5 border-2 border-median-taupe bg-white shadow-sm" />
@@ -105,19 +105,19 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
             {/* Massive Typographic Headline with Split-Mask Line Revelations */}
             <h1 className="font-oswald text-[2.75rem] sm:text-7xl md:text-9xl font-bold uppercase tracking-tight text-black leading-[0.92] select-none">
-              <ScrollReveal variant="split-mask" delay={160} duration={850}>
+              <ScrollReveal variant="split-mask" delay={80} duration={700} once>
                 <span className="block hover:text-median-taupe transition-colors duration-300">The digital</span>
               </ScrollReveal>
-              <ScrollReveal variant="split-mask" delay={280} duration={850}>
+              <ScrollReveal variant="split-mask" delay={170} duration={700} once>
                 <span className="block hover:text-median-taupe transition-colors duration-300">innovation</span>
               </ScrollReveal>
-              <ScrollReveal variant="split-mask" delay={400} duration={850}>
+              <ScrollReveal variant="split-mask" delay={260} duration={700} once>
                 <span className="block hover:text-median-taupe transition-colors duration-300">studio</span>
               </ScrollReveal>
             </h1>
 
             {/* Action Button with spring scale */}
-            <ScrollReveal variant="counter-pop" delay={520} duration={850}>
+            <ScrollReveal variant="counter-pop" delay={360} duration={700} once>
               <div className="mt-12 flex justify-center">
                 <button
                   onClick={scrollToServices}
