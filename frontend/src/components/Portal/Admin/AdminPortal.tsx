@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import {
   UserProfile,
@@ -100,6 +100,7 @@ const AdminSkeletonList: React.FC<{ count?: number }> = ({ count = 3 }) => (
 export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const { user, logout, switchDemoRole, isLiveAuth } = useAuth();
   const { canInstall, promptInstall } = usePwaInstall();
+  const mainScrollRef = useRef<HTMLElement | null>(null);
 
   // Active Admin View
   const [activeTab, setActiveTab] = useState<
@@ -894,69 +895,70 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-black font-inter selection:bg-median-taupe selection:text-white flex flex-col md:flex-row">
+    <div className="min-h-screen md:h-screen md:overflow-hidden bg-[#FAF8F5] text-black font-inter selection:bg-median-taupe selection:text-white flex flex-col md:flex-row">
       {/* ================= LEFT HAUTE EDITORIAL ADMIN SIDEBAR ================= */}
-      <aside className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-median-taupe/20 p-4 sm:p-6 flex flex-col justify-between shrink-0">
-        <div>
-          {/* Logo & Cluster Badge */}
-          <div className="flex md:block items-center justify-between mb-4 md:mb-8">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center gap-2 focus:outline-none group"
-            >
-              <span className="w-4 h-4 bg-black flex items-center justify-center text-white text-[9px] font-bold">
-                ■
-              </span>
-              <span className="font-oswald text-xl font-bold tracking-[0.2em] text-black uppercase group-hover:text-median-taupe transition-colors">
-                MONOLITH<span className="text-median-taupe ml-1">LK</span>
-              </span>
-            </button>
-            <div className="flex items-center gap-2 text-[10px] font-mono uppercase text-median-taupe/80">
-              <span className={`w-2 h-2 rounded-full animate-pulse ${isLiveDb ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-              <span>{isLiveDb ? 'Live Supabase DB' : 'Offline Mode'}</span>
-            </div>
+      <aside className="w-full md:w-64 md:h-screen bg-white border-b md:border-b-0 md:border-r border-median-taupe/20 p-4 sm:p-5 flex flex-col shrink-0">
+        {/* Logo & Cluster Badge (Always pinned at top) */}
+        <div className="flex md:block items-center justify-between mb-3 md:mb-5 shrink-0">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 focus:outline-none group"
+          >
+            <span className="w-4 h-4 bg-black flex items-center justify-center text-white text-[9px] font-bold">
+              ■
+            </span>
+            <span className="font-oswald text-xl font-bold tracking-[0.2em] text-black uppercase group-hover:text-median-taupe transition-colors">
+              MONOLITH<span className="text-median-taupe ml-1">LK</span>
+            </span>
+          </button>
+          <div className="flex items-center gap-2 text-[10px] font-mono uppercase text-median-taupe/80 md:mt-1">
+            <span className={`w-2 h-2 rounded-full animate-pulse ${isLiveDb ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+            <span>{isLiveDb ? 'Live Supabase DB' : 'Offline Mode'}</span>
           </div>
-
-          {/* Nav List - Horizontal scroll on mobile / vertical stack on desktop */}
-          <nav className="flex md:flex-col gap-1.5 md:space-y-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 no-scrollbar font-oswald text-xs sm:text-sm uppercase tracking-wider">
-            {[
-              { id: 'overview', label: 'Telemetry & HUD', count: null },
-              { id: 'tasks', label: 'Executive Tasks', count: tasks.filter((t) => !t.is_completed).length },
-              { id: 'customers', label: 'Customers Registry', count: users.filter((u) => u.role === 'client').length },
-              { id: 'partners', label: 'Strategic Partners', count: partners.length },
-              { id: 'projects', label: 'Projects & Progress', count: projects.length },
-              { id: 'payments', label: 'Payments & Packages', count: paymentPlans.length },
-              { id: 'billing', label: 'Invoices & Quotations', count: billingDocs.length },
-              { id: 'reviews', label: 'Customer Reviews', count: reviews.length },
-              { id: 'blog', label: 'Editorial & News CMS', count: blogPosts.length },
-              { id: 'requests', label: 'Inquiries & Meetings', count: requests.length + meetings.length + inquiries.length },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`py-2 px-3 md:py-2.5 md:px-3 rounded-xl flex items-center gap-2 md:justify-between transition-all shrink-0 md:shrink whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'bg-black text-white font-bold shadow-sm'
-                    : 'text-median-taupe hover:text-black hover:bg-median-taupe/10 bg-white md:bg-transparent border border-median-taupe/20 md:border-0'
-                }`}
-              >
-                <span>{tab.label}</span>
-                {tab.count !== null && (
-                  <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                      activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-median-taupe/10 text-median-taupe'
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
         </div>
 
+        {/* Nav List - Horizontal scroll on mobile / self-scrolling vertical stack on desktop */}
+        <nav className="flex md:flex-col gap-1.5 md:gap-1 overflow-x-auto md:overflow-x-visible md:overflow-y-auto md:flex-1 md:min-h-0 pb-2 md:pb-2 no-scrollbar font-oswald text-xs sm:text-[13px] uppercase tracking-wider">
+          {[
+            { id: 'overview', label: 'Telemetry & HUD', count: null },
+            { id: 'tasks', label: 'Executive Tasks', count: tasks.filter((t) => !t.is_completed).length },
+            { id: 'customers', label: 'Customers Registry', count: users.filter((u) => u.role === 'client').length },
+            { id: 'partners', label: 'Strategic Partners', count: partners.length },
+            { id: 'projects', label: 'Projects & Progress', count: projects.length },
+            { id: 'payments', label: 'Payments & Packages', count: paymentPlans.length },
+            { id: 'billing', label: 'Invoices & Quotations', count: billingDocs.length },
+            { id: 'reviews', label: 'Customer Reviews', count: reviews.length },
+            { id: 'blog', label: 'Editorial & News CMS', count: blogPosts.length },
+            { id: 'requests', label: 'Inquiries & Meetings', count: requests.length + meetings.length + inquiries.length },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id as any);
+                mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`py-2 px-3 rounded-xl flex items-center gap-2 md:justify-between transition-all shrink-0 whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-black text-white font-bold shadow-sm'
+                  : 'text-median-taupe hover:text-black hover:bg-median-taupe/10 bg-white md:bg-transparent border border-median-taupe/20 md:border-0'
+              }`}
+            >
+              <span>{tab.label}</span>
+              {tab.count !== null && (
+                <span
+                  className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                    activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-median-taupe/10 text-median-taupe'
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+
         {/* Admin Mobile Quick Actions (visible only on mobile) */}
-        <div className="flex md:hidden items-center justify-between gap-2 pt-3 border-t border-median-taupe/15 text-[11px] font-mono">
+        <div className="flex md:hidden items-center justify-between gap-2 pt-3 border-t border-median-taupe/15 text-[11px] font-mono shrink-0">
           <button
             onClick={() => {
               switchDemoRole('client');
@@ -980,9 +982,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
           </button>
         </div>
 
-        {/* Admin Desktop Sidebar Footer Actions (visible md and up) */}
-        <div className="hidden md:block pt-6 border-t border-median-taupe/15 mt-6 space-y-2 text-xs font-mono">
-          <div className="text-median-taupe/80 text-[10px] truncate">
+        {/* Admin Desktop Sidebar Footer Actions (Always pinned at bottom) */}
+        <div className="hidden md:block pt-3 border-t border-median-taupe/15 mt-2 space-y-1.5 text-xs font-mono shrink-0">
+          <div className="text-median-taupe/80 text-[10px] truncate mb-1">
             Architect: <strong>{user?.full_name || 'Dulanja Abeysinghe'}</strong>
           </div>
           <button
@@ -990,19 +992,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               switchDemoRole('client');
               navigate('/portal/client');
             }}
-            className="w-full py-2 px-3 rounded-lg border border-median-taupe/30 hover:border-black text-black text-center transition-colors"
+            className="w-full py-1.5 px-3 rounded-lg border border-median-taupe/30 hover:border-black text-black text-center transition-colors"
           >
             Switch to Client View ↗
           </button>
           <button
             onClick={() => navigate('/')}
-            className="w-full py-2 px-3 rounded-lg border border-median-taupe/30 hover:border-black text-black text-center transition-colors"
+            className="w-full py-1.5 px-3 rounded-lg border border-median-taupe/30 hover:border-black text-black text-center transition-colors"
           >
             View Public Site
           </button>
           <button
             onClick={handleLogout}
-            className="w-full py-2 px-3 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-center transition-colors font-bold"
+            className="w-full py-1.5 px-3 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-center transition-colors font-bold"
           >
             Sign Out
           </button>
@@ -1010,7 +1012,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       </aside>
 
       {/* ================= MAIN EXECUTIVE CONTENT PANE ================= */}
-      <main className="flex-1 p-4 sm:p-6 md:p-10 md:max-h-screen md:overflow-y-auto w-full min-w-0">
+      <main ref={mainScrollRef} className="flex-1 p-4 sm:p-6 lg:p-8 md:h-screen md:overflow-y-auto w-full min-w-0">
         {/* Top Breadcrumb & Notification Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-median-taupe/20">
           <div>
@@ -1080,7 +1082,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* Stat Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
               {[
                 { label: 'Active Enterprise Clients', val: users.filter((u) => u.role === 'client').length, suffix: '+' },
                 { label: 'Live Projects Dispatched', val: projects.length, suffix: '' },
@@ -1093,12 +1095,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               ].map((card, idx) => (
                 <div
                   key={idx}
-                  className="p-6 rounded-2xl bg-white border border-median-taupe/20 shadow-sm"
+                  className="p-5 sm:p-6 rounded-2xl bg-white border border-median-taupe/20 shadow-sm min-w-0"
                 >
                   <span className="text-[10px] font-mono uppercase tracking-wider text-median-taupe font-bold block mb-2">
                     {card.label}
                   </span>
-                  <div className="font-oswald text-4xl sm:text-5xl font-bold text-median-taupe">
+                  <div className="font-oswald text-3xl sm:text-4xl font-bold text-median-taupe truncate">
                     {card.val}{card.suffix}
                   </div>
                 </div>
@@ -1338,9 +1340,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
             </div>
 
             {/* Grid: Add Task (Left) + Active Tasks & Completed Tasks (Right) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
               {/* Add Daily Task Form */}
-              <div className="lg:col-span-5 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-4">
+              <div className="lg:col-span-5 p-6 sm:p-7 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-4 h-fit">
                 <div>
                   <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">
                     Add Daily Sprint Task
@@ -1585,7 +1587,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                                   onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
                                   className="w-full px-3 py-1.5 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-black"
                                 />
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                   <select
                                     value={editingTask.assignee}
                                     onChange={(e) => setEditingTask({ ...editingTask, assignee: e.target.value })}
@@ -1724,9 +1726,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
 
         {/* ================= TAB 3: CUSTOMERS REGISTRY ================= */}
         {activeTab === 'customers' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             {/* Add Customer Form */}
-            <div className="lg:col-span-5 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
+            <div className="lg:col-span-5 p-6 sm:p-7 rounded-2xl bg-white border border-median-taupe/20 shadow-sm h-fit">
               <h3 className="font-oswald text-xl font-bold uppercase text-black mb-1">Add New Customer</h3>
               <p className="text-xs text-median-taupe/80 mb-6">
                 Register an enterprise client. They can log in via `/portal/login` with this email.
@@ -1819,18 +1821,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                         key={c.id}
                         className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-3"
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                          <div>
-                            <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block truncate">
                               {c.company_name}
                             </span>
-                            <h4 className="font-oswald text-lg font-bold uppercase text-black">{c.full_name}</h4>
-                            <div className="text-xs text-median-taupe/80 font-mono">
+                            <h4 className="font-oswald text-lg font-bold uppercase text-black break-words">{c.full_name}</h4>
+                            <div className="text-xs text-median-taupe/80 font-mono break-all">
                               {c.email} {c.phone && `· ${c.phone}`}
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-1.5 shrink-0">
                             <span
                               className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase ${
                                 c.is_blocked
@@ -1947,9 +1949,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
 
         {/* ================= TAB 3: STRATEGIC PARTNERS ================= */}
         {activeTab === 'partners' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             {/* Add Partner Form */}
-            <div className="lg:col-span-5 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
+            <div className="lg:col-span-5 p-6 sm:p-7 rounded-2xl bg-white border border-median-taupe/20 shadow-sm h-fit">
               <h3 className="font-oswald text-xl font-bold uppercase text-black mb-1">Add Strategic Partner</h3>
               <p className="text-xs text-median-taupe/80 mb-6">
                 Publish university, cloud provider, or enterprise ecosystem partner.
@@ -2031,13 +2033,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                         className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-3"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                          <div>
+                          <div className="min-w-0">
                             <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
                               {p.category}
                             </span>
-                            <h4 className="font-oswald text-lg font-bold uppercase text-black">{p.name}</h4>
+                            <h4 className="font-oswald text-lg font-bold uppercase text-black break-words">{p.name}</h4>
                             {p.description && (
-                              <p className="text-xs text-median-taupe/80 font-mono mt-1">{p.description}</p>
+                              <p className="text-xs text-median-taupe/80 font-mono mt-1 break-words">{p.description}</p>
                             )}
                           </div>
                           <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -2663,9 +2665,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
 
         {/* ================= TAB 5: BILLING & INVOICES CREATOR ================= */}
         {activeTab === 'billing' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             {/* Create Quotation / Invoice Form */}
-            <div className="lg:col-span-6 p-5 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
+            <div className="lg:col-span-6 p-5 sm:p-7 rounded-2xl bg-white border border-median-taupe/20 shadow-sm h-fit">
               <h3 className="font-oswald text-xl font-bold uppercase text-black mb-1">
                 Create Quotation / Invoice
               </h3>
@@ -3143,9 +3145,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
 
         {/* ================= TAB 6: CUSTOMER REVIEWS ================= */}
         {activeTab === 'reviews' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             {/* Add Review Form */}
-            <div className="lg:col-span-5 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
+            <div className="lg:col-span-5 p-6 sm:p-7 rounded-2xl bg-white border border-median-taupe/20 shadow-sm h-fit">
               <h3 className="font-oswald text-xl font-bold uppercase text-black mb-1">Add Customer Review</h3>
               <p className="text-xs text-median-taupe/80 mb-6">
                 Publish client testimonials to display on the public website.
@@ -3164,7 +3166,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-bold uppercase text-black mb-1">Client Title</label>
                     <input
@@ -3674,7 +3676,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
 
         {/* ================= TAB 8: INQUIRIES & MEETINGS ================= */}
         {activeTab === 'requests' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             {/* Incoming Project Inquiries */}
             <div className="lg:col-span-6 space-y-4">
               <h3 className="font-oswald text-xl font-bold uppercase text-black">
