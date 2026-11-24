@@ -169,6 +169,42 @@ CREATE TABLE IF NOT EXISTS public.executive_tasks (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 12. Project Payment Plans & Packages (Per-Project Billing Progress: One-Time, Monthly, Installment)
+CREATE TABLE IF NOT EXISTS public.project_payment_plans (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  client_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
+  package_name TEXT NOT NULL,
+  billing_type TEXT CHECK (billing_type IN ('one_time', 'monthly', 'installment')) NOT NULL DEFAULT 'one_time',
+  currency TEXT DEFAULT 'LKR',
+  total_amount NUMERIC(14, 2) NOT NULL DEFAULT 0,
+  installment_amount NUMERIC(14, 2) DEFAULT 0,
+  total_months INTEGER DEFAULT 1,
+  start_date DATE DEFAULT CURRENT_DATE,
+  next_due_date DATE,
+  status TEXT CHECK (status IN ('active', 'completed', 'overdue', 'paused')) DEFAULT 'active',
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 13. Payment Records (Past Payments Ledger linked to Payment Plans & Invoices)
+CREATE TABLE IF NOT EXISTS public.payment_records (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  payment_plan_id UUID REFERENCES public.project_payment_plans(id) ON DELETE CASCADE,
+  client_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
+  invoice_id UUID REFERENCES public.documents_billing(id) ON DELETE SET NULL,
+  amount NUMERIC(14, 2) NOT NULL DEFAULT 0,
+  currency TEXT DEFAULT 'LKR',
+  payment_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  payment_method TEXT DEFAULT 'Bank Transfer / CEFTS',
+  reference_number TEXT,
+  billing_scope TEXT CHECK (billing_scope IN ('project_cover', 'separate')) DEFAULT 'project_cover',
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ====================================================================
 -- SAFE COLUMN MIGRATIONS (Upgrades pre-existing tables cleanly)
 -- ====================================================================
@@ -204,6 +240,8 @@ ALTER TABLE public.project_milestones
 
 ALTER TABLE public.documents_billing
   ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS payment_plan_id UUID REFERENCES public.project_payment_plans(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS billing_scope TEXT DEFAULT 'separate',
   ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'LKR',
   ADD COLUMN IF NOT EXISTS tax NUMERIC(14, 2) DEFAULT 0,
   ADD COLUMN IF NOT EXISTS due_date DATE,
@@ -266,6 +304,8 @@ ALTER TABLE public.customer_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contact_inquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.executive_tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.project_payment_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_records ENABLE ROW LEVEL SECURITY;
 
 -- Helper function: Is Admin?
 CREATE OR REPLACE FUNCTION public.is_admin()
@@ -446,4 +486,26 @@ CREATE POLICY "Anyone can submit contact inquiry"
 DROP POLICY IF EXISTS "Admins manage contact inquiries" ON public.contact_inquiries;
 CREATE POLICY "Admins manage contact inquiries"
   ON public.contact_inquiries FOR ALL
+  USING (public.is_admin());
+
+-- Project Payment Plans Policies
+DROP POLICY IF EXISTS "Clients view own payment plans" ON public.project_payment_plans;
+CREATE POLICY "Clients view own payment plans"
+  ON public.project_payment_plans FOR SELECT
+  USING (client_id = auth.uid() OR public.is_admin());
+
+DROP POLICY IF EXISTS "Admins manage all payment plans" ON public.project_payment_plans;
+CREATE POLICY "Admins manage all payment plans"
+  ON public.project_payment_plans FOR ALL
+  USING (public.is_admin());
+
+-- Payment Records Policies
+DROP POLICY IF EXISTS "Clients view own payment records" ON public.payment_records;
+CREATE POLICY "Clients view own payment records"
+  ON public.payment_records FOR SELECT
+  USING (client_id = auth.uid() OR public.is_admin());
+
+DROP POLICY IF EXISTS "Admins manage all payment records" ON public.payment_records;
+CREATE POLICY "Admins manage all payment records"
+  ON public.payment_records FOR ALL
   USING (public.is_admin());

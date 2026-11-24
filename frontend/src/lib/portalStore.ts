@@ -70,6 +70,46 @@ export interface BillingLineItem {
   total: number;
 }
 
+export type BillingType = 'one_time' | 'monthly' | 'installment';
+export type BillingScope = 'project_cover' | 'separate';
+
+export interface PaymentRecord {
+  id: string;
+  payment_plan_id: string;
+  client_id: string;
+  project_id?: string;
+  invoice_id?: string;
+  amount: number;
+  currency: string;
+  payment_date: string; // YYYY-MM-DD
+  payment_method: string;
+  reference_number?: string;
+  billing_scope: BillingScope;
+  notes?: string;
+  created_at: string;
+}
+
+export interface ProjectPaymentPlan {
+  id: string;
+  client_id: string;
+  client_name?: string;
+  project_id?: string;
+  project_title?: string;
+  project_code?: string;
+  package_name: string;
+  billing_type: BillingType;
+  currency: string;
+  total_amount: number;
+  installment_amount: number;
+  total_months: number; // 1 for one_time, N for installment, 0 for ongoing monthly
+  start_date: string;
+  next_due_date?: string;
+  status: 'active' | 'completed' | 'overdue' | 'paused';
+  notes?: string;
+  payments: PaymentRecord[];
+  created_at: string;
+}
+
 export interface BillingDocument {
   id: string;
   document_number: string;
@@ -79,6 +119,9 @@ export interface BillingDocument {
   client_contact_name?: string;
   client_email?: string;
   client_phone?: string;
+  project_id?: string;
+  payment_plan_id?: string;
+  billing_scope?: BillingScope;
   project_title?: string;
   status: 'draft' | 'sent' | 'approved' | 'paid' | 'overdue';
   currency: string;
@@ -299,7 +342,10 @@ const initialBilling: BillingDocument[] = [
     type: 'invoice',
     client_id: 'user-client-01',
     client_name: 'ShadowTopup Global',
-    project_title: 'ShadowTopup Engine',
+    project_id: 'proj-01',
+    payment_plan_id: 'plan-01',
+    billing_scope: 'project_cover',
+    project_title: 'ShadowTopup Engine (Fintech & Gaming API)',
     status: 'paid',
     currency: 'LKR',
     line_items: [
@@ -319,6 +365,8 @@ const initialBilling: BillingDocument[] = [
     type: 'quotation',
     client_id: 'user-client-01',
     client_name: 'ShadowTopup Global',
+    project_id: 'proj-01',
+    billing_scope: 'separate',
     project_title: 'Phase 03 High-Availability Cloud Cluster',
     status: 'sent',
     currency: 'LKR',
@@ -332,6 +380,129 @@ const initialBilling: BillingDocument[] = [
     due_date: '2026-12-01',
     notes: 'Quotation valid for 30 business days from issue date. Quoted in LKR.',
     created_at: '2026-11-18T14:20:00Z',
+  },
+];
+
+const initialPaymentPlans: ProjectPaymentPlan[] = [
+  {
+    id: 'plan-01',
+    client_id: 'user-client-01',
+    client_name: 'ShadowTopup Global',
+    project_id: 'proj-01',
+    project_title: 'ShadowTopup Engine (Fintech & Gaming API)',
+    project_code: 'PRJ-SHADOW-01',
+    package_name: 'Enterprise Build — 3-Month Split Plan',
+    billing_type: 'installment',
+    currency: 'LKR',
+    total_amount: 3000000,
+    installment_amount: 1000000,
+    total_months: 3,
+    start_date: '2026-09-15',
+    next_due_date: '2026-12-10',
+    status: 'active',
+    notes: '3-stage engineering settlement tied to production milestones.',
+    payments: [
+      {
+        id: 'pay-01',
+        payment_plan_id: 'plan-01',
+        client_id: 'user-client-01',
+        project_id: 'proj-01',
+        invoice_id: 'bill-01',
+        amount: 1850000,
+        currency: 'LKR',
+        payment_date: '2026-11-04',
+        payment_method: 'Corporate Bank Wire (CEFTS)',
+        reference_number: 'INV-2026-104',
+        billing_scope: 'project_cover',
+        notes: 'Phases 1 & 2 engineering settlement cleared.',
+        created_at: '2026-11-04T09:00:00Z',
+      },
+    ],
+    created_at: '2026-09-15T08:00:00Z',
+  },
+  {
+    id: 'plan-02',
+    client_id: 'user-client-01',
+    client_name: 'ShadowTopup Global',
+    project_id: 'proj-01',
+    project_title: 'ShadowTopup Engine (Fintech & Gaming API)',
+    project_code: 'PRJ-SHADOW-01',
+    package_name: 'Managed Cloud & 24/7 SLA Retainer',
+    billing_type: 'monthly',
+    currency: 'LKR',
+    total_amount: 125000,
+    installment_amount: 125000,
+    total_months: 0,
+    start_date: '2026-10-01',
+    next_due_date: '2026-12-01',
+    status: 'active',
+    notes: 'Recurring monthly cloud infrastructure & telemetry maintenance.',
+    payments: [
+      {
+        id: 'pay-02',
+        payment_plan_id: 'plan-02',
+        client_id: 'user-client-01',
+        project_id: 'proj-01',
+        amount: 125000,
+        currency: 'LKR',
+        payment_date: '2026-10-02',
+        payment_method: 'Bank Transfer / CEFTS',
+        reference_number: 'RET-2026-10',
+        billing_scope: 'project_cover',
+        notes: 'October monthly infrastructure retainer.',
+        created_at: '2026-10-02T10:00:00Z',
+      },
+      {
+        id: 'pay-03',
+        payment_plan_id: 'plan-02',
+        client_id: 'user-client-01',
+        project_id: 'proj-01',
+        amount: 125000,
+        currency: 'LKR',
+        payment_date: '2026-11-02',
+        payment_method: 'Bank Transfer / CEFTS',
+        reference_number: 'RET-2026-11',
+        billing_scope: 'project_cover',
+        notes: 'November monthly infrastructure retainer.',
+        created_at: '2026-11-02T10:00:00Z',
+      },
+    ],
+    created_at: '2026-10-01T08:00:00Z',
+  },
+  {
+    id: 'plan-03',
+    client_id: 'user-client-02',
+    client_name: 'Teaching Hospitals Pharmacy OS',
+    project_id: 'proj-02',
+    project_title: 'Clinical Pharmacy OS',
+    project_code: 'PRJ-CLINICAL-02',
+    package_name: 'Turnkey Clinical Deployment (One-Time)',
+    billing_type: 'one_time',
+    currency: 'LKR',
+    total_amount: 950000,
+    installment_amount: 950000,
+    total_months: 1,
+    start_date: '2026-07-10',
+    next_due_date: '2026-11-01',
+    status: 'completed',
+    notes: 'One-time full software license & on-site deployment settled in full.',
+    payments: [
+      {
+        id: 'pay-04',
+        payment_plan_id: 'plan-03',
+        client_id: 'user-client-02',
+        project_id: 'proj-02',
+        amount: 950000,
+        currency: 'LKR',
+        payment_date: '2026-10-20',
+        payment_method: 'Institutional Cheque / Wire',
+        reference_number: 'INV-2026-112',
+        billing_scope: 'project_cover',
+        notes: 'Full lump-sum settlement.',
+        created_at: '2026-10-20T12:00:00Z',
+      },
+    ],
+    created_at: '2026-07-10T09:30:00Z',
   },
 ];
 
@@ -679,10 +850,30 @@ export const portalStore = {
     return newDoc;
   },
   updateBillingStatus: (id: string, status: BillingDocument['status']): void => {
-    const list = portalStore.getBillingDocuments().map((d) =>
-      d.id === id ? { ...d, status } : d
-    );
+    const docs = portalStore.getBillingDocuments();
+    const targetDoc = docs.find((d) => d.id === id);
+    const list = docs.map((d) => (d.id === id ? { ...d, status } : d));
     setStored('billing', list);
+
+    // Auto-record linked project cover payment if marked paid
+    if (status === 'paid' && targetDoc && targetDoc.type === 'invoice' && targetDoc.billing_scope === 'project_cover') {
+      const plans = portalStore.getPaymentPlans();
+      const targetPlan =
+        (targetDoc.payment_plan_id ? plans.find((p) => p.id === targetDoc.payment_plan_id) : undefined) ||
+        (targetDoc.project_id ? plans.find((p) => p.project_id === targetDoc.project_id) : undefined);
+
+      if (targetPlan && !targetPlan.payments.some((r) => r.invoice_id === targetDoc.id)) {
+        portalStore.addPaymentRecord(targetPlan.id, {
+          amount: targetDoc.total,
+          payment_date: new Date().toISOString().split('T')[0],
+          payment_method: 'Invoice Settlement',
+          reference_number: targetDoc.document_number,
+          invoice_id: targetDoc.id,
+          billing_scope: 'project_cover',
+          notes: `Auto-applied from paid invoice ${targetDoc.document_number}`,
+        });
+      }
+    }
   },
   deleteBillingDocument: (id: string): void => {
     const list = portalStore.getBillingDocuments().filter((d) => d.id !== id);
@@ -891,5 +1082,126 @@ export const portalStore = {
   deleteTask: (id: string): void => {
     const list = getStored('tasks', initialTasks).filter((t) => t.id !== id);
     setStored('tasks', list);
+  },
+
+  // Project Payment Plans & Payment Records
+  getPaymentPlans: (clientId?: string): ProjectPaymentPlan[] => {
+    const users = portalStore.getUsers();
+    const projects = portalStore.getProjects();
+    const list = getStored<ProjectPaymentPlan[]>('payment_plans', initialPaymentPlans).map((plan) => {
+      const client = users.find((u) => u.id === plan.client_id);
+      const proj = plan.project_id ? projects.find((p) => p.id === plan.project_id) : undefined;
+      return {
+        ...plan,
+        client_name: plan.client_name || client?.company_name || client?.full_name || 'Enterprise Client',
+        project_title: plan.project_title || proj?.title,
+        project_code: plan.project_code || proj?.code_name,
+        payments: Array.isArray(plan.payments) ? plan.payments : [],
+      };
+    });
+    return clientId ? list.filter((p) => p.client_id === clientId) : list;
+  },
+  createPaymentPlan: (
+    plan: Omit<ProjectPaymentPlan, 'id' | 'payments' | 'created_at'>
+  ): ProjectPaymentPlan => {
+    const list = getStored<ProjectPaymentPlan[]>('payment_plans', initialPaymentPlans);
+    const newPlan: ProjectPaymentPlan = {
+      ...plan,
+      id: `plan-${Date.now()}`,
+      payments: [],
+      created_at: new Date().toISOString(),
+    };
+    setStored('payment_plans', [newPlan, ...list]);
+    return newPlan;
+  },
+  updatePaymentPlan: (id: string, updates: Partial<ProjectPaymentPlan>): ProjectPaymentPlan | null => {
+    const list = getStored<ProjectPaymentPlan[]>('payment_plans', initialPaymentPlans);
+    let updated: ProjectPaymentPlan | null = null;
+    const next = list.map((p) => {
+      if (p.id === id) {
+        updated = { ...p, ...updates };
+        return updated;
+      }
+      return p;
+    });
+    setStored('payment_plans', next);
+    return updated;
+  },
+  deletePaymentPlan: (id: string): void => {
+    const list = getStored<ProjectPaymentPlan[]>('payment_plans', initialPaymentPlans).filter((p) => p.id !== id);
+    setStored('payment_plans', list);
+  },
+  addPaymentRecord: (
+    planId: string,
+    payload: {
+      amount: number;
+      payment_date: string;
+      payment_method: string;
+      reference_number?: string;
+      invoice_id?: string;
+      billing_scope?: BillingScope;
+      notes?: string;
+      advance_due_date?: boolean;
+    }
+  ): PaymentRecord | null => {
+    const list = getStored<ProjectPaymentPlan[]>('payment_plans', initialPaymentPlans);
+    let created: PaymentRecord | null = null;
+    const next = list.map((plan) => {
+      if (plan.id !== planId) return plan;
+      created = {
+        id: `pay-${Date.now()}`,
+        payment_plan_id: plan.id,
+        client_id: plan.client_id,
+        project_id: plan.project_id,
+        invoice_id: payload.invoice_id,
+        amount: Number(payload.amount),
+        currency: plan.currency || 'LKR',
+        payment_date: payload.payment_date || new Date().toISOString().split('T')[0],
+        payment_method: payload.payment_method || 'Bank Transfer / CEFTS',
+        reference_number: payload.reference_number,
+        billing_scope: payload.billing_scope || 'project_cover',
+        notes: payload.notes,
+        created_at: new Date().toISOString(),
+      };
+      const updatedPayments = [created, ...(plan.payments || [])];
+      const totalPaid = updatedPayments.reduce((s, r) => s + Number(r.amount || 0), 0);
+      let nextStatus = plan.status;
+      if (plan.billing_type !== 'monthly' && plan.total_amount > 0 && totalPaid >= plan.total_amount) {
+        nextStatus = 'completed';
+      } else if (plan.status === 'overdue') {
+        nextStatus = 'active';
+      }
+      let nextDueDate = plan.next_due_date;
+      if (payload.advance_due_date && (plan.billing_type === 'monthly' || plan.billing_type === 'installment')) {
+        const d = nextDueDate ? new Date(nextDueDate) : new Date(payload.payment_date || Date.now());
+        d.setMonth(d.getMonth() + 1);
+        nextDueDate = d.toISOString().split('T')[0];
+      }
+      return {
+        ...plan,
+        status: nextStatus,
+        next_due_date: nextDueDate,
+        payments: updatedPayments,
+      };
+    });
+    setStored('payment_plans', next);
+    return created;
+  },
+  updatePaymentRecord: (
+    recordId: string,
+    updates: Partial<Pick<PaymentRecord, 'amount' | 'payment_date' | 'payment_method' | 'reference_number' | 'billing_scope' | 'notes'>>
+  ): void => {
+    const list = getStored<ProjectPaymentPlan[]>('payment_plans', initialPaymentPlans).map((plan) => ({
+      ...plan,
+      payments: (plan.payments || []).map((r) => (r.id === recordId ? { ...r, ...updates } : r)),
+    }));
+    setStored('payment_plans', list);
+  },
+  deletePaymentRecord: (recordId: string): void => {
+    const list = getStored<ProjectPaymentPlan[]>('payment_plans', initialPaymentPlans).map((plan) => ({
+      ...plan,
+      payments: (plan.payments || []).filter((r) => r.id !== recordId),
+    }));
+    setStored('payment_plans', list);
   },
 };

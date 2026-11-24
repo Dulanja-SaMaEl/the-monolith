@@ -31,6 +31,8 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
       type,
       client_id,
       project_id,
+      payment_plan_id,
+      billing_scope,
       currency,
       status,
       line_items,
@@ -65,6 +67,8 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
     const randCode = Math.floor(1000 + Math.random() * 9000);
     const document_number = `${prefix}-${new Date().getFullYear()}-${randCode}`;
 
+    const safeScope = billing_scope === 'project_cover' ? 'project_cover' : 'separate';
+
     const { data, error } = await supabaseAdmin
       .from('documents_billing')
       .insert({
@@ -72,6 +76,8 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
         type,
         client_id,
         project_id: project_id || null,
+        payment_plan_id: payment_plan_id || null,
+        billing_scope: safeScope,
         status: status || 'sent',
         currency: currency || 'LKR',
         line_items: normalizedItems,
@@ -91,7 +97,7 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthenticatedRequest, re
   }
 });
 
-// PATCH /api/billing/:id/status - Admin updates document status
+// PATCH /api/billing/:id/status - Admin updates document status (auto-applies project cover payment when paid)
 router.patch('/:id/status', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -110,6 +116,67 @@ router.patch('/:id/status', requireAuth, requireAdmin, async (req: Authenticated
       .single();
 
     if (error) throw error;
+
+    // If this invoice counts toward a project cover-up and is now PAID, auto-record into payment_records idempotently
+    if (status === 'paid' && data && data.type === 'invoice' && data.billing_scope === 'project_cover') {
+      try {
+        const { data: existingRec } = await supabaseAdmin
+          .from('payment_records')
+          .select('id')
+          .eq('invoice_id', data.id)
+          .maybeSingle();
+
+        if (!existingRec) {
+          let targetPlanId = data.payment_plan_id;
+          if (!targetPlanId && data.project_id) {
+            const { data: matchedPlan } = await supabaseAdmin
+              .from('project_payment_plans')
+              .select('id')
+              .eq('project_id', data.project_id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            targetPlanId = matchedPlan?.id || null;
+          }
+
+          if (targetPlanId) {
+            await supabaseAdmin.from('payment_records').insert({
+              payment_plan_id: targetPlanId,
+              client_id: data.client_id,
+              project_id: data.project_id || null,
+              invoice_id: data.id,
+              amount: Number(data.total || 0),
+              currency: data.currency || 'LKR',
+              payment_date: new Date().toISOString().split('T')[0],
+              payment_method: 'Invoice Settlement',
+              reference_number: data.document_number,
+              billing_scope: 'project_cover',
+              notes: `Auto-applied from paid invoice ${data.document_number}`,
+            });
+
+            // Recompute completion status for fixed/installment plans
+            const { data: plan } = await supabaseAdmin
+              .from('project_payment_plans')
+              .select('*, payments:payment_records(amount)')
+              .eq('id', targetPlanId)
+              .single();
+
+            if (plan && plan.billing_type !== 'monthly' && Number(plan.total_amount) > 0) {
+              const totalPaid = (plan.payments || []).reduce((acc: number, r: any) => acc + Number(r.amount || 0), 0);
+              if (totalPaid >= Number(plan.total_amount)) {
+                await supabaseAdmin
+                  .from('project_payment_plans')
+                  .update({ status: 'completed', updated_at: new Date().toISOString() })
+                  .eq('id', targetPlanId);
+              }
+            }
+          }
+        }
+      } catch (syncErr) {
+        console.warn('Auto payment sync skipped:', syncErr);
+      }
+    }
+
     res.json({ document: data });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

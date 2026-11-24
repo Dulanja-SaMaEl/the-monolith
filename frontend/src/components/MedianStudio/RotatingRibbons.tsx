@@ -16,17 +16,17 @@ export const RotatingRibbons: React.FC<RotatingRibbonsProps> = ({ navigate }) =>
   };
 
   return (
-    <div className="relative py-28 md:py-36 overflow-hidden select-none bg-white">
+    <div className="relative py-20 sm:py-28 md:py-36 overflow-hidden select-none bg-white contain-paint">
       {/* Background Ribbon 2: Rotated +6deg with lower opacity */}
       <div
         onClick={handleClick}
         data-cursor="pointer"
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140vw] bg-median-taupe/40 text-white py-4 md:py-6 flex items-center cursor-pointer shadow-lg transition-transform duration-500 hover:scale-105"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140vw] bg-median-taupe/40 text-white py-4 md:py-6 flex items-center cursor-pointer shadow-lg transition-transform duration-500 hover:scale-105 will-change-transform"
         style={{
           transform: 'translate(-50%, -50%) rotate(6deg) scale(1.15)',
         }}
       >
-        <div className="flex whitespace-nowrap animate-marquee-right">
+        <div className="flex whitespace-nowrap animate-marquee-right will-change-transform">
           {[...repeatedText, ...repeatedText].map((text, idx) => (
             <div key={idx} className="flex items-center">
               <span className="font-oswald text-4xl sm:text-6xl md:text-7xl font-bold uppercase tracking-tight mx-4 text-white">

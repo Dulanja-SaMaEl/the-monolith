@@ -70,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="w-4 h-4 bg-black flex items-center justify-center text-white text-[9px] font-bold">
             ■
           </span>
-          <span className="font-oswald text-xl sm:text-2xl font-bold tracking-[0.2em] text-black uppercase transition-colors group-hover:text-median-taupe">
+          <span className="font-oswald text-lg sm:text-2xl font-bold tracking-[0.14em] sm:tracking-[0.2em] text-black uppercase transition-colors group-hover:text-median-taupe whitespace-nowrap">
             MONOLITH<span className="text-median-taupe ml-1">LK</span>
           </span>
         </button>

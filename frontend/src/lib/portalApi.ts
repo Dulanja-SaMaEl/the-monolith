@@ -11,6 +11,9 @@ import {
   PortalBlogPost,
   ContactInquiry,
   ExecutiveTask,
+  ProjectPaymentPlan,
+  PaymentRecord,
+  BillingScope,
 } from './portalStore';
 
 // Helper: get current Supabase JWT if logged in via real Supabase Auth
@@ -81,6 +84,9 @@ const mapBillingRow = (row: any): BillingDocument => ({
   client_contact_name: row.client?.full_name || row.client_contact_name || undefined,
   client_email: row.client?.email || row.client_email || undefined,
   client_phone: row.client?.phone || row.client_phone || undefined,
+  project_id: row.project_id || undefined,
+  payment_plan_id: row.payment_plan_id || undefined,
+  billing_scope: (row.billing_scope === 'project_cover' ? 'project_cover' : 'separate') as BillingScope,
   project_title: row.project?.title || row.project_title || undefined,
   status: row.status,
   currency: row.currency || 'LKR',
@@ -90,6 +96,45 @@ const mapBillingRow = (row: any): BillingDocument => ({
   total: Number(row.total ?? 0),
   due_date: row.due_date || '',
   notes: row.notes,
+  created_at: row.created_at,
+});
+
+const mapPaymentPlanRow = (row: any): ProjectPaymentPlan => ({
+  id: row.id,
+  client_id: row.client_id,
+  client_name: row.client?.company_name || row.client?.full_name || row.client_name || 'Client',
+  project_id: row.project_id || undefined,
+  project_title: row.project?.title || row.project_title || undefined,
+  project_code: row.project?.code_name || row.project_code || undefined,
+  package_name: row.package_name || 'Custom Package',
+  billing_type: row.billing_type || 'one_time',
+  currency: row.currency || 'LKR',
+  total_amount: Number(row.total_amount ?? 0),
+  installment_amount: Number(row.installment_amount ?? 0),
+  total_months: Number(row.total_months ?? 1),
+  start_date: row.start_date || '',
+  next_due_date: row.next_due_date || undefined,
+  status: row.status || 'active',
+  notes: row.notes || undefined,
+  payments: Array.isArray(row.payments)
+    ? [...row.payments]
+        .map((p: any) => ({
+          id: p.id,
+          payment_plan_id: p.payment_plan_id,
+          client_id: p.client_id,
+          project_id: p.project_id || undefined,
+          invoice_id: p.invoice_id || undefined,
+          amount: Number(p.amount ?? 0),
+          currency: p.currency || row.currency || 'LKR',
+          payment_date: p.payment_date || '',
+          payment_method: p.payment_method || 'Bank Transfer / CEFTS',
+          reference_number: p.reference_number || undefined,
+          billing_scope: (p.billing_scope === 'separate' ? 'separate' : 'project_cover') as BillingScope,
+          notes: p.notes || undefined,
+          created_at: p.created_at,
+        }))
+        .sort((a, b) => new Date(b.payment_date || b.created_at).getTime() - new Date(a.payment_date || a.created_at).getTime())
+    : [],
   created_at: row.created_at,
 });
 
@@ -491,6 +536,9 @@ export const portalApi = {
             document_number,
             type: doc.type,
             client_id: doc.client_id,
+            project_id: doc.project_id || null,
+            payment_plan_id: doc.payment_plan_id || null,
+            billing_scope: doc.billing_scope || 'separate',
             status: doc.status || 'sent',
             currency: doc.currency || 'LKR',
             line_items: doc.line_items,
@@ -526,8 +574,50 @@ export const portalApi = {
         await apiFetch(`/api/billing/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }, token);
         return;
       } catch {
-        const { error } = await supabase.from('documents_billing').update({ status }).eq('id', id);
-        if (!error) return;
+        const { data: updatedDoc, error } = await supabase
+          .from('documents_billing')
+          .update({ status })
+          .eq('id', id)
+          .select()
+          .single();
+        if (!error && updatedDoc) {
+          if (status === 'paid' && updatedDoc.type === 'invoice' && updatedDoc.billing_scope === 'project_cover') {
+            const { data: existing } = await supabase
+              .from('payment_records')
+              .select('id')
+              .eq('invoice_id', updatedDoc.id)
+              .maybeSingle();
+            if (!existing) {
+              let targetPlanId = updatedDoc.payment_plan_id;
+              if (!targetPlanId && updatedDoc.project_id) {
+                const { data: matched } = await supabase
+                  .from('project_payment_plans')
+                  .select('id')
+                  .eq('project_id', updatedDoc.project_id)
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                  .maybeSingle();
+                targetPlanId = matched?.id || null;
+              }
+              if (targetPlanId) {
+                await supabase.from('payment_records').insert({
+                  payment_plan_id: targetPlanId,
+                  client_id: updatedDoc.client_id,
+                  project_id: updatedDoc.project_id || null,
+                  invoice_id: updatedDoc.id,
+                  amount: Number(updatedDoc.total || 0),
+                  currency: updatedDoc.currency || 'LKR',
+                  payment_date: new Date().toISOString().split('T')[0],
+                  payment_method: 'Invoice Settlement',
+                  reference_number: updatedDoc.document_number,
+                  billing_scope: 'project_cover',
+                  notes: `Auto-applied from paid invoice ${updatedDoc.document_number}`,
+                });
+              }
+            }
+          }
+          return;
+        }
       }
     }
     portalStore.updateBillingStatus(id, status);
@@ -979,5 +1069,201 @@ export const portalApi = {
       }
     }
     portalStore.deleteTask(id);
+  },
+
+  // ================= PROJECT PAYMENT PLANS & PAYMENT RECORDS =================
+  async getPaymentPlans(clientId?: string): Promise<{ data: ProjectPaymentPlan[]; live: boolean }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        const res = await apiFetch<{ plans: any[] }>('/api/payments', {}, token);
+        const mapped = (res.plans || []).map(mapPaymentPlanRow);
+        return {
+          data: clientId ? mapped.filter((p) => p.client_id === clientId) : mapped,
+          live: true,
+        };
+      } catch {
+        if (isSupabaseConfigured) {
+          let q = supabase
+            .from('project_payment_plans')
+            .select(
+              '*, client:profiles!client_id(full_name, email, company_name), project:projects!project_id(id, title, code_name), payments:payment_records(*)'
+            );
+          if (clientId) q = q.eq('client_id', clientId);
+          const { data, error } = await q.order('created_at', { ascending: false });
+          if (!error && data) return { data: data.map(mapPaymentPlanRow), live: true };
+        }
+      }
+    }
+    return { data: portalStore.getPaymentPlans(clientId), live: false };
+  },
+
+  async createPaymentPlan(
+    payload: Omit<ProjectPaymentPlan, 'id' | 'payments' | 'created_at'>
+  ): Promise<{ plan: ProjectPaymentPlan; live: boolean }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        const res = await apiFetch<{ plan: any }>(
+          '/api/payments',
+          { method: 'POST', body: JSON.stringify(payload) },
+          token
+        );
+        return { plan: mapPaymentPlanRow(res.plan), live: true };
+      } catch {
+        if (isSupabaseConfigured) {
+          const { client_name: _cn, project_title: _pt, project_code: _pc, ...row } = payload;
+          const { data, error } = await supabase
+            .from('project_payment_plans')
+            .insert({
+              ...row,
+              project_id: row.project_id || null,
+              next_due_date: row.next_due_date || null,
+            })
+            .select(
+              '*, client:profiles!client_id(full_name, email, company_name), project:projects!project_id(id, title, code_name), payments:payment_records(*)'
+            )
+            .single();
+          if (!error && data) return { plan: mapPaymentPlanRow(data), live: true };
+        }
+      }
+    }
+    return { plan: portalStore.createPaymentPlan(payload), live: false };
+  },
+
+  async updatePaymentPlan(id: string, updates: Partial<ProjectPaymentPlan>): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/payments/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }, token);
+        return;
+      } catch {
+        if (isSupabaseConfigured) {
+          const { client_name: _cn, project_title: _pt, project_code: _pc, payments: _ps, ...fields } = updates as any;
+          const { error } = await supabase
+            .from('project_payment_plans')
+            .update({ ...fields, updated_at: new Date().toISOString() })
+            .eq('id', id);
+          if (!error) return;
+        }
+      }
+    }
+    portalStore.updatePaymentPlan(id, updates);
+  },
+
+  async deletePaymentPlan(id: string): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/payments/${id}`, { method: 'DELETE' }, token);
+        return;
+      } catch {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase.from('project_payment_plans').delete().eq('id', id);
+          if (!error) return;
+        }
+      }
+    }
+    portalStore.deletePaymentPlan(id);
+  },
+
+  async addPaymentRecord(
+    planId: string,
+    payload: {
+      amount: number;
+      payment_date: string;
+      payment_method: string;
+      reference_number?: string;
+      invoice_id?: string;
+      billing_scope?: BillingScope;
+      notes?: string;
+      advance_due_date?: boolean;
+    }
+  ): Promise<{ record: PaymentRecord | null; live: boolean }> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        const res = await apiFetch<{ record: PaymentRecord }>(
+          `/api/payments/${planId}/records`,
+          { method: 'POST', body: JSON.stringify(payload) },
+          token
+        );
+        return { record: res.record, live: true };
+      } catch {
+        if (isSupabaseConfigured) {
+          const { data: plan } = await supabase
+            .from('project_payment_plans')
+            .select('*')
+            .eq('id', planId)
+            .single();
+          if (plan) {
+            const { data, error } = await supabase
+              .from('payment_records')
+              .insert({
+                payment_plan_id: planId,
+                client_id: plan.client_id,
+                project_id: plan.project_id || null,
+                invoice_id: payload.invoice_id || null,
+                amount: Number(payload.amount),
+                currency: plan.currency || 'LKR',
+                payment_date: payload.payment_date || new Date().toISOString().split('T')[0],
+                payment_method: payload.payment_method || 'Bank Transfer / CEFTS',
+                reference_number: payload.reference_number || null,
+                billing_scope: payload.billing_scope || 'project_cover',
+                notes: payload.notes || null,
+              })
+              .select()
+              .single();
+            if (!error && data) {
+              if (payload.advance_due_date && (plan.billing_type === 'monthly' || plan.billing_type === 'installment')) {
+                const base = plan.next_due_date ? new Date(plan.next_due_date) : new Date(payload.payment_date || Date.now());
+                base.setMonth(base.getMonth() + 1);
+                await supabase
+                  .from('project_payment_plans')
+                  .update({ next_due_date: base.toISOString().split('T')[0], updated_at: new Date().toISOString() })
+                  .eq('id', planId);
+              }
+              return { record: data as PaymentRecord, live: true };
+            }
+          }
+        }
+      }
+    }
+    return { record: portalStore.addPaymentRecord(planId, payload), live: false };
+  },
+
+  async updatePaymentRecord(
+    recordId: string,
+    updates: Partial<Pick<PaymentRecord, 'amount' | 'payment_date' | 'payment_method' | 'reference_number' | 'billing_scope' | 'notes'>>
+  ): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/payments/records/${recordId}`, { method: 'PATCH', body: JSON.stringify(updates) }, token);
+        return;
+      } catch {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase.from('payment_records').update(updates).eq('id', recordId);
+          if (!error) return;
+        }
+      }
+    }
+    portalStore.updatePaymentRecord(recordId, updates);
+  },
+
+  async deletePaymentRecord(recordId: string): Promise<void> {
+    const token = await getAccessToken();
+    if (token) {
+      try {
+        await apiFetch(`/api/payments/records/${recordId}`, { method: 'DELETE' }, token);
+        return;
+      } catch {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase.from('payment_records').delete().eq('id', recordId);
+          if (!error) return;
+        }
+      }
+    }
+    portalStore.deletePaymentRecord(recordId);
   },
 };

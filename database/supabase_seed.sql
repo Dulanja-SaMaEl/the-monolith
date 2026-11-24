@@ -45,6 +45,43 @@ CREATE TABLE IF NOT EXISTS public.executive_tasks (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS public.project_payment_plans (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  client_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
+  package_name TEXT NOT NULL,
+  billing_type TEXT CHECK (billing_type IN ('one_time', 'monthly', 'installment')) NOT NULL DEFAULT 'one_time',
+  currency TEXT DEFAULT 'LKR',
+  total_amount NUMERIC(14, 2) NOT NULL DEFAULT 0,
+  installment_amount NUMERIC(14, 2) DEFAULT 0,
+  total_months INTEGER DEFAULT 1,
+  start_date DATE DEFAULT CURRENT_DATE,
+  next_due_date DATE,
+  status TEXT CHECK (status IN ('active', 'completed', 'overdue', 'paused')) DEFAULT 'active',
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.payment_records (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  payment_plan_id UUID REFERENCES public.project_payment_plans(id) ON DELETE CASCADE,
+  client_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
+  invoice_id UUID REFERENCES public.documents_billing(id) ON DELETE SET NULL,
+  amount NUMERIC(14, 2) NOT NULL DEFAULT 0,
+  currency TEXT DEFAULT 'LKR',
+  payment_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  payment_method TEXT DEFAULT 'Bank Transfer / CEFTS',
+  reference_number TEXT,
+  billing_scope TEXT CHECK (billing_scope IN ('project_cover', 'separate')) DEFAULT 'project_cover',
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE IF EXISTS public.documents_billing ADD COLUMN IF NOT EXISTS payment_plan_id UUID REFERENCES public.project_payment_plans(id) ON DELETE SET NULL;
+ALTER TABLE IF EXISTS public.documents_billing ADD COLUMN IF NOT EXISTS billing_scope TEXT DEFAULT 'separate';
+
 -- 1. Seed Auth Accounts & Profiles (Founder Admin + 3 Enterprise Clients)
 DO $$
 DECLARE

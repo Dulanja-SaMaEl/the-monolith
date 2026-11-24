@@ -1,8 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { PortalProject, MeetingRequest, ProjectRequest, BillingDocument, CustomerReview } from '../../../lib/portalStore';
+import {
+  PortalProject,
+  MeetingRequest,
+  ProjectRequest,
+  BillingDocument,
+  CustomerReview,
+  ProjectPaymentPlan,
+} from '../../../lib/portalStore';
 import { portalApi } from '../../../lib/portalApi';
 import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
+import { ClientPaymentsTab } from './ClientPaymentsTab';
 
 interface ClientPortalProps {
   navigate: (route: string) => void;
@@ -10,12 +18,13 @@ interface ClientPortalProps {
 
 export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
   const { user, logout, isLiveAuth } = useAuth();
-  const [activeTab, setActiveTab] = useState<'projects' | 'request' | 'meetings' | 'billing' | 'reviews' | 'security'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'payments' | 'request' | 'meetings' | 'billing' | 'reviews' | 'security'>('projects');
   const [isLiveDb, setIsLiveDb] = useState<boolean>(false);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
 
   // Client Data States
   const [projects, setProjects] = useState<PortalProject[]>([]);
+  const [paymentPlans, setPaymentPlans] = useState<ProjectPaymentPlan[]>([]);
   const [requests, setRequests] = useState<ProjectRequest[]>([]);
   const [meetings, setMeetings] = useState<MeetingRequest[]>([]);
   const [billingDocs, setBillingDocs] = useState<BillingDocument[]>([]);
@@ -53,14 +62,16 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
     if (!user?.id) return;
     setIsLoadingData(true);
     try {
-      const [projRes, reqRes, meetRes, billRes, revRes] = await Promise.all([
+      const [projRes, payRes, reqRes, meetRes, billRes, revRes] = await Promise.all([
         portalApi.getProjects(user.id),
+        portalApi.getPaymentPlans(user.id),
         portalApi.getProjectRequests(user.id),
         portalApi.getMeetings(user.id),
         portalApi.getBillingDocuments(user.id),
         portalApi.getReviews(true),
       ]);
       setProjects(projRes.data);
+      setPaymentPlans(payRes.data);
       setRequests(reqRes.data);
       setMeetings(meetRes.data);
       setBillingDocs(billRes.data);
@@ -176,50 +187,54 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-black font-inter selection:bg-median-taupe selection:text-white pb-24">
       {/* Top Haute Editorial VIP Navigation */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-median-taupe/20 px-6 sm:px-12 py-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center gap-2 group focus:outline-none"
-            >
-              <span className="w-4 h-4 bg-black flex items-center justify-center text-white text-[9px] font-bold">
-                ■
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-median-taupe/20 px-4 sm:px-6 md:px-12 py-3.5 sm:py-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+          <div className="flex items-center justify-between md:justify-start gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <button
+                onClick={() => navigate('/')}
+                className="flex items-center gap-2 group focus:outline-none"
+              >
+                <span className="w-4 h-4 bg-black flex items-center justify-center text-white text-[9px] font-bold">
+                  ■
+                </span>
+                <span className="font-oswald text-lg sm:text-xl font-bold tracking-[0.2em] text-black uppercase group-hover:text-median-taupe transition-colors">
+                  MONOLITH<span className="text-median-taupe ml-1">LK</span>
+                </span>
+              </button>
+              <span className="text-median-taupe/40 font-mono text-sm">/</span>
+              <span className="font-mono text-[11px] sm:text-xs uppercase tracking-wider text-median-taupe font-semibold">
+                Client Portal
               </span>
-              <span className="font-oswald text-xl font-bold tracking-[0.2em] text-black uppercase group-hover:text-median-taupe transition-colors">
-                MONOLITH<span className="text-median-taupe ml-1">LK</span>
-              </span>
-            </button>
-            <span className="text-median-taupe/40 font-mono text-sm">/</span>
-            <span className="font-mono text-xs uppercase tracking-wider text-median-taupe font-semibold">
-              Client VIP Lounge
-            </span>
+            </div>
           </div>
 
           {/* User profile & actions */}
-          <div className="flex items-center gap-4 text-xs font-mono">
-            <div className="hidden sm:block text-right">
-              <span className="font-bold text-black block">{user?.company_name || user?.full_name}</span>
-              <span className="text-median-taupe/70 text-[10px]">{user?.email}</span>
+          <div className="flex items-center justify-between md:justify-end gap-3 sm:gap-4 text-xs font-mono">
+            <div className="text-left sm:text-right truncate max-w-[160px] sm:max-w-none">
+              <span className="font-bold text-black block truncate">{user?.company_name || user?.full_name}</span>
+              <span className="text-median-taupe/70 text-[10px] hidden sm:block">{user?.email}</span>
             </div>
-            <button
-              onClick={() => navigate('/')}
-              className="px-3 py-1.5 rounded-lg border border-median-taupe/30 hover:border-black text-black transition-colors"
-            >
-              Public Site
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-3 py-1.5 rounded-lg border border-black bg-black text-white hover:bg-median-taupe hover:border-median-taupe transition-colors"
-            >
-              Sign Out
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => navigate('/')}
+                className="px-3 py-1.5 rounded-lg border border-median-taupe/30 hover:border-black text-black transition-colors"
+              >
+                Public Site
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1.5 rounded-lg border border-black bg-black text-white hover:bg-median-taupe hover:border-median-taupe transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Hub Container */}
-      <main className="max-w-7xl mx-auto px-6 sm:px-12 pt-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 pt-6 sm:pt-8">
         {/* Welcome Greeting Banner */}
         <div className="mb-8 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
@@ -258,41 +273,55 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
         </div>
 
         {/* Portal Tabs Bar */}
-        <div className="flex border-b border-median-taupe/20 mb-8 overflow-x-auto gap-2 sm:gap-6 font-oswald text-sm sm:text-base uppercase tracking-wider">
+        <div className="flex border-b border-median-taupe/20 mb-8 overflow-x-auto no-scrollbar gap-3 sm:gap-6 font-oswald text-sm sm:text-base uppercase tracking-wider">
           <button
             onClick={() => setActiveTab('projects')}
-            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 ${
+            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'projects'
                 ? 'border-black text-black font-bold'
                 : 'border-transparent text-median-taupe/60 hover:text-black'
             }`}
           >
-            <span>Active Projects & Milestones</span>
+            <span>Active Projects</span>
             <span className="w-5 h-5 rounded-full bg-median-taupe/10 text-median-taupe text-[10px] font-mono font-bold flex items-center justify-center">
               {projects.length}
             </span>
           </button>
 
           <button
+            onClick={() => setActiveTab('payments')}
+            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
+              activeTab === 'payments'
+                ? 'border-black text-black font-bold'
+                : 'border-transparent text-median-taupe/60 hover:text-black'
+            }`}
+          >
+            <span>Payments & Packages</span>
+            <span className="w-5 h-5 rounded-full bg-median-taupe/10 text-median-taupe text-[10px] font-mono font-bold flex items-center justify-center">
+              {paymentPlans.length}
+            </span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('request')}
-            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 ${
+            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'request'
                 ? 'border-black text-black font-bold'
                 : 'border-transparent text-median-taupe/60 hover:text-black'
             }`}
           >
-            <span>Request New Project</span>
+            <span>Request Project</span>
           </button>
 
           <button
             onClick={() => setActiveTab('meetings')}
-            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 ${
+            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'meetings'
                 ? 'border-black text-black font-bold'
                 : 'border-transparent text-median-taupe/60 hover:text-black'
             }`}
           >
-            <span>Schedule Meeting</span>
+            <span>Meetings</span>
             {meetings.length > 0 && (
               <span className="w-5 h-5 rounded-full bg-median-taupe/10 text-median-taupe text-[10px] font-mono font-bold flex items-center justify-center">
                 {meetings.length}
@@ -302,7 +331,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
 
           <button
             onClick={() => setActiveTab('billing')}
-            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 ${
+            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'billing'
                 ? 'border-black text-black font-bold'
                 : 'border-transparent text-median-taupe/60 hover:text-black'
@@ -316,13 +345,13 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
 
           <button
             onClick={() => setActiveTab('reviews')}
-            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 ${
+            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'reviews'
                 ? 'border-black text-black font-bold'
                 : 'border-transparent text-median-taupe/60 hover:text-black'
             }`}
           >
-            <span>Testimonials & Reviews</span>
+            <span>Reviews</span>
             {reviews.length > 0 && (
               <span className="w-5 h-5 rounded-full bg-median-taupe/10 text-median-taupe text-[10px] font-mono font-bold flex items-center justify-center">
                 {reviews.length}
@@ -332,7 +361,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
 
           <button
             onClick={() => setActiveTab('security')}
-            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 ${
+            className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'security'
                 ? 'border-black text-black font-bold'
                 : 'border-transparent text-median-taupe/60 hover:text-black'
@@ -461,10 +490,96 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Per-Project Payment Progress Summary Strip */}
+                  {(() => {
+                    const projPlans = paymentPlans.filter((pl) => pl.project_id === proj.id);
+                    if (projPlans.length === 0) return null;
+                    return (
+                      <div className="mt-6 pt-5 border-t border-median-taupe/15 space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <h3 className="font-oswald text-sm font-bold uppercase tracking-wider text-black">
+                            Project Payment Progress
+                          </h3>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('payments')}
+                            className="text-[11px] font-mono font-bold uppercase text-median-taupe hover:text-black underline transition-colors"
+                          >
+                            View Full Payment Ledger →
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {projPlans.map((pl) => {
+                            const paid = (pl.payments || []).reduce((s, r) => s + Number(r.amount || 0), 0);
+                            const remaining = pl.billing_type === 'monthly' ? 0 : Math.max(0, pl.total_amount - paid);
+                            const pct =
+                              pl.billing_type === 'monthly'
+                                ? 100
+                                : pl.total_amount > 0
+                                ? Math.min(100, Math.round((paid / pl.total_amount) * 100))
+                                : 0;
+                            return (
+                              <div
+                                key={pl.id}
+                                className="p-4 rounded-xl bg-[#FAF8F5] border border-median-taupe/20 space-y-2 text-xs font-mono"
+                              >
+                                <div className="flex flex-wrap items-center justify-between gap-1">
+                                  <strong className="font-oswald text-sm uppercase text-black">{pl.package_name}</strong>
+                                  <span className="text-[10px] uppercase px-2 py-0.5 rounded-full bg-white border border-median-taupe/25 text-median-taupe font-bold">
+                                    {pl.billing_type === 'monthly'
+                                      ? `${pl.currency} ${pl.installment_amount.toLocaleString()}/mo`
+                                      : `${pct}% Paid`}
+                                  </span>
+                                </div>
+                                {pl.billing_type !== 'monthly' && (
+                                  <div className="w-full h-2 rounded-full bg-median-taupe/15 overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full transition-all duration-700 ${
+                                        pct >= 100 ? 'bg-emerald-600' : 'bg-median-taupe'
+                                      }`}
+                                      style={{ width: `${pct}%` }}
+                                    />
+                                  </div>
+                                )}
+                                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                                  <span className="text-emerald-700 font-semibold">
+                                    Paid: {pl.currency} {paid.toLocaleString()}
+                                  </span>
+                                  {pl.billing_type !== 'monthly' ? (
+                                    <span className="text-black font-semibold">
+                                      Needed: {pl.currency} {remaining.toLocaleString()}
+                                    </span>
+                                  ) : (
+                                    <span className="text-median-taupe">
+                                      {pl.payments.length} cycle{pl.payments.length === 1 ? '' : 's'} cleared
+                                    </span>
+                                  )}
+                                  {pl.next_due_date && pl.status !== 'completed' && (
+                                    <span className="text-median-taupe">Due: {pl.next_due_date}</span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               ))
             )}
           </div>
+        )}
+
+        {/* ================= TAB 1B: PAYMENTS & PACKAGES ================= */}
+        {activeTab === 'payments' && (
+          <ClientPaymentsTab
+            paymentPlans={paymentPlans}
+            projects={projects}
+            billingDocs={billingDocs}
+            onViewInvoice={(doc) => setSelectedBillingDoc(doc)}
+          />
         )}
 
         {/* ================= TAB 2: REQUEST NEW PROJECT ================= */}
@@ -780,11 +895,24 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
                     className="p-6 rounded-2xl bg-white border border-median-taupe/20 hover:border-median-taupe shadow-sm transition-all flex flex-col justify-between"
                   >
                     <div>
-                      <div className="flex justify-between items-start mb-4">
+                      <div className="flex justify-between items-start gap-2 mb-4">
                         <div>
-                          <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
-                            {doc.type.toUpperCase()}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold">
+                              {doc.type.toUpperCase()}
+                            </span>
+                            {doc.type === 'invoice' && (
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase border ${
+                                  doc.billing_scope === 'project_cover'
+                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                    : 'bg-[#FAF8F5] text-median-taupe border-median-taupe/25'
+                                }`}
+                              >
+                                {doc.billing_scope === 'project_cover' ? 'Project Cover-Up' : 'Separate Charge'}
+                              </span>
+                            )}
+                          </div>
                           <h3 className="font-oswald text-2xl font-bold uppercase text-black">
                             {doc.document_number}
                           </h3>

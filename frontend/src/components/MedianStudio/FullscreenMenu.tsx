@@ -109,7 +109,7 @@ export const FullscreenMenu: React.FC<FullscreenMenuProps> = ({
                 {/* Big Typographic Heading */}
                 <div className="relative overflow-hidden">
                   <span
-                    className={`font-oswald text-4xl sm:text-6xl md:text-7xl font-medium tracking-tight uppercase transition-all duration-300 inline-block ${
+                    className={`font-oswald text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-medium tracking-tight uppercase transition-all duration-300 inline-block ${
                       isActive
                         ? 'text-black'
                         : 'text-median-taupe group-hover:text-black group-hover:translate-x-3'

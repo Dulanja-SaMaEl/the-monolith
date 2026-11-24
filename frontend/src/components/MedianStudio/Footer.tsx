@@ -111,12 +111,12 @@ export const Footer: React.FC<FooterProps> = ({ navigate }) => {
 
         {/* Bottom Copyright & Legal Links */}
         <ScrollReveal variant="fade-up" delay={200} duration={650}>
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-median-taupe/70 gap-4">
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-median-taupe/70 gap-4 text-center sm:text-left">
             <p>
               © 2026 Monolith LK. Contemporary architectural design & digital engineering.
             </p>
 
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:gap-6">
               <button
                 onClick={() => {
                   navigate('/style-guide');

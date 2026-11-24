@@ -34,22 +34,73 @@ interface ScrollRevealProps {
   once?: boolean;
 }
 
-// Shared registry so when an outer container animates into place, nested children re-evaluate
-// even if the user pauses scrolling mid-transition.
-const activeEvaluators = new Set<() => void>();
+interface ViewportSnapshot {
+  vh: number;
+  vw: number;
+  scrollY: number;
+  docHeight: number;
+  remainingScroll: number;
+}
+
+const getViewportSnapshot = (): ViewportSnapshot => {
+  const vh = window.innerHeight || document.documentElement.clientHeight;
+  const vw = window.innerWidth || document.documentElement.clientWidth;
+  const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+  const docHeight = Math.max(
+    document.body.scrollHeight,
+    document.documentElement.scrollHeight
+  );
+  const remainingScroll = Math.max(0, docHeight - (scrollY + vh));
+  return { vh, vw, scrollY, docHeight, remainingScroll };
+};
+
+// Shared module-level registry & single scroll/resize listener to eliminate per-element listener overhead
+const activeEvaluators = new Set<(snap: ViewportSnapshot) => void>();
 let cascadeTimers: number[] = [];
+let sharedListenersBound = false;
+let sharedTicking = false;
+
+function runAllEvaluators() {
+  if (activeEvaluators.size === 0) return;
+  const snap = getViewportSnapshot();
+  activeEvaluators.forEach((fn) => fn(snap));
+}
+
+function onSharedScrollOrResize() {
+  if (!sharedTicking) {
+    sharedTicking = true;
+    requestAnimationFrame(() => {
+      sharedTicking = false;
+      runAllEvaluators();
+    });
+  }
+}
+
+function onSharedPreloaderDone() {
+  requestAnimationFrame(() => {
+    runAllEvaluators();
+  });
+}
+
+function ensureSharedListeners() {
+  if (sharedListenersBound || typeof window === 'undefined') return;
+  sharedListenersBound = true;
+  window.addEventListener('scroll', onSharedScrollOrResize, { passive: true, capture: true });
+  window.addEventListener('resize', onSharedScrollOrResize, { passive: true });
+  window.addEventListener('median_preloader_done', onSharedPreloaderDone);
+}
 
 function triggerCascadeReevaluation() {
   queueMicrotask(() => {
-    activeEvaluators.forEach((fn) => fn());
+    runAllEvaluators();
   });
   requestAnimationFrame(() => {
-    activeEvaluators.forEach((fn) => fn());
+    runAllEvaluators();
   });
   cascadeTimers.forEach((id) => window.clearTimeout(id));
   cascadeTimers = [80, 220, 480, 850].map((ms) =>
     window.setTimeout(() => {
-      activeEvaluators.forEach((fn) => fn());
+      runAllEvaluators();
     }, ms)
   );
 }
@@ -242,20 +293,12 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
       return !seen && !done;
     };
 
-    const evaluateVisibility = () => {
+    const evaluateVisibility = (snap?: ViewportSnapshot) => {
       if (!el || !isMountedAndPainted) return;
       if (once && hasRevealedOnceRef.current) return;
 
       const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight || document.documentElement.clientHeight;
-      const vw = window.innerWidth || document.documentElement.clientWidth;
-      const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-      const docHeight = Math.max(
-        document.body.scrollHeight,
-        document.documentElement.scrollHeight
-      );
-      const scrollBottom = scrollY + vh;
-      const remainingScroll = Math.max(0, docHeight - scrollBottom);
+      const { vh, vw, scrollY, remainingScroll } = snap || getViewportSnapshot();
 
       const ancestorReveal = el.parentElement?.closest('[data-scroll-reveal]');
       const isAncestorVisible =
@@ -319,6 +362,7 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
       }
     };
 
+    ensureSharedListeners();
     activeEvaluators.add(evaluateVisibility);
 
     // Ensure initial hidden state is committed to DOM & GPU before evaluating visibility
@@ -329,48 +373,22 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
       });
     }, 35);
 
-    let ticking = false;
-    const onScrollOrResize = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          evaluateVisibility();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    const onPreloaderDone = () => {
-      requestAnimationFrame(() => {
-        evaluateVisibility();
-      });
-    };
-
     let observer: IntersectionObserver | null = null;
     if (typeof IntersectionObserver !== 'undefined') {
       observer = new IntersectionObserver(
         () => {
           evaluateVisibility();
         },
-        { threshold: [0, 0.05, 0.15, 0.3, 0.5, 0.75, 1] }
+        { threshold: [0, 0.1, 0.3, 0.6] }
       );
       observer.observe(el);
     }
-
-    window.addEventListener('scroll', onScrollOrResize, { passive: true, capture: true });
-    document.addEventListener('scroll', onScrollOrResize, { passive: true, capture: true });
-    window.addEventListener('resize', onScrollOrResize, { passive: true });
-    window.addEventListener('median_preloader_done', onPreloaderDone);
 
     return () => {
       activeEvaluators.delete(evaluateVisibility);
       if (mountTimer) window.clearTimeout(mountTimer);
       if (raf1) cancelAnimationFrame(raf1);
       if (observer) observer.disconnect();
-      window.removeEventListener('scroll', onScrollOrResize, true);
-      document.removeEventListener('scroll', onScrollOrResize, true);
-      window.removeEventListener('resize', onScrollOrResize);
-      window.removeEventListener('median_preloader_done', onPreloaderDone);
     };
   }, [once]);
 
@@ -388,7 +406,7 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
         ? 'right center'
         : 'center center',
     transition: `opacity ${activeDuration}ms ${easing} ${appliedDelay}ms, transform ${activeDuration}ms ${easing} ${appliedDelay}ms, filter ${activeDuration}ms ease-out ${appliedDelay}ms, clip-path ${activeDuration}ms ${easing} ${appliedDelay}ms`,
-    willChange: 'opacity, transform, filter',
+    willChange: isVisible ? 'auto' : 'opacity, transform',
     ...style,
   };
 

@@ -12,9 +12,12 @@ import {
   BillingLineItem,
   ContactInquiry,
   ExecutiveTask,
+  ProjectPaymentPlan,
+  BillingScope,
 } from '../../../lib/portalStore';
 import { portalApi } from '../../../lib/portalApi';
 import { downloadBillingVoucherHtml, printBillingVoucherPdf } from '../../../lib/invoiceDownloader';
+import { AdminPaymentsPanel } from './AdminPaymentsPanel';
 
 interface AdminPortalProps {
   navigate: (route: string) => void;
@@ -97,7 +100,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
 
   // Active Admin View
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'tasks' | 'customers' | 'partners' | 'projects' | 'billing' | 'reviews' | 'blog' | 'requests'
+    'overview' | 'tasks' | 'customers' | 'partners' | 'projects' | 'payments' | 'billing' | 'reviews' | 'blog' | 'requests'
   >('overview');
   const [isLiveDb, setIsLiveDb] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -106,6 +109,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [projects, setProjects] = useState<PortalProject[]>([]);
+  const [paymentPlans, setPaymentPlans] = useState<ProjectPaymentPlan[]>([]);
   const [billingDocs, setBillingDocs] = useState<BillingDocument[]>([]);
   const [reviews, setReviews] = useState<CustomerReview[]>([]);
   const [blogPosts, setBlogPosts] = useState<PortalBlogPost[]>([]);
@@ -163,6 +167,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   // 4. Invoicing / Quotation Builder (Default Currency: LKR)
   const [billType, setBillType] = useState<'quotation' | 'invoice'>('invoice');
   const [billClientId, setBillClientId] = useState('');
+  const [billScope, setBillScope] = useState<BillingScope>('project_cover');
+  const [billProjectId, setBillProjectId] = useState('');
+  const [billPaymentPlanId, setBillPaymentPlanId] = useState('');
   const [billProjectTitle, setBillProjectTitle] = useState('');
   const [billDueDate, setBillDueDate] = useState('');
   const [billNotes, setBillNotes] = useState('');
@@ -206,11 +213,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   const refreshData = useCallback(async () => {
     setIsSyncing(true);
     try {
-      const [clientsRes, partRes, projRes, billRes, revRes, blogRes, reqRes, meetRes, inqRes, taskRes] =
+      const [clientsRes, partRes, projRes, payRes, billRes, revRes, blogRes, reqRes, meetRes, inqRes, taskRes] =
         await Promise.all([
           portalApi.getClients(),
           portalApi.getPartners(true),
           portalApi.getProjects(),
+          portalApi.getPaymentPlans(),
           portalApi.getBillingDocuments(),
           portalApi.getReviews(true),
           portalApi.getBlogPosts(true),
@@ -223,6 +231,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       setUsers(clientsRes.data);
       setPartners(partRes.data);
       setProjects(projRes.data);
+      setPaymentPlans(payRes.data);
       setBillingDocs(billRes.data);
       setReviews(revRes.data);
       setBlogPosts(blogRes.data);
@@ -687,6 +696,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
     if (!billClientId || lineItems.length === 0) return null;
 
     const selectedClient = users.find((u) => u.id === billClientId);
+    const selectedPlan = paymentPlans.find((p) => p.id === billPaymentPlanId);
+    const resolvedProjectId = billProjectId || selectedPlan?.project_id || undefined;
+    const selectedProject = projects.find((p) => p.id === resolvedProjectId);
     const subtotal = lineItems.reduce((acc, i) => acc + i.total, 0);
 
     try {
@@ -697,7 +709,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
         client_contact_name: selectedClient?.full_name,
         client_email: selectedClient?.email,
         client_phone: selectedClient?.phone,
-        project_title: billProjectTitle || 'Enterprise Architecture Sprints',
+        project_id: resolvedProjectId,
+        payment_plan_id: billScope === 'project_cover' ? billPaymentPlanId || undefined : undefined,
+        billing_scope: billScope,
+        project_title: billProjectTitle || selectedProject?.title || 'Monolith LK Deliverable',
         status: 'sent',
         currency: 'LKR',
         line_items: lineItems,
@@ -713,7 +728,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       setBillProjectTitle('');
       setBillNotes('');
       await refreshData();
-      showAlert(`✓ ${billType.toUpperCase()} (${created.document_number}) generated in LKR and ready to download.`);
+      showAlert(
+        `✓ ${billType.toUpperCase()} (${created.document_number}) generated (${
+          billScope === 'project_cover' ? 'Counts toward Project Cover-Up' : 'Separate / Standalone Charge'
+        }).`
+      );
       return enriched;
     } catch (err: any) {
       showAlert(`✕ Error creating billing document: ${err.message}`);
@@ -827,6 +846,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               { id: 'customers', label: 'Customers Registry', count: users.filter((u) => u.role === 'client').length },
               { id: 'partners', label: 'Strategic Partners', count: partners.length },
               { id: 'projects', label: 'Projects & Progress', count: projects.length },
+              { id: 'payments', label: 'Payments & Packages', count: paymentPlans.length },
               { id: 'billing', label: 'Invoices & Quotations', count: billingDocs.length },
               { id: 'reviews', label: 'Customer Reviews', count: reviews.length },
               { id: 'blog', label: 'Editorial & News CMS', count: blogPosts.length },
@@ -911,7 +931,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
       </aside>
 
       {/* ================= MAIN EXECUTIVE CONTENT PANE ================= */}
-      <main className="flex-1 p-4 sm:p-6 md:p-10 max-h-screen overflow-y-auto w-full min-w-0">
+      <main className="flex-1 p-4 sm:p-6 md:p-10 md:max-h-screen md:overflow-y-auto w-full min-w-0">
         {/* Top Breadcrumb & Notification Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-median-taupe/20">
           <div>
@@ -924,6 +944,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               {activeTab === 'customers' && 'Customer & Enterprise Registry'}
               {activeTab === 'partners' && 'Strategic Academic & Tech Partners'}
               {activeTab === 'projects' && 'Projects & Engineering Progress'}
+              {activeTab === 'payments' && 'Payment Packages & Client Progress'}
               {activeTab === 'billing' && 'Invoicing & Quotation Studio'}
               {activeTab === 'reviews' && 'Customer Reviews & Accreditations'}
               {activeTab === 'blog' && 'Editorial & "Latest News" CMS'}
@@ -2454,20 +2475,32 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
           </div>
         )}
 
+        {/* ================= TAB 4B: PAYMENTS & PACKAGES ================= */}
+        {activeTab === 'payments' && (
+          <AdminPaymentsPanel
+            users={users}
+            projects={projects}
+            paymentPlans={paymentPlans}
+            isSyncing={isSyncing}
+            onRefresh={refreshData}
+            showAlert={showAlert}
+          />
+        )}
+
         {/* ================= TAB 5: BILLING & INVOICES CREATOR ================= */}
         {activeTab === 'billing' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Create Quotation / Invoice Form */}
-            <div className="lg:col-span-6 p-6 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
+            <div className="lg:col-span-6 p-5 sm:p-8 rounded-2xl bg-white border border-median-taupe/20 shadow-sm">
               <h3 className="font-oswald text-xl font-bold uppercase text-black mb-1">
                 Create Quotation / Invoice
               </h3>
               <p className="text-xs text-median-taupe/80 mb-6">
-                Issue a formal quotation or payment invoice. Auto-dispatches to client portal.
+                Issue a formal quotation or payment invoice. Link it to cover a project payment package or issue as a separate standalone charge.
               </p>
 
               <form onSubmit={handleCreateBilling} className="space-y-4 text-xs font-mono">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-bold uppercase text-black mb-1">Document Type</label>
                     <select
@@ -2485,7 +2518,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                     <select
                       required
                       value={billClientId}
-                      onChange={(e) => setBillClientId(e.target.value)}
+                      onChange={(e) => {
+                        setBillClientId(e.target.value);
+                        setBillProjectId('');
+                        setBillPaymentPlanId('');
+                      }}
                       className="w-full px-3 py-2 rounded-xl border border-median-taupe/30 bg-[#FAF8F5] text-sm text-black"
                     >
                       <option value="">-- Choose Client --</option>
@@ -2500,7 +2537,124 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                {/* Invoice Allocation Mode: Project Cover-Up vs Separate Charge */}
+                <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-median-taupe/25 space-y-3">
+                  <div>
+                    <label className="block font-bold uppercase text-black mb-1.5">
+                      Payment Allocation Mode
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setBillScope('project_cover')}
+                        className={`p-2.5 rounded-xl border text-left transition-all ${
+                          billScope === 'project_cover'
+                            ? 'bg-black text-white border-black shadow-sm'
+                            : 'bg-white text-black border-median-taupe/30 hover:border-black'
+                        }`}
+                      >
+                        <div className="font-bold uppercase text-[11px]">Project Cover-Up</div>
+                        <div
+                          className={`text-[10px] mt-0.5 ${
+                            billScope === 'project_cover' ? 'text-white/75' : 'text-median-taupe'
+                          }`}
+                        >
+                          Counts toward project payment progress when paid
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBillScope('separate');
+                          setBillPaymentPlanId('');
+                        }}
+                        className={`p-2.5 rounded-xl border text-left transition-all ${
+                          billScope === 'separate'
+                            ? 'bg-black text-white border-black shadow-sm'
+                            : 'bg-white text-black border-median-taupe/30 hover:border-black'
+                        }`}
+                      >
+                        <div className="font-bold uppercase text-[11px]">Separate / Standalone</div>
+                        <div
+                          className={`text-[10px] mt-0.5 ${
+                            billScope === 'separate' ? 'text-white/75' : 'text-median-taupe'
+                          }`}
+                        >
+                          Independent invoice (add-ons, travel, extra scope)
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {billClientId && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-median-taupe mb-1">
+                          Link to Client Project
+                        </label>
+                        <select
+                          value={billProjectId}
+                          onChange={(e) => {
+                            const pid = e.target.value;
+                            setBillProjectId(pid);
+                            const matchedProj = projects.find((p) => p.id === pid);
+                            if (matchedProj && !billProjectTitle) {
+                              setBillProjectTitle(matchedProj.title);
+                            }
+                            if (billScope === 'project_cover') {
+                              const matchedPlan = paymentPlans.find(
+                                (pl) => pl.client_id === billClientId && pl.project_id === pid
+                              );
+                              setBillPaymentPlanId(matchedPlan?.id || '');
+                            }
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-white text-xs text-black"
+                        >
+                          <option value="">-- No Specific Project --</option>
+                          {projects
+                            .filter((p) => p.client_id === billClientId)
+                            .map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.code_name} · {p.title}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+
+                      {billScope === 'project_cover' && (
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase text-median-taupe mb-1">
+                            Target Payment Package
+                          </label>
+                          <select
+                            value={billPaymentPlanId}
+                            onChange={(e) => {
+                              const planId = e.target.value;
+                              setBillPaymentPlanId(planId);
+                              const matched = paymentPlans.find((pl) => pl.id === planId);
+                              if (matched?.project_id) setBillProjectId(matched.project_id);
+                              if (matched?.project_title && !billProjectTitle) {
+                                setBillProjectTitle(matched.project_title);
+                              }
+                            }}
+                            className="w-full px-3 py-2 rounded-lg border border-median-taupe/30 bg-white text-xs text-black"
+                          >
+                            <option value="">-- Auto-match Project Plan --</option>
+                            {paymentPlans
+                              .filter((pl) => pl.client_id === billClientId)
+                              .map((pl) => (
+                                <option key={pl.id} value={pl.id}>
+                                  {pl.package_name} ({pl.currency} {pl.total_amount.toLocaleString()})
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-bold uppercase text-black mb-1">Project Reference</label>
                     <input
@@ -2538,36 +2692,38 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
 
                   <div className="space-y-2">
                     {lineItems.map((item) => (
-                      <div key={item.id} className="flex gap-2 items-center">
+                      <div key={item.id} className="flex flex-wrap sm:flex-nowrap gap-2 items-center">
                         <input
                           type="text"
                           required
                           value={item.description}
                           onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
                           placeholder="Deliverable item description..."
-                          className="flex-1 px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-xs text-black"
+                          className="w-full sm:flex-1 px-3 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-xs text-black"
                         />
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => updateLineItem(item.id, 'quantity', Number(e.target.value))}
-                          className="w-14 px-2 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-xs text-center text-black"
-                        />
-                        <input
-                          type="number"
-                          step="100"
-                          value={item.unit_price}
-                          onChange={(e) => updateLineItem(item.id, 'unit_price', Number(e.target.value))}
-                          className="w-24 px-2 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-xs text-right text-black"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeLineItem(item.id)}
-                          className="text-red-500 hover:text-red-700 px-1 font-bold text-sm"
-                        >
-                          ✕
-                        </button>
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.quantity}
+                            onChange={(e) => updateLineItem(item.id, 'quantity', Number(e.target.value))}
+                            className="w-16 sm:w-14 px-2 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-xs text-center text-black"
+                          />
+                          <input
+                            type="number"
+                            step="100"
+                            value={item.unit_price}
+                            onChange={(e) => updateLineItem(item.id, 'unit_price', Number(e.target.value))}
+                            className="flex-1 sm:w-28 px-2 py-2 rounded-lg border border-median-taupe/30 bg-[#FAF8F5] text-xs text-right text-black"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeLineItem(item.id)}
+                            className="text-red-500 hover:text-red-700 px-2 py-1 font-bold text-sm"
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -2671,9 +2827,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">
-                          {doc.type.toUpperCase()} · {doc.document_number}
-                        </span>
+                        <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                          <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold">
+                            {doc.type.toUpperCase()} · {doc.document_number}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase border ${
+                              doc.billing_scope === 'project_cover'
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                : 'bg-[#FAF8F5] text-median-taupe border-median-taupe/25'
+                            }`}
+                          >
+                            {doc.billing_scope === 'project_cover' ? 'Project Cover-Up' : 'Separate Charge'}
+                          </span>
+                        </div>
                         <h4 className="font-oswald text-lg font-bold uppercase text-black">
                           {doc.client_name}
                           {doc.client_contact_name && doc.client_contact_name !== doc.client_name && (
@@ -2684,6 +2851,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                         </h4>
                         <span className="text-xs font-mono text-median-taupe/80">
                           Total: <strong className="text-black font-semibold">{doc.currency || 'LKR'} {doc.total.toLocaleString()}</strong>
+                          {doc.project_title ? ` · ${doc.project_title}` : ''}
                         </span>
                       </div>
 
@@ -2705,7 +2873,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
                           onClick={async () => {
                             await portalApi.updateBillingStatus(doc.id, 'paid');
                             await refreshData();
-                            showAlert(`Marked ${doc.document_number} as PAID.`);
+                            showAlert(
+                              doc.billing_scope === 'project_cover' && doc.type === 'invoice'
+                                ? `Marked ${doc.document_number} as PAID and automatically updated the linked project's payment progress.`
+                                : `Marked ${doc.document_number} as PAID.`
+                            );
                           }}
                           className="px-3 py-1 rounded bg-emerald-600 text-white text-[10px] font-mono font-bold hover:bg-emerald-700 transition-colors"
                         >
