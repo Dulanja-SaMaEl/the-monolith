@@ -10,15 +10,34 @@ interface AdminTasksViewProps {
   showAlert: (msg: string) => void;
 }
 
+/** Local YYYY-MM-DD (accurate in UTC+5:30 even between midnight and 5:30 AM) */
+const getLocalTodayYmd = (): string => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+/** Pure UTC calendar-day math so local timezone offsets never cancel +1/-1 day */
+const addDaysYmd = (ymd: string, days: number): string => {
+  const parts = (ymd || getLocalTodayYmd()).split('-').map(Number);
+  const dt = new Date(Date.UTC(parts[0] || 2026, (parts[1] || 1) - 1, parts[2] || 1));
+  dt.setUTCDate(dt.getUTCDate() + days);
+  return dt.toISOString().split('T')[0];
+};
+
 export const AdminTasksView: React.FC<AdminTasksViewProps> = ({
   tasks,
   onRefresh,
   onToggleTask,
   showAlert,
 }) => {
-  const [taskDate, setTaskDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [taskDate, setTaskDate] = useState<string>(() => getLocalTodayYmd());
   const [assigneeFilter, setAssigneeFilter] = useState<string>('All');
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
+  const [busyTaskId, setBusyTaskId] = useState<string | null>(null);
+  const [isBulkRolling, setIsBulkRolling] = useState<boolean>(false);
 
   // New task form
   const [title, setTitle] = useState('');
@@ -29,9 +48,7 @@ export const AdminTasksView: React.FC<AdminTasksViewProps> = ({
   const [editingTask, setEditingTask] = useState<ExecutiveTask | null>(null);
 
   const shiftDate = (days: number) => {
-    const d = new Date(taskDate + 'T00:00:00');
-    d.setDate(d.getDate() + days);
-    setTaskDate(d.toISOString().split('T')[0]);
+    setTaskDate((prev) => addDaysYmd(prev, days));
   };
 
   const dayTasks = useMemo(() => {
@@ -71,28 +88,39 @@ export const AdminTasksView: React.FC<AdminTasksViewProps> = ({
   };
 
   const handleRolloverSingle = async (t: ExecutiveTask) => {
-    const d = new Date((t.task_date || taskDate) + 'T00:00:00');
-    d.setDate(d.getDate() + 1);
-    const nextDate = d.toISOString().split('T')[0];
+    const nextDate = addDaysYmd(t.task_date || taskDate, 1);
+    setBusyTaskId(t.id);
     try {
       await portalApi.updateTask(t.id, { task_date: nextDate });
       await onRefresh();
       showAlert(`✓ Moved "${t.title}" to ${nextDate}.`);
     } catch (err: any) {
       showAlert(`✕ Error rolling over task: ${err.message}`);
+    } finally {
+      setBusyTaskId(null);
     }
   };
 
   const handleBulkRollover = async () => {
-    const d = new Date(taskDate + 'T00:00:00');
-    d.setDate(d.getDate() + 1);
-    const nextDate = d.toISOString().split('T')[0];
+    if (activeTasks.length === 0) return;
+    const nextDate = addDaysYmd(taskDate, 1);
+    setIsBulkRolling(true);
     try {
-      const res = await portalApi.rolloverTasks(taskDate, nextDate);
+      let movedCount = 0;
+      if (assigneeFilter === 'All') {
+        const res = await portalApi.rolloverTasks(taskDate, nextDate);
+        movedCount = res.count || activeTasks.length;
+      } else {
+        await Promise.all(activeTasks.map((t) => portalApi.updateTask(t.id, { task_date: nextDate })));
+        movedCount = activeTasks.length;
+      }
       await onRefresh();
-      showAlert(`✓ Rolled over ${res.count} incomplete task(s) to ${nextDate}.`);
+      setTaskDate(nextDate);
+      showAlert(`✓ Rolled over ${movedCount} incomplete task(s) to ${nextDate}.`);
     } catch (err: any) {
       showAlert(`✕ Error rolling over: ${err.message}`);
+    } finally {
+      setIsBulkRolling(false);
     }
   };
 
@@ -149,7 +177,7 @@ export const AdminTasksView: React.FC<AdminTasksViewProps> = ({
             />
             <button
               type="button"
-              onClick={() => setTaskDate(new Date().toISOString().split('T')[0])}
+              onClick={() => setTaskDate(getLocalTodayYmd())}
               className="px-2.5 py-1.5 rounded-lg border border-median-taupe/30 hover:border-black uppercase text-[10px] font-bold"
             >
               Today
@@ -182,10 +210,11 @@ export const AdminTasksView: React.FC<AdminTasksViewProps> = ({
             {activeTasks.length > 0 && (
               <button
                 type="button"
+                disabled={isBulkRolling}
                 onClick={handleBulkRollover}
-                className="px-3 py-2 rounded-xl border border-median-taupe/40 text-black hover:border-black text-[10px] font-bold uppercase transition-colors"
+                className="px-3 py-2 rounded-xl border border-median-taupe/40 text-black hover:border-black text-[10px] font-bold uppercase transition-colors disabled:opacity-50"
               >
-                Roll Over Remaining ({activeTasks.length}) →
+                {isBulkRolling ? 'Rolling Over...' : `Roll Over Remaining (${activeTasks.length}) →`}
               </button>
             )}
             <button
@@ -334,10 +363,11 @@ export const AdminTasksView: React.FC<AdminTasksViewProps> = ({
                     <div className="flex flex-wrap items-center gap-1.5 shrink-0 pl-8 sm:pl-0">
                       <button
                         type="button"
+                        disabled={busyTaskId === t.id}
                         onClick={() => handleRolloverSingle(t)}
-                        className="px-2.5 py-1 rounded-lg border border-median-taupe/30 text-black hover:border-black text-[10px] font-mono font-bold uppercase"
+                        className="px-2.5 py-1 rounded-lg border border-median-taupe/30 text-black hover:border-black text-[10px] font-mono font-bold uppercase disabled:opacity-50"
                       >
-                        Tomorrow →
+                        {busyTaskId === t.id ? 'Moving...' : 'Tomorrow →'}
                       </button>
                       <button
                         type="button"
