@@ -165,4 +165,57 @@
     background-color: #9F8170 !important;
     color: #ffffff !important;
   }
+
+  /* MONO Floating Obsidian Companion — Pure 60fps GPU Animations */
+  @keyframes monoFloat {
+    0%, 100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -5px, 0);
+    }
+  }
+
+  @keyframes monoShadow {
+    0%, 100% {
+      transform: scaleX(1);
+      opacity: 0.22;
+    }
+    50% {
+      transform: scaleX(0.82);
+      opacity: 0.12;
+    }
+  }
+
+  @keyframes monoSpotlightPulse {
+    0%, 100% {
+      box-shadow: 0 0 0 2px rgba(159, 129, 112, 0.9), 0 0 24px rgba(159, 129, 112, 0.35);
+    }
+    50% {
+      box-shadow: 0 0 0 4px rgba(159, 129, 112, 0.55), 0 0 36px rgba(159, 129, 112, 0.5);
+    }
+  }
+
+  .mono-float {
+    animation: monoFloat 3.4s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .mono-shadow {
+    animation: monoShadow 3.4s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+
+  .mono-spotlight {
+    animation: monoSpotlightPulse 2s ease-in-out infinite;
+    background: rgba(159, 129, 112, 0.04);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mono-float,
+    .mono-shadow,
+    .mono-spotlight {
+      animation: none !important;
+    }
+  }
 }

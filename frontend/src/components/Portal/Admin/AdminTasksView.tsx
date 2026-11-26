@@ -210,6 +210,7 @@ export const AdminTasksView: React.FC<AdminTasksViewProps> = ({
             {activeTasks.length > 0 && (
               <button
                 type="button"
+                data-guide="admin-task-rollover"
                 disabled={isBulkRolling}
                 onClick={handleBulkRollover}
                 className="px-3 py-2 rounded-xl border border-median-taupe/40 text-black hover:border-black text-[10px] font-bold uppercase transition-colors disabled:opacity-50"
@@ -219,6 +220,7 @@ export const AdminTasksView: React.FC<AdminTasksViewProps> = ({
             )}
             <button
               type="button"
+              data-guide="admin-add-task-btn"
               onClick={() => setShowCreateForm((s) => !s)}
               className={`px-4 py-2 rounded-xl font-oswald text-xs uppercase tracking-wider font-bold transition-all ${
                 showCreateForm

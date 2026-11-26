@@ -172,7 +172,7 @@ export const ClientPaymentsTab: React.FC<ClientPaymentsTabProps> = ({
       </div>
 
       {/* Top Executive Summary Cards with Staggered Reveal & Counting Numbers */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div data-guide="client-payment-summary" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <ScrollReveal variant="card-flip-left" delay={0} duration={800} once className="h-full">
           <div className="p-5 rounded-2xl bg-white border border-median-taupe/20 shadow-sm hover:border-median-taupe hover:shadow-md transition-all h-full">
             <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block mb-1">

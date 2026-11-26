@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import {
   UserProfile,
@@ -16,6 +16,8 @@ import { ClientPaymentsTab } from './ClientPaymentsTab';
 import { ClientChangeRequestsSection } from './ClientChangeRequestsSection';
 import { SystemHeartbeatMonitor } from '../SystemHeartbeatMonitor';
 import { CalendarSyncButton } from '../CalendarSyncButton';
+import { MonoCompanion } from '../MonoCompanion/MonoCompanion';
+import { buildClientProactiveRadar } from '../MonoCompanion/monoGuideEngine';
 import { ScrollReveal, RevealVariant } from '../../MedianStudio/ScrollReveal';
 import { usePwaInstall } from '../../../lib/usePwaInstall';
 
@@ -134,6 +136,19 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
   useEffect(() => {
     loadClientData();
   }, [loadClientData]);
+
+  const monoSuggestions = useMemo(
+    () =>
+      buildClientProactiveRadar({
+        clientName: activeClient?.company_name || activeClient?.full_name || 'Valued Client',
+        projects,
+        paymentPlans,
+        billingDocs,
+        changeRequests,
+        meetings,
+      }),
+    [activeClient, projects, paymentPlans, billingDocs, changeRequests, meetings]
+  );
 
   const handleLogout = async () => {
     await logout();
@@ -378,6 +393,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
         {/* Portal Tabs Bar */}
         <div className="flex border-b border-median-taupe/20 mb-8 overflow-x-auto no-scrollbar gap-3 sm:gap-6 font-oswald text-sm sm:text-base uppercase tracking-wider">
           <button
+            data-guide="client-tab-projects"
             onClick={() => setActiveTab('projects')}
             className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'projects'
@@ -392,6 +408,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
           </button>
 
           <button
+            data-guide="client-tab-payments"
             onClick={() => setActiveTab('payments')}
             className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'payments'
@@ -406,6 +423,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
           </button>
 
           <button
+            data-guide="client-tab-request"
             onClick={() => setActiveTab('request')}
             className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'request'
@@ -417,6 +435,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
           </button>
 
           <button
+            data-guide="client-tab-meetings"
             onClick={() => setActiveTab('meetings')}
             className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'meetings'
@@ -433,6 +452,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
           </button>
 
           <button
+            data-guide="client-tab-billing"
             onClick={() => setActiveTab('billing')}
             className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'billing'
@@ -447,6 +467,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
           </button>
 
           <button
+            data-guide="client-tab-reviews"
             onClick={() => setActiveTab('reviews')}
             className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'reviews'
@@ -463,6 +484,7 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
           </button>
 
           <button
+            data-guide="client-tab-security"
             onClick={() => setActiveTab('security')}
             className={`py-3 px-2 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'security'
@@ -648,11 +670,13 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
 
                       {/* Live System Heartbeat Telemetry Monitor (tied to actual production_url) */}
                       {proj.production_url && (
-                        <SystemHeartbeatMonitor
-                          projectId={proj.id}
-                          productionUrl={proj.production_url}
-                          variant="vault"
-                        />
+                        <div data-guide="client-heartbeat-monitor">
+                          <SystemHeartbeatMonitor
+                            projectId={proj.id}
+                            productionUrl={proj.production_url}
+                            variant="vault"
+                          />
+                        </div>
                       )}
 
                       {/* Asset Quick-Access Links */}
@@ -1696,6 +1720,15 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ navigate }) => {
           </div>
         </div>
       )}
+      {/* MONO Living Spatial AI Companion (Client Concierge) */}
+      <MonoCompanion
+        role="client"
+        activeTab={activeTab}
+        onNavigateTab={(tab) => setActiveTab(tab as any)}
+        suggestions={monoSuggestions}
+        clientId={activeClient?.id}
+        userName={activeClient?.company_name || activeClient?.full_name}
+      />
     </div>
   );
 };

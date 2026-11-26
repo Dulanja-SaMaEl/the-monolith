@@ -14,6 +14,7 @@ import inquiriesRouter from './routes/inquiries';
 import tasksRouter from './routes/tasks';
 import paymentsRouter from './routes/payments';
 import changeRequestsRouter from './routes/changeRequests';
+import aiRouter from './routes/ai';
 
 dotenv.config();
 
@@ -87,6 +88,7 @@ app.use('/api/inquiries', inquiriesRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/payments', paymentsRouter);
 app.use('/api/change-requests', changeRequestsRouter);
+app.use('/api/ai', aiRouter);
 
 // 404 Handler
 app.use((_req: Request, res: Response) => {

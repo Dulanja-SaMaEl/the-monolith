@@ -1698,4 +1698,32 @@ export const portalApi = {
     }
     portalStore.deleteChangeRequest(id);
   },
+
+  // ================= MONO SPATIAL AI COMPANION =================
+  async askMono(payload: {
+    question: string;
+    mode: 'admin' | 'client';
+    currentTab: string;
+    clientId?: string;
+    history?: { role: 'user' | 'model'; text: string }[];
+  }): Promise<{
+    reply: string;
+    mood: 'idle' | 'guiding' | 'thinking' | 'celebrate' | 'alert';
+    suggestions: string[];
+    stops: { tab?: string; target: string; title: string; caption: string }[];
+    ai_powered: boolean;
+  } | null> {
+    const token = await getAccessToken();
+    if (!token) return null;
+    try {
+      return await apiFetch(
+        '/api/ai/ask',
+        { method: 'POST', body: JSON.stringify(payload) },
+        token,
+        14000
+      );
+    } catch {
+      return null;
+    }
+  },
 };

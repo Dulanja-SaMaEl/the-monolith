@@ -121,14 +121,16 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({
       </div>
 
       {/* Cashflow Forecast HUD */}
-      <ScrollReveal variant="fade-up" delay={120} duration={700} once>
-        <AdminCashflowHud
-          paymentPlans={paymentPlans}
-          billingDocs={billingDocs}
-          onOpenPayments={() => onNavigateTab('payments')}
-          onOpenBilling={() => onNavigateTab('billing')}
-        />
-      </ScrollReveal>
+      <div data-guide="admin-cashflow-hud">
+        <ScrollReveal variant="fade-up" delay={120} duration={700} once>
+          <AdminCashflowHud
+            paymentPlans={paymentPlans}
+            billingDocs={billingDocs}
+            onOpenPayments={() => onNavigateTab('payments')}
+            onOpenBilling={() => onNavigateTab('billing')}
+          />
+        </ScrollReveal>
+      </div>
 
       {/* Focused 2-Column Pulse: Projects + Today's Tasks */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -186,7 +188,7 @@ export const AdminOverviewView: React.FC<AdminOverviewViewProps> = ({
 
         {/* Open Executive Tasks Pulse */}
         <ScrollReveal variant="card-flip-right" delay={200} duration={700} once className="lg:col-span-5">
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-4">
+          <div data-guide="admin-open-tasks" className="p-5 sm:p-6 rounded-2xl bg-white border border-median-taupe/20 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-median-taupe font-bold block">

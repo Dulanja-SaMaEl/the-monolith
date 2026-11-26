@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import {
   UserProfile,
@@ -32,6 +32,8 @@ import {
   AdminBlogView,
   AdminRequestsView,
 } from './AdminBrandViews';
+import { MonoCompanion } from '../MonoCompanion/MonoCompanion';
+import { buildAdminProactiveRadar } from '../MonoCompanion/monoGuideEngine';
 
 interface AdminPortalProps {
   navigate: (route: string) => void;
@@ -128,10 +130,29 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
   // Shared Modal & Toast
   const [selectedBillingDoc, setSelectedBillingDoc] = useState<BillingDocument | null>(null);
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
+  const [monoCelebrateCount, setMonoCelebrateCount] = useState<number>(0);
   const showAlert = useCallback((msg: string) => {
     setAlertMsg(msg);
+    if (msg.startsWith('✓')) {
+      setMonoCelebrateCount((c) => c + 1);
+    }
     window.setTimeout(() => setAlertMsg(null), 4000);
   }, []);
+
+  const monoSuggestions = useMemo(
+    () =>
+      buildAdminProactiveRadar({
+        projects,
+        tasks,
+        paymentPlans,
+        billingDocs,
+        changeRequests,
+        meetings,
+        inquiries,
+        requests,
+      }),
+    [projects, tasks, paymentPlans, billingDocs, changeRequests, meetings, inquiries, requests]
+  );
 
   const refreshData = useCallback(async () => {
     setIsSyncing(true);
@@ -307,6 +328,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
               {group.items.map((tab) => (
                 <button
                   key={tab.id}
+                  data-guide={`admin-nav-${tab.id}`}
                   onClick={() => handleSelectTab(tab.id)}
                   className={`w-full py-2 px-3 rounded-xl flex items-center justify-between font-oswald text-[13px] uppercase tracking-wider transition-all ${
                     activeTab === tab.id
@@ -364,6 +386,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
           </div>
           <div className="grid grid-cols-2 gap-1.5">
             <button
+              data-guide="admin-client-preview-btn"
               onClick={() => {
                 const firstClient = users.find((u) => u.role === 'client') || null;
                 setPreviewClient(firstClient);
@@ -680,6 +703,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ navigate }) => {
           </div>
         </div>
       )}
+      {/* MONO Living Spatial AI Companion (Admin Executive Copilot) */}
+      <MonoCompanion
+        role="admin"
+        activeTab={activeTab}
+        onNavigateTab={(tab) => handleSelectTab(tab as AdminTabId)}
+        suggestions={monoSuggestions}
+        userName={user?.full_name || 'Dulanja Abeysinghe'}
+        celebrateTrigger={monoCelebrateCount}
+      />
     </div>
   );
 };

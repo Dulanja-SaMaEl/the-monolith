@@ -505,6 +505,7 @@ export const AdminPaymentsPanel: React.FC<AdminPaymentsPanelProps> = ({
           </div>
           <button
             type="button"
+            data-guide="admin-new-plan-btn"
             onClick={() => setShowCreateForm((s) => !s)}
             className={`px-4 py-2 rounded-xl font-oswald text-xs uppercase tracking-wider font-bold transition-all shrink-0 ${
               showCreateForm

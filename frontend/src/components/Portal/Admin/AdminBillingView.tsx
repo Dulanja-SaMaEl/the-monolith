@@ -222,6 +222,7 @@ export const AdminBillingView: React.FC<AdminBillingViewProps> = ({
   return (
     <div className="space-y-5">
       {/* Clean Segmented Toolbar */}
+      <div data-guide="admin-billing-composer-btn">
       <ScrollReveal variant="fade-up" duration={550} once>
         <AdminToolbar
           searchValue={mode === 'registry' ? search : undefined}
@@ -264,6 +265,7 @@ export const AdminBillingView: React.FC<AdminBillingViewProps> = ({
           }
         />
       </ScrollReveal>
+      </div>
 
       {/* Instant Ready Banner (visible in either mode) */}
       {lastCreatedDoc && (

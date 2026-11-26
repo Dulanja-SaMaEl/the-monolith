@@ -151,6 +151,7 @@ export const ClientChangeRequestsSection: React.FC<ClientChangeRequestsSectionPr
 
         <button
           type="button"
+          data-guide="client-change-request-btn"
           onClick={() => setShowForm((s) => !s)}
           className={`px-3.5 py-1.5 rounded-xl text-[11px] font-mono font-bold uppercase tracking-wider transition-colors ${
             showForm

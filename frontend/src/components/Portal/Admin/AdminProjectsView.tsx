@@ -269,6 +269,7 @@ export const AdminProjectsView: React.FC<AdminProjectsViewProps> = ({
       )}
 
       {/* Projects List */}
+      <div data-guide="admin-projects-list">
       {isSyncing ? (
         <AdminSkeletonList count={3} />
       ) : filtered.length === 0 ? (
@@ -573,6 +574,7 @@ export const AdminProjectsView: React.FC<AdminProjectsViewProps> = ({
           ))}
         </div>
       )}
+      </div>
 
       <AdminPagination
         currentPage={page}
